@@ -8,22 +8,22 @@ def healthChecker():
     return {"status": "success", "message": "Integrate Flask Framework with Next.js"}
 
 # create a user
-@app.route('/api/flask/users', methods=['POST'])
-def create_user():
+@app.route('/api/register', methods=["GET", "POST"])
+def register():
     try:
         data = request.get_json()
-        new_user = User(name=data['name'], email=data['email'])
-        db.session.add(new_user)
+        new_user = User( username=data['username'],
+                         email=data['email'],
+                         password=data['password'])
+        db.session.add( new_user )
         db.session.commit()
 
-        return jsonify({
-            'id': new_user.id,
-            'name': new_user.name,
-            'email': new_user.email
-        }), 201
+        return make_response(jsonify({
+            "message" : "User created successfully"
+        }), 201)
     except Exception as e:
         return make_response(jsonify({
-            'message': 'error creating user', 'error' : str(e)
+            "message" : "error creating user", 'error' : str(e)
         }), 500)
 
 # get users
