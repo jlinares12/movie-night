@@ -86,39 +86,3 @@ def delete_user(id):
         return make_response(jsonify({
             'message': 'error deleting user', 'error' : str(e)
         }), 500)
-
-@app.route('/register', methods=['GET','POST'])
-def register_page():
-    form = RegisterUserForm()
-    if form.validate_on_submit():
-        user_to_create = User(name=form.name.data,
-                              username=form.username.data,
-                              email=form.email.data,
-                              password=form.password1.data)
-        db.session.add(user_to_create)
-        db.session.commit()
-        login_user(user_to_create)
-        flash(f'You created your account successfully! Welcome to the site {user_to_create.username}', category='success')
-        return redirect(url_for('profile_page', username=current_user.username))
-    if form.errors != {}:                                           # If there are errors from the validations
-        for err_msg in form.errors.values():
-            flash(f'There was an error with creating a user: {err_msg[0]}', category='danger')
-    return render_template('register_page.html', form=form)
-
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    if current_user.is_authenticated:
-        return redirect(url_for('home_page'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        attempted_user = User.query.filter_by(username=form.username.data).first()
-        if not attempted_user or not attempted_user.check_password_correction(form.password.data):
-            flash(f'Invalid username or password', category='danger')
-            return redirect(url_for('login_page'))
-        login_user(attempted_user)
-        next = request.args.get('next')
-        flash(f'Login was successful! You are logged in as: {attempted_user.username}', category='success')
-        if not url_has_allowed_host_and_scheme(next, request.host):
-            return redirect(url_for('home_page'))
-        return redirect(next)
-    return render_template('login_page.html', form=form)
