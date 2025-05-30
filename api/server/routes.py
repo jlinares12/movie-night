@@ -1,5 +1,5 @@
-from server import app, db
-from server.models import User
+from api.server import app, db
+from api.server.models import User
 from flask import request, jsonify, make_response
 
 # create test route
