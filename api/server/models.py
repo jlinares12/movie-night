@@ -1,4 +1,4 @@
-from server import db, bcrypt
+from api.server import db, bcrypt
 
 class User(db.Model):
     __tablename__ = 'users'
