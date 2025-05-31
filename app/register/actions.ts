@@ -1,5 +1,5 @@
 'use server';
-export async function createUser (prevState: any, formData: FormData) {
+export async function createUser (prevState: {message: ''}, formData: FormData) {
         const url = 'http://localhost:8000/api/register';
         const username = formData.get('username');
         const email = formData.get('email');
@@ -22,6 +22,6 @@ export async function createUser (prevState: any, formData: FormData) {
         if (!res.ok) {
             return { message: 'Failed to create user'}
         } else {
-            return { message: 'Created user successfully'}
+            return { message: json.message}
         }
     }
