@@ -1,6 +1,6 @@
 'use client';
 import { useActionState } from 'react';
-import { createUser } from './actions'
+import { createUser } from './createUser'
 
 const initialState = {
     message: '',
