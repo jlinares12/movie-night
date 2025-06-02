@@ -1,0 +1,12 @@
+:root {
+    --background-color: #000000;
+    --accent-color: #f2b407;
+    --text-color: white;
+}
+
+html {
+    background: linear-gradient(45deg, #000000, #007649) no-repeat;
+    background-size: cover;
+    height: 100%;
+    color: var(--text-color);
+}
