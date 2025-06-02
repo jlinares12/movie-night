@@ -20,7 +20,7 @@ export async function createUser (prevState: {message: ''}, formData: FormData) 
         const json = await res.json()
 
         if (!res.ok) {
-            return { message: 'Failed to create user'}
+            return { message: json.error }
         } else {
             return { message: json.message}
         }
