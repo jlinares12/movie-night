@@ -33,14 +33,16 @@ export default function RegistrationPage() {
                     id="passwrd"
                     name='password'
                     type="password"
-                    required/>
+                    required
+                    minLength={8}/>
 
                     <label htmlFor="cpasswrd">Confirm Password:</label>
                     <input
                     id="cpasswrd"
                     name='cpassword'
                     type='password'
-                    required/>
+                    required
+                    minLength={8}/>
                 </div>
                 {!pending && <button type='submit'>Sign Up</button>}
                 {pending && <button disabled>Creating Account...</button>}
