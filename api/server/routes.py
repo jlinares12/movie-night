@@ -1,6 +1,7 @@
 from api.server import app, db
 from api.server.models import User
 from flask import request, jsonify, make_response
+from flask_login import login_user, logout_user, login_required, current_user
 
 # create test route
 @app.route("/api/healthchecker", methods=["GET"])
@@ -38,6 +39,19 @@ def register():
         return make_response(jsonify({
             "message" : "error creating user", 'error' : str(e)
         }), 500)
+
+@app.route('/api/login', methods=['GET', 'POST'])
+def login():
+    data = request.get_json()
+    attempted_user = User.query.filter_by(username=data['username']).first()
+    if not attempted_user or not attempted_user.check_password_correction(data['password']):
+        return make_response(jsonify({
+            "error" : "Username or password is incorrect"
+        }), 500)
+    login_user(attempted_user)
+    return make_response(jsonify({
+        'message' : 'user logged in successfully!'
+    }), 201)
 
 # get users
 @app.route('/api/flask/users', methods=['GET'])
