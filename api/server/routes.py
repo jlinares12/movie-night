@@ -10,11 +10,24 @@ def healthChecker():
 # create a user
 @app.route('/api/register', methods=["GET", "POST"])
 def register():
+    data = request.get_json()
+    new_username=data['username'],
+    new_email=data['email'],
+    new_password=data['password']
+
+    user = User.query.filter_by(username = new_username ).first()
+    email = User.query.filter_by(email = new_email ).first()
+    if user:
+        print("user test")
+        return make_response( jsonify({
+            'error' : "Username is already in use"
+        }), 500)
+    if email:
+        return make_response( jsonify({
+            'error' : "Email is already in use"
+        }), 500)
     try:
-        data = request.get_json()
-        new_user = User( username=data['username'],
-                         email=data['email'],
-                         password=data['password'])
+        new_user = User( username=new_username, email=new_email, password=new_password)
         db.session.add( new_user )
         db.session.commit()
 
