@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import styles from '../styles/landingPage/landingPage.module.css'
 
 export const metadata = {
   title: 'Next.js',
@@ -12,7 +13,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className={styles.page}>
+          {children}
+        </div>
+        <footer>
+          some stuff
+        </footer>
+      </body>
     </html>
   )
 }

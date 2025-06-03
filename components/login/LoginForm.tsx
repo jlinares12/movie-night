@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { login } from './login'
 import styles from '../../styles/login/login.module.css'
+import button from '../../styles/buttons/buttons.module.css'
 import Link from "next/link";
 
 const initialState = {
@@ -38,8 +39,8 @@ export default function LoginForm() {
                     </div>
 
                     <span>Don't have an account? <Link className={styles.link} href={'register'}>Sign Up</Link></span>
-                    {!pending && <button type='submit' className={styles.button}>Login</button>}
-                    {pending && <button disabled className={styles.button}>Creating Account...</button>}
+                    {!pending && <button type='submit' className={button.primary}>Login</button>}
+                    {pending && <button disabled className={button.primary}>Creating Account...</button>}
                     {state?.message && <p aria-live="polite">{state.message}</p>}
                 </form>
             </div>
