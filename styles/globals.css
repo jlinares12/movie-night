@@ -5,7 +5,7 @@
 }
 
 html {
-    background: linear-gradient(45deg, #000000, #007649) no-repeat;
+    background: linear-gradient(45deg, #000000, #0E3A0E) no-repeat;
     background-size: cover;
     height: 100%;
     color: var(--text-color);

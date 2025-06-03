@@ -45,22 +45,6 @@
     background: rgba(255, 255, 255, 0.3);
 }
 
-.button {
-    margin: 10px;
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(45deg, #8686e3, #3b3494);
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.button:hover {
-    background: linear-gradient(45deg, #f5ec71, #6464e4);
-}
-
 .link {
     text-decoration: none;
 }
