@@ -1,5 +1,7 @@
 'use server';
 
+import { permanentRedirect } from 'next/navigation'
+
 export async function login (prevState: {message: ''}, formData: FormData) {
     const url = 'http://localhost:8000/api/login'
     const username = formData.get('username')
@@ -18,6 +20,6 @@ export async function login (prevState: {message: ''}, formData: FormData) {
     if (!result.ok) {
             return { message: json.error }
         } else {
-            return { message: json.message}
+            permanentRedirect('/home')
         }
 }

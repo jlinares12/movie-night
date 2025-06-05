@@ -40,7 +40,7 @@ export default function LoginForm() {
 
                     <span>Don't have an account? <Link className={styles.link} href={'register'}>Sign Up</Link></span>
                     {!pending && <button type='submit' className={button.primary}>Login</button>}
-                    {pending && <button disabled className={button.primary}>Creating Account...</button>}
+                    {pending && <button disabled className={button.primary}>Logging in...</button>}
                     {state?.message && <p aria-live="polite">{state.message}</p>}
                 </form>
             </div>

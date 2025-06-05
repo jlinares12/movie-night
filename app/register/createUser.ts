@@ -1,4 +1,7 @@
 'use server';
+
+import { permanentRedirect } from 'next/navigation'
+
 export async function createUser (prevState: {message: ''}, formData: FormData) {
         const url = 'http://localhost:8000/api/register';
         const username = formData.get('username');
@@ -22,6 +25,6 @@ export async function createUser (prevState: {message: ''}, formData: FormData) 
         if (!res.ok) {
             return { message: json.error }
         } else {
-            return { message: json.message}
+            permanentRedirect('/home')
         }
     }
