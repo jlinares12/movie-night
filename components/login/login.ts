@@ -1,5 +1,6 @@
 'use server';
 
+import prisma from '@/app/lib/prisma';
 import { permanentRedirect } from 'next/navigation'
 
 export async function login (prevState: {message: ''}, formData: FormData) {
