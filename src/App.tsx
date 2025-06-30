@@ -4,7 +4,7 @@ import {useState, useEffect} from 'react'
 function App() {
   const [data, setData] = useState({"tech" : []});
   const fetchAPI = async () => {
-    const response = await axios.get("http://localhost:5000/data");
+    const response = await axios.get("api/data");
     console.log(response.data);
     setData(response.data)
   };
