@@ -1,9 +1,7 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react'
-import Login from './components/Login';
-import './index.css'
 
-function App() {
+export default function Techstack() {
   const [data, setData] = useState({"tech" : []});
   const fetchAPI = async () => {
     const response = await axios.get("api/data");
@@ -27,9 +25,6 @@ function App() {
         ))
       )
       }
-      <Login/>
     </div>
   )
 }
-
-export default App
