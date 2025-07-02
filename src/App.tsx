@@ -1,5 +1,7 @@
 import axios from 'axios';
 import {useState, useEffect} from 'react'
+import Login from './components/Login';
+import './index.css'
 
 function App() {
   const [data, setData] = useState({"tech" : []});
@@ -25,6 +27,7 @@ function App() {
         ))
       )
       }
+      <Login/>
     </div>
   )
 }
