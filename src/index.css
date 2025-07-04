@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+    --bk-color: #0C1A0D;
+    --primary-color: #40D952;
+    --primary-opacity: rgb(64, 217, 82, .2);
+    --text-color: #ffffff;
+}
