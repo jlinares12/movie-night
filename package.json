@@ -11,6 +11,7 @@
     "api": "cd api && venv/bin/flask run --no-debugger"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.32.4",
     "axios": "^1.10.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
