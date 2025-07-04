@@ -1,9 +1,9 @@
-import LoginForm from "../components/forms/LoginForm";
+import { SignIn } from "@clerk/clerk-react";
 
 export default function Login() {
     return (
         <>
-            <LoginForm/>
+            <SignIn signUpUrl="/register"/>
         </>
     )
 }
