@@ -2,7 +2,7 @@ import ReactDOM from "react-dom/client";
 import { StrictMode } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
-import Layout from "./pages/Layout";
+import AuthenticationLayout from "./pages/layouts/AuthenticationLayout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Techstack from "./pages/Techstack";
@@ -18,15 +18,15 @@ if (!PUBLISHABLE_KEY) {
 
 const ROUTER = createBrowserRouter([
   {
-    element: <Layout/>,
+    element: <AuthenticationLayout/>,
     children: [
-      {path:"/", element: <Home/>},
       {path:"/login/*", element: <Login/>},
-      {path:"/register/*", element: <Register/>},
-      {path:"/tech-stack", element: <Techstack/>},
+      {path:"/register/*", element: <Register/>}
     ]
   },
-  {path:"*", element: <NotFound/>}
+  {path:"*", element: <NotFound/>},
+  {path:"/", element: <Home/>},
+  {path:"/tech-stack", element: <Techstack/>},
 ]);
 
 const ROOT = document.getElementById("root")!;
