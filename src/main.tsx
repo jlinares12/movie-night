@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Signup";
 import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
+import ProtectedRoutes from "./utils/ProtectedRoutes";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -26,9 +27,14 @@ const ROUTER = createBrowserRouter([
     ]
   },
   {
-    element: <MainLayout/>,
+    element: <ProtectedRoutes/>,
     children: [
-      {path:"/", element: <Home/>},
+      {
+        element: <MainLayout/>,
+        children: [
+          {path:"/", element: <Home/>},
+        ]
+      },
     ]
   },
   {path:"*", element: <NotFound/>},
