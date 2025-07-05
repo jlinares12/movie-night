@@ -11,6 +11,7 @@ import Register from "./pages/Signup";
 import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
+import ProfilePage from "./pages/Profile";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -33,6 +34,7 @@ const ROUTER = createBrowserRouter([
         element: <MainLayout/>,
         children: [
           {path:"/", element: <Home/>},
+          {path:"/profile", element:<ProfilePage/>}
         ]
       },
     ]
