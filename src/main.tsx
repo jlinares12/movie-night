@@ -9,6 +9,7 @@ import Techstack from "./pages/Techstack";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Signup";
 import "./index.css"
+import MainLayout from "./pages/layouts/MainLayout";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -24,8 +25,13 @@ const ROUTER = createBrowserRouter([
       {path:"/register/*", element: <Register/>}
     ]
   },
+  {
+    element: <MainLayout/>,
+    children: [
+      {path:"/", element: <Home/>},
+    ]
+  },
   {path:"*", element: <NotFound/>},
-  {path:"/", element: <Home/>},
   {path:"/tech-stack", element: <Techstack/>},
 ]);
 
