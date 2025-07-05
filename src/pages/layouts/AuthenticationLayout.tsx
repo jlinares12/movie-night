@@ -13,11 +13,11 @@ export default function AuthenticationLayout() {
         </div>
         <Outlet />
       </div>
-      <footer className="h-10 flex align-center justify-center bg-[var(--bk-color)] gap-[2rem] h-[60px]">
-        <Link to={'#'} className="text-white">About</Link>
-        <Link to={'#'} className="text-white">Github</Link>
-        <Link to={'#'} className="text-white">Contact us</Link>
-        <Link to={'#'} className="text-white">Privacy</Link>
+      <footer className="h-10 flex align-center justify-center bg-[var(--bk-color)] gap-[2rem] h-[60px] text-white text-xs">
+        <Link to={'#'}>About</Link>
+        <Link to={'#'}>Github</Link>
+        <Link to={'#'}>Contact us</Link>
+        <Link to={'#'}>Privacy</Link>
       </footer>
     </div>
   )
