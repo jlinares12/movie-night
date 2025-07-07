@@ -5,7 +5,7 @@ import NotificationIcon from "./icons/NotificationIcon"
 export default function Header() {
     const {user} = useUser();
     return (
-        <header className="h-[65px] w-full flex flex-row items-center justify-between pr-7 pl-7">
+        <header className="h-[65px] w-full flex flex-row items-center justify-between pr-8 pl-8">
             <div className="flex items-center justify-center gap-[15px]">
                 <div className="w-[30px] h-[30px]">
                     <MovieClapper color="#40D952" className="w-full h-full"/>
@@ -14,7 +14,7 @@ export default function Header() {
             </div>
             <h1 className="text-[var(--text-color)]">{user?.username}</h1>
             <div className="w-[30px] h-[30px]">
-                <NotificationIcon color="#40D952" className="w-full h-full"/>
+                <NotificationIcon color="#40D952" className="w-[30px] h-[30px]"/>
             </div>
         </header>
     )
