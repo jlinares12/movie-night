@@ -8,7 +8,9 @@ export default function MainLayout() {
             <Header/>
             <div className="flex h-full">
                 <SideBar/>
-                <Outlet/>
+                <div className="w-full flex flex-col items-center justify-between p-8 overflow-scroll">
+                    <Outlet/>
+                </div>
             </div>
         </div>
     )
