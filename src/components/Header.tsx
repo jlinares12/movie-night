@@ -7,8 +7,8 @@ import NavLink from "./NavLink";
 export default function Header() {
     const {user} = useUser();
     return (
-        <header className="h-[65px] w-full flex flex-row items-center justify-between pr-8 pl-8">
-            <div className="flex items-center justify-center gap-[15px]">
+        <header className="h-[65px] flex items-center grid grid-cols-3 pr-8 pl-8">
+            <div className="justify-self-start">
                 <Link to="/">
                     <NavLink
                         icon={(className) => <MovieClapper color="#40D952" className={className}/>}
@@ -16,9 +16,11 @@ export default function Header() {
                     />
                 </Link>
             </div>
-            <h1 className="text-[var(--text-color)]">{user?.username}</h1>
-            <div className="w-[30px] h-[30px]">
-                <NotificationIcon color="#40D952" className="w-[30px] h-[30px]"/>
+            <div className="justify-self-center text-[var(--text-color)]">
+                <h1>{user?.username}</h1>
+            </div>
+            <div className="flex w-[30px] h-[30px] justify-self-end">
+                <NotificationIcon color="#40D952" className="w-full h-full"/>
             </div>
         </header>
     )
