@@ -15,14 +15,11 @@ export default function MovieGroups() {
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <div>
-                <h1>Your Groups</h1>
-            </div>
             <div className="w-full justify-self-start">
                 {(typeof data === 'undefined') ? (
                 <p>Loading</p>
                 ): (
-                <ul className="list-none divide-y divide-[var(--primary-opacity)]">
+                <ul className="list-none divide-y divide-[var(--primary-gray)]">
                     {data.map((group, i) => (
                         <GroupLink
                             key={i}
