@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import GroupLink from "./GroupLink";
 
 export default function MovieGroups() {
     const [data, setData] = useState([])
@@ -21,11 +22,13 @@ export default function MovieGroups() {
                 {(typeof data === 'undefined') ? (
                 <p>Loading</p>
                 ): (
-                <ul className="list-decimal">
+                <ul className="list-none divide-y divide-[var(--primary-opacity)]">
                     {data.map((group, i) => (
-                    <li key={i} className="">
-                        {group["name"]}
-                    </li>
+                        <GroupLink
+                            key={i}
+                            name={group["name"]}
+                            user_count={group["user_count"] as number}
+                            date={group["date"]}/>
                     ))}
                 </ul>
                 )}
