@@ -68,6 +68,9 @@ ReactDOM.createRoot(ROOT).render(
           rootBox: {
             border: '1px solid #40D952',
             borderRadius: '10px'
+          },
+          navbarButtonText: {
+            color: 'white'
           }
         }
       }}
