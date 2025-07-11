@@ -3,7 +3,7 @@ import MovieGroups from "../components/MovieGroups";
 export default function Home(){
   return (
     <div className="grid grid-flow-row grid-row-2 gap-12">
-      <div className="w-[910px] border border-[var(--primary-color)] p-8">
+      <div className="w-[910px] border border-[var(--primary-color)] rounded-[10px] p-8">
         <MovieGroups/>
       </div>
       <div className="flex justify-between">
