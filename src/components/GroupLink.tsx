@@ -13,7 +13,7 @@ export default function GroupLink({name, user_count, date}:Props) {
     return (
         <div className="grid grid-cols-3 items-center pb-8 pt-8">
             <div className="flex">
-                <div className="cl-group-name text-2xl text-[var(--name-color)]">
+                <div className="cl-group-name text-2xl text-[var(--name-color)] font-extrabold">
                     <h1>{name}</h1>
                 </div>
             </div>
