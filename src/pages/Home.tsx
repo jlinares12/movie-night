@@ -6,7 +6,7 @@ export default function Home(){
   return (
     <div className="grid grid-flow-row grid-row-2 gap-12">
       <div className="flex flex-col gap-5">
-        <div className="text-5xl text-[var(--primary-color)] font-extrabold">
+        <div className="text-5xl text-[var(--primary-color)] font-extrabold pl-8">
             <h1>Your Groups</h1>
         </div>
         <div className="border border-[var(--primary-color)] rounded-[10px] p-8">
@@ -15,13 +15,13 @@ export default function Home(){
       </div>
       <div className="grid grid-cols-2 gap-24 pt-8">
         <div className="flex flex-col gap-5">
-          <div className="text-5xl text-[var(--primary-color)] font-extrabold">
+          <div className="text-5xl text-[var(--primary-color)] font-extrabold pl-4">
               <h1>Create a Group</h1>
           </div>
           <CreateGroup/>
         </div>
         <div className="flex flex-col gap-5">
-          <div className="text-5xl text-[var(--primary-color)] font-extrabold">
+          <div className="text-5xl text-[var(--primary-color)] font-extrabold pl-4">
               <h1>Join a Group</h1>
           </div>
           <JoinGroup/>
