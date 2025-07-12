@@ -5,7 +5,8 @@
 :root {
     --bk-color: #0C1A0D;
     --primary-color: #40D952;
-    --primary-gray: rgba(53, 59, 54);
+    --primary-gray: #353b36;
+    --light-gray: #d6e4db;
     --text-color: #ffffff;
     --name-color: #e2a114;
     --member-color: #14b9e2;
