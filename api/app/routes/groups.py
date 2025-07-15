@@ -1,14 +1,8 @@
-from flask import Flask
-from flask_cors import CORS
+from flask import Blueprint
 
-app = Flask(__name__)
-cors = CORS(app)
+bp = Blueprint('groups', __name__)
 
-@app.route('/api/data')
-def data():
-    return {"tech" : ["Flask", "React", "Python", "Typescript"]}
-
-@app.route('/api/groups')
+@bp.route('/api/groups')
 def groups():
     return [
   {
@@ -30,7 +24,3 @@ def groups():
     "date": "August 23, 2025"
   }
 ]
-
-
-if __name__ == '__main__':
-    app.run()
