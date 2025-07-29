@@ -8,6 +8,5 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:5000'
     },
-    allowedHosts: ['https://learning-newt-unduly.ngrok-free.app']
   }
 })
