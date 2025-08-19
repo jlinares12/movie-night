@@ -4,9 +4,10 @@ import GroupLink from "./GroupLink";
 import axios from "axios";
 
 interface Group {
-  name: string;
-  user_count: number;
-  date: string;
+    id: number;
+    name: string;
+    user_count: number;
+    date: string;
 }
 
 export default function MovieGroups() {
@@ -30,7 +31,7 @@ useEffect(() => {
   };
 
   fetchAPI();
-  intervalId = window.setInterval(fetchAPI, 2000);
+  intervalId = setInterval(fetchAPI, 2000);
 }, []);
 
     return (
@@ -43,9 +44,9 @@ useEffect(() => {
                     </div>
                 ) : (
                 <ul className="list-none divide-y divide-[var(--primary-gray)]">
-                    {data.map((group, i) => (
+                    {data.map((group) => (
                         <GroupLink
-                            key={i}
+                            key={group["id"]}
                             name={group["name"]}
                             user_count={group["user_count"] as number}
                             date={group["date"]}/>
