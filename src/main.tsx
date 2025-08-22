@@ -12,6 +12,8 @@ import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
+import GroupLayout from "./pages/layouts/GroupLayout";
+import GroupPage from "./pages/GroupPage";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -37,6 +39,12 @@ const ROUTER = createBrowserRouter([
           {path:"/profile", element:<ProfilePage/>}
         ]
       },
+      {
+        element: <GroupLayout/>,
+        children: [
+          {path:"/group", element:<GroupPage/>}
+        ]
+      }
     ]
   },
   {path:"*", element: <NotFound/>},
