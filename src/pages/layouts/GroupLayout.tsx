@@ -7,9 +7,11 @@ export default function GroupLayout() {
     return (
         <div className="h-screen bg-[var(--bk-color)] text-white ">
             <Header/>
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-4 flex justify-items-center">
                 <GroupList/>
-                <Outlet/>
+                <div className="col-span-2">
+                    <Outlet/>
+                </div>
                 <RightSidebar/>
             </div>
         </div>
