@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import NotFoundIcon from "../components/icons/NotFoundIcon";
+import { SearchOff } from "@mui/icons-material";
 
 export default function NotFound() {
     return (
@@ -7,7 +7,7 @@ export default function NotFound() {
             <div className="flex items-center text-[var(--primary-color)] h-[384px]">
                 <h1 className="text-[384px]">4</h1>
                 <div className="w-[384px] h-[384px]">
-                    <NotFoundIcon color="#40D952" className=""/>
+                    <SearchOff style={{ width: '100%', height: '100%', color: '#40D952' }}/>
                 </div>
                 <h1 className="text-[384px]">4</h1>
             </div>
