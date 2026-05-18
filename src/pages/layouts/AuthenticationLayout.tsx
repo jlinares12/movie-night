@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
-import MovieClapper from "../../components/icons/MovieClapper"
+import { Movie } from "@mui/icons-material";
 
 export default function AuthenticationLayout() {
   return (
@@ -8,7 +8,7 @@ export default function AuthenticationLayout() {
         <div className="flex flex-col items-center justify-center gap-[2rem]">
           <h1 className="text-5xl font-bold text-[var(--primary-color)]">Movie Nights</h1>
           <div className="w-[300px] h-[250px]">
-            <MovieClapper color="#40d952" className=""/>
+            <Movie style={{ width: '100%', height: '100%', color: '#40d952' }}/>
           </div>
         </div>
         <Outlet />
