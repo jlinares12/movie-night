@@ -1,9 +1,6 @@
 import { useClerk, useUser } from "@clerk/clerk-react"
 import { Link } from "react-router-dom";
-import MovieClapper from "./icons/MovieClapper"
-import NotificationIcon from "./icons/NotificationIcon"
-import ProfileIcon from "./icons/ProfileIcon";
-import LogoutIcon from "./icons/LogoutIcon";
+import { Movie, Notifications, AccountCircle, Logout as LogoutIcon } from "@mui/icons-material";
 import NavLink from "./NavLink";
 
 export default function Header() {
@@ -15,7 +12,7 @@ export default function Header() {
             <div className="justify-self-start">
                 <Link to="/">
                     <NavLink
-                        icon={(className) => <MovieClapper color="#40D952" className={className}/>}
+                        icon={(className) => <Movie className={className} htmlColor="#40D952"/>}
                         label="Movie Nights"
                     />
                 </Link>
@@ -24,16 +21,16 @@ export default function Header() {
                 <h1>{user?.username}</h1>
             </div>
             <div className="grid grid-cols-3 justify-self-end gap-4">
-                    <NotificationIcon color="#40D952" className="w-[20px] h-[20px]"/>
+                    <Notifications className="w-[20px] h-[20px]" htmlColor="#40D952"/>
                     <Link to={"/profile"}>
                         <NavLink
-                            icon={(className) => <ProfileIcon color="#40D952" className={className}/>}
+                            icon={(className) => <AccountCircle className={className} htmlColor="#40D952"/>}
                             label=""
                         />
                     </Link>
                     <button onClick={() => signOut({ redirectUrl: '/login' })}>
                         <NavLink
-                            icon={(className) => <LogoutIcon color="#d60303ff" className={className}/>}
+                            icon={(className) => <LogoutIcon className={className} htmlColor="#d60303ff"/>}
                             label=""
                         />
                     </button>
