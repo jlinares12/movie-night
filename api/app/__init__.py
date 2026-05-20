@@ -13,16 +13,18 @@ def create_app(config_class=Config):
     # Register models
     from app.models import (
         User, Group, GroupMember, MovieNightSession,
-        SessionResult, MovieProposal, Vote, FoodItem,
+        SessionResult, MovieProposal, Vote, FoodItem, Movie,
     )
 
     # Register blueprints
     from app.routes.groups import bp as groups_bp
     from app.routes.tech_stack import bp as tech_bp
     from app.routes.webhooks import bp as webhook_bp
+    from app.routes.movies import bp as movies_bp
 
     app.register_blueprint(groups_bp)
     app.register_blueprint(tech_bp)
     app.register_blueprint(webhook_bp)
+    app.register_blueprint(movies_bp)
 
     return app

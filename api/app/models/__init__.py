@@ -6,8 +6,9 @@ from app.models.session_result import SessionResult
 from app.models.movie_proposal import MovieProposal
 from app.models.vote import Vote
 from app.models.food_item import FoodItem
+from app.models.movie import Movie
 
 __all__ = [
     'User', 'Group', 'GroupMember', 'MovieNightSession',
-    'SessionResult', 'MovieProposal', 'Vote', 'FoodItem',
+    'SessionResult', 'MovieProposal', 'Vote', 'FoodItem', 'Movie',
 ]
