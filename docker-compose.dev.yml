@@ -31,6 +31,7 @@ services:
       - ./api/.env
     environment:
       DATABASE_URL: postgresql://postgres:Rubble!13@db:5432/movie-night
+      TMDB_API_KEY: ${TMDB_API_KEY:-}
     ports:
       - "5000:5000"
     depends_on:
