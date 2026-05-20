@@ -10,9 +10,11 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Import models to ensure they are registered with SQLAlchemy
-    # This is CRUCIAL for Flask-Migrate to detect models
-    from app.models.user import User
+    # Register models
+    from app.models import (
+        User, Group, GroupMember, MovieNightSession,
+        SessionResult, MovieProposal, Vote, FoodItem,
+    )
 
     # Register blueprints
     from app.routes.groups import bp as groups_bp
