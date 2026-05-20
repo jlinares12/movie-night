@@ -1,0 +1,27 @@
+services:
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: testpassword
+      POSTGRES_DB: movie-night-test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d movie-night-test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  test-runner:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.test
+    environment:
+      DATABASE_URL: postgresql://postgres:testpassword@test-db:5432/movie-night-test
+      SECRET_KEY: test-secret-key
+      TMDB_API_KEY: fake-key
+      # whsec_ + base64("secretsecretsecretsecretsecret00") — 32-byte key for real svix verification
+      CLERK_WEBHOOK_SECRET: whsec_c2VjcmV0c2VjcmV0c2VjcmV0c2VjcmV0c2VjcmV0MDA=
+    depends_on:
+      test-db:
+        condition: service_healthy
+    command: pytest tests/ -v
