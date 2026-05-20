@@ -3,7 +3,6 @@ import FilledButton from "./buttons/FilledButton";
 import WarningButton from "./buttons/DangerButton";
 
 interface Props {
-    key: number;
     name: string;
     user_count: number;
     date: string;

@@ -15,7 +15,7 @@ export default function MovieGroups() {
   const [loading, setLoading] = useState(true);
 
 useEffect(() => {
-  let intervalId: number;
+  let intervalId: ReturnType<typeof setInterval>;
 
   const fetchAPI = async () => {
     try {
