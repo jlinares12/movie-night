@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from app import create_app
 from app.extensions import db as _db
+from app.models.user import User
 
 
 @pytest.fixture(scope='session')
@@ -30,6 +31,18 @@ def clean_db(app):
             _db.session.execute(table.delete())
         _db.session.commit()
         _db.session.remove()
+
+
+@pytest.fixture()
+def as_user(monkeypatch):
+    # TODO: update patch target to match the actual import when auth is implemented
+    def _set(user_id: int):
+        monkeypatch.setattr(
+            'app.routes.groups.get_current_user',
+            lambda: User.query.get(user_id),
+            raising=False,
+        )
+    return _set
 
 
 @pytest.fixture()
