@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.models.user import User
 from app.models.group_member import GroupMember
 from app.extensions import db
+from app.services.group_service import transfer_or_dissolve
 import os
 
 from svix.webhooks import Webhook, WebhookVerificationError
@@ -82,19 +83,7 @@ def delete_user(user_id):
 
         owned = GroupMember.query.filter_by(user_id=user.id, role='owner').all()
         for membership in owned:
-            next_member = (
-                GroupMember.query
-                .filter(
-                    GroupMember.group_id == membership.group_id,
-                    GroupMember.user_id != user.id,
-                )
-                .order_by(GroupMember.joined_at)
-                .first()
-            )
-            if next_member:
-                next_member.role = 'owner'
-            else:
-                db.session.delete(membership.group)
+            transfer_or_dissolve(membership.group_id, user.id)
 
         db.session.delete(user)
         db.session.commit()
