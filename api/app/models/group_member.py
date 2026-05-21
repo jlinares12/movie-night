@@ -10,7 +10,7 @@ class GroupMember(db.Model):
     id        = db.Column(db.Integer, primary_key=True)
     user_id   = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
     group_id  = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'), nullable=False, index=True)
-    role      = db.Column(db.Enum('owner', 'member', name='group_member_role'), nullable=False, default='member')
+    role      = db.Column(db.Enum('owner', 'admin', 'member', name='group_member_role'), nullable=False, default='member')
     joined_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
 
     user  = db.relationship('User', back_populates='group_memberships')
