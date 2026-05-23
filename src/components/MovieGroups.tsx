@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import GroupLinkSkeleton from "./skeletons/GroupLinkSkeleton";
 import GroupLink from "./GroupLink";
-import axios from "axios";
+import api from "../utils/api";
 
 interface Group {
     id: number;
@@ -19,19 +19,23 @@ useEffect(() => {
 
   const fetchAPI = async () => {
     try {
-        const response = await axios.get<Group[]>("api/groups");
+        const response = await api.get<Group[]>("api/groups");
         setData(response.data);
         setLoading(false);
         if (response.data.length >= 0) {
             clearInterval(intervalId);
         }
     } catch (err: any) {
+        if (err?.response?.status === 401) {
+            clearInterval(intervalId);
+        }
         setLoading(true);
     }
   };
 
   fetchAPI();
   intervalId = setInterval(fetchAPI, 2000);
+  return () => clearInterval(intervalId);
 }, []);
 
     return (

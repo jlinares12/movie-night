@@ -1,10 +1,10 @@
-import axios from 'axios';
+import api from '../utils/api';
 import {useState, useEffect} from 'react'
 
 export default function Techstack() {
   const [data, setData] = useState({"tech" : []});
   const fetchAPI = async () => {
-    const response = await axios.get("api/data");
+    const response = await api.get("api/data");
     console.log(response.data);
     setData(response.data)
   };

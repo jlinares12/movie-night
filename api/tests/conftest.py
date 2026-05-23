@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from app import create_app
 from app.extensions import db as _db
+from app.models import User
 
 
 @pytest.fixture(scope='session')
@@ -30,6 +31,19 @@ def clean_db(app):
             _db.session.execute(table.delete())
         _db.session.commit()
         _db.session.remove()
+
+
+@pytest.fixture()
+def authenticated_client(client):
+    """Returns (client, user_id) with an active Flask session cookie."""
+    user = User(user_id='user_authed_test', username='autheduser')
+    _db.session.add(user)
+    _db.session.commit()
+
+    with patch('app.routes.auth._verify_clerk_token', return_value='user_authed_test'):
+        client.post('/api/auth/session', json={'token': 'fake_token'})
+
+    return client, 'user_authed_test'
 
 
 @pytest.fixture()
