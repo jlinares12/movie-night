@@ -34,15 +34,16 @@ def clean_db(app):
 
 
 @pytest.fixture()
-def as_user(monkeypatch):
-    # TODO: update patch target to match the actual import when auth is implemented
-    def _set(user_id: int):
-        monkeypatch.setattr(
-            'app.routes.groups.get_current_user',
-            lambda: User.query.get(user_id),
-            raising=False,
-        )
-    return _set
+def authenticated_client(client):
+    """Returns (client, user_id) with an active Flask session cookie."""
+    user = User(user_id='user_authed_test', username='autheduser')
+    _db.session.add(user)
+    _db.session.commit()
+
+    with patch('app.routes.auth._verify_clerk_token', return_value='user_authed_test'):
+        client.post('/api/auth/session', json={'token': 'fake_token'})
+
+    return client, 'user_authed_test'
 
 
 @pytest.fixture()
