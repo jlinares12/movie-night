@@ -47,6 +47,16 @@ def authenticated_client(client):
 
 
 @pytest.fixture()
+def as_user(app, client):
+    def _as_user(user_pk):
+        with app.app_context():
+            user = _db.session.get(User, user_pk)
+        with patch('app.routes.auth._verify_clerk_token', return_value=user.user_id):
+            client.post('/api/auth/session', json={'token': 'fake_token'})
+    return _as_user
+
+
+@pytest.fixture()
 def webhook_post(client):
     """POST a Clerk webhook event with signature verification bypassed."""
     def _post(event_type, data):
