@@ -2,6 +2,7 @@ import { useClerk, useUser } from "@clerk/clerk-react"
 import { Link } from "react-router-dom";
 import { Movie, Notifications, AccountCircle, Logout as LogoutIcon } from "@mui/icons-material";
 import NavLink from "./NavLink";
+import api from "../utils/api";
 
 export default function Header() {
     const { user } = useUser();
@@ -28,7 +29,10 @@ export default function Header() {
                             label=""
                         />
                     </Link>
-                    <button onClick={() => signOut({ redirectUrl: '/login' })}>
+                    <button onClick={async () => {
+                        await api.delete('/api/auth/session');
+                        signOut({ redirectUrl: '/login' });
+                    }}>
                         <NavLink
                             icon={(className) => <LogoutIcon className={className} htmlColor="#d60303ff"/>}
                             label=""

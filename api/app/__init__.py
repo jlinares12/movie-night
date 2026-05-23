@@ -1,6 +1,7 @@
 from flask import Flask
 from config import Config
-from .extensions import db, migrate
+from .extensions import db, migrate, sess, cors
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -10,7 +11,17 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # Register models
+    # Flask-Session needs the db instance set before init
+    app.config['SESSION_SQLALCHEMY'] = db
+    sess.init_app(app)
+
+    cors.init_app(
+        app,
+        origins=app.config['CORS_ALLOWED_ORIGINS'],
+        supports_credentials=True,
+    )
+
+    # Register models (keeps them in Alembic's metadata scope)
     from app.models import (
         User, Group, GroupMember, MovieNightSession,
         SessionResult, MovieProposal, Vote, FoodItem, Movie,
@@ -21,10 +32,12 @@ def create_app(config_class=Config):
     from app.routes.tech_stack import bp as tech_bp
     from app.routes.webhooks import bp as webhook_bp
     from app.routes.movies import bp as movies_bp
+    from app.routes.auth import bp as auth_bp
 
     app.register_blueprint(groups_bp)
     app.register_blueprint(tech_bp)
     app.register_blueprint(webhook_bp)
     app.register_blueprint(movies_bp)
+    app.register_blueprint(auth_bp)
 
     return app

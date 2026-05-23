@@ -56,5 +56,15 @@ services:
     depends_on:
       - api
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http --domain=${NGROK_DOMAIN} api:5000
+    ports:
+      - "4040:4040"
+    depends_on:
+      - api
+
 volumes:
   pgdata_dev:
