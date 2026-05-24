@@ -1,10 +1,12 @@
 SERVICE ?=
+MSG     ?= migration
 
 DEV_COMPOSE  = docker compose --env-file .env -f docker-compose.dev.yml
 PROD_COMPOSE = docker compose --env-file .env.prod -f docker-compose.prod.yml
 
 .PHONY: test-backend test-frontend test-e2e test \
         dev dev-build down logs \
+        migrate \
         prod down-prod \
         help
 
@@ -28,13 +30,18 @@ dev:
 	$(DEV_COMPOSE) up -d $(SERVICE)
 
 dev-build:
-	$(DEV_COMPOSE) up --build $(SERVICE)
+	$(DEV_COMPOSE) up -d --build $(SERVICE)
 
 down:
 	$(DEV_COMPOSE) down
 
 logs:
 	$(DEV_COMPOSE) logs -f $(SERVICE)
+
+# ── Database ──────────────────────────────────────────────────────────────────
+
+migrate:
+	$(DEV_COMPOSE) exec api flask db migrate -m "$(MSG)"
 
 # ── Prod ──────────────────────────────────────────────────────────────────────
 
@@ -61,6 +68,10 @@ help:
 	@echo "  dev-build          Rebuild images and start dev stack"
 	@echo "  down               Stop dev stack"
 	@echo "  logs               Follow dev logs"
+	@echo ""
+	@echo "Database  (dev stack must be running)"
+	@echo "  migrate            Generate a migration (MSG= for message, default: 'migration')"
+	@echo "                     Apply: restart the api container (entrypoint runs flask db upgrade)"
 	@echo ""
 	@echo "Prod  (SERVICE= optional)"
 	@echo "  prod               Start prod stack (detached)"
