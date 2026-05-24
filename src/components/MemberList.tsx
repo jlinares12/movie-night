@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { removeMember, updateMemberRole } from "../services/groups";
+import IconButton from "./buttons/IconButton";
 import type { GroupMember, UserRole } from "../types/groups";
 
 const ROLE_BADGE: Record<UserRole, { label: string; color: string; border: string }> = {
@@ -89,49 +90,19 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
               {(your_role === 'owner' && !isSelf) && (
                 <div className="flex gap-1">
                   {m.role === 'member' && (
-                    <button
-                      onClick={() => handleRoleChange(m, 'admin')}
-                      title="Promote to admin"
-                      className="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container-highest transition-all"
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_upward</span>
-                    </button>
+                    <IconButton icon="arrow_upward" title="Promote to admin" variant="secondary" onClick={() => handleRoleChange(m, 'admin')} />
                   )}
                   {m.role === 'admin' && (
-                    <button
-                      onClick={() => handleRoleChange(m, 'member')}
-                      title="Demote to member"
-                      className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all"
-                    >
-                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_downward</span>
-                    </button>
+                    <IconButton icon="arrow_downward" title="Demote to member" onClick={() => handleRoleChange(m, 'member')} />
                   )}
-                  <button
-                    onClick={() => handleRemove(m)}
-                    title="Remove member"
-                    className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
-                  >
-                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>person_remove</span>
-                  </button>
+                  <IconButton icon="person_remove" title="Remove member" variant="danger" onClick={() => handleRemove(m)} />
                 </div>
               )}
               {(your_role === 'admin' && m.role === 'member' && !isSelf) && (
-                <button
-                  onClick={() => handleRemove(m)}
-                  title="Remove member"
-                  className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>person_remove</span>
-                </button>
+                <IconButton icon="person_remove" title="Remove member" variant="danger" onClick={() => handleRemove(m)} />
               )}
               {isSelf && (
-                <button
-                  onClick={() => handleRemove(m)}
-                  title="Leave group"
-                  className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>logout</span>
-                </button>
+                <IconButton icon="logout" title="Leave group" variant="danger" onClick={() => handleRemove(m)} />
               )}
             </div>
           );

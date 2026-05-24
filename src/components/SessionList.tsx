@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSession } from "../services/groups";
+import FilledButton from "./buttons/FilledButton";
+import OutlinedButton from "./buttons/OutlinedButton";
 import type { Session, SessionStatus, UserRole } from "../types/groups";
 
 const STATUS_BADGE: Record<SessionStatus, { label: string; className: string }> = {
@@ -53,13 +55,7 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
       <div className="flex items-center justify-between mb-lg">
         <h3 className="type-headline-sm text-on-surface">Sessions</h3>
         {canManage && !showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-primary text-on-primary px-4 py-2 rounded-lg type-label-md flex items-center gap-2 hover:brightness-110 transition-all active:scale-95 shadow-[0_0_15px_rgba(0,230,118,0.3)]"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>add</span>
-            New Session
-          </button>
+          <FilledButton icon="add" label="New Session" onClick={() => setShowForm(true)} />
         )}
       </div>
 
@@ -75,19 +71,8 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
           />
           {error && <p className="type-label-sm text-error">{error}</p>}
           <div className="flex gap-sm pt-xs">
-            <button
-              onClick={handleCreate}
-              disabled={loading}
-              className="bg-primary text-on-primary px-6 py-2 rounded-lg type-label-md hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
-            >
-              {loading ? 'Creating…' : 'Create'}
-            </button>
-            <button
-              onClick={() => { setShowForm(false); setError(''); }}
-              className="px-6 py-2 rounded-lg type-label-md text-on-surface-variant bg-surface-variant hover:bg-surface-container-highest transition-all"
-            >
-              Cancel
-            </button>
+            <FilledButton label={loading ? 'Creating…' : 'Create'} isDisabled={loading} onClick={handleCreate} />
+            <OutlinedButton label="Cancel" onClick={() => { setShowForm(false); setError(''); }} />
           </div>
         </div>
       )}

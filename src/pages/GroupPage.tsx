@@ -6,6 +6,7 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import InviteCodePanel from "../components/InviteCodePanel";
 import MemberList from "../components/MemberList";
 import SessionList from "../components/SessionList";
+import DangerButton from "../components/buttons/DangerButton";
 import type { GroupDetail, GroupMember, Session, SessionStatus } from "../types/groups";
 
 export default function GroupPage() {
@@ -132,13 +133,7 @@ export default function GroupPage() {
           </div>
         </div>
         {canDelete && (
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-6 py-3 bg-error-container/20 text-error border border-error/30 rounded-xl type-label-md hover:bg-error-container/40 transition-colors active:scale-95"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
-            Delete Group
-          </button>
+          <DangerButton icon="delete" label="Delete Group" onClick={handleDelete} />
         )}
       </header>
 
