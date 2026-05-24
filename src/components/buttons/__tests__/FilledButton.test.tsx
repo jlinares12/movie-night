@@ -36,7 +36,7 @@ describe('FilledButton', () => {
     expect(screen.getByRole('button', { name: label })).toBeDisabled();
   });
 
-  test('applies the pulse animation class when disabled', () => {
+  test('applies disabled opacity class when disabled', () => {
     // Arrange
     const label = 'Submit';
 
@@ -44,7 +44,7 @@ describe('FilledButton', () => {
     render(<FilledButton label={label} isDisabled={true} />);
 
     // Assert
-    expect(screen.getByRole('button', { name: label })).toHaveClass('animate-pulse');
+    expect(screen.getByRole('button', { name: label })).toHaveClass('disabled:opacity-50');
   });
 
   test('fires onClick when clicked', async () => {
