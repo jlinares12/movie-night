@@ -1,17 +1,15 @@
 import { Outlet } from "react-router-dom";
-import Header from "../../components/Header";
+import Sidebar from "../../components/Sidebar";
 import { useBackendAuth } from "../../hooks/useBackendAuth";
 
 export default function MainLayout() {
-    const { sessionReady } = useBackendAuth();
-    return (
-        <div className="h-screen bg-[var(--bk-color)] text-white flex flex-col">
-            <Header/>
-            <div className="flex h-full">
-                <div className="w-full fixed flex flex-col items-center pt-8 overflow-scroll">
-                    {sessionReady ? <Outlet/> : null}
-                </div>
-            </div>
-        </div>
-    )
+  const { sessionReady } = useBackendAuth();
+  return (
+    <div className="min-h-screen bg-background text-on-surface">
+      <Sidebar />
+      <main className="ml-64 min-h-screen px-margin-desktop py-lg overflow-y-auto">
+        {sessionReady ? <Outlet /> : null}
+      </main>
+    </div>
+  );
 }

@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getGroup, deleteGroup } from "../services/groups";
 import { useGroupEvents } from "../hooks/useGroupEvents";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import InviteCodePanel from "../components/InviteCodePanel";
 import MemberList from "../components/MemberList";
 import SessionList from "../components/SessionList";
-import WarningButton from "../components/buttons/DangerButton";
 import type { GroupDetail, GroupMember, Session, SessionStatus } from "../types/groups";
 
 export default function GroupPage() {
@@ -85,18 +84,23 @@ export default function GroupPage() {
 
   if (!id) {
     return (
-      <div className="p-8 text-[var(--member-color)]">
+      <div className="text-on-surface-variant type-body-md">
         Select a group from the sidebar.
       </div>
     );
   }
 
   if (loading) {
-    return <div className="p-8 text-[var(--member-color)]">Loading…</div>;
+    return (
+      <div className="flex items-center gap-3 text-on-surface-variant type-body-md">
+        <span className="material-symbols-outlined animate-spin">progress_activity</span>
+        Loading…
+      </div>
+    );
   }
 
   if (error || !group) {
-    return <div className="p-8 text-red-400">{error || 'Unknown error.'}</div>;
+    return <div className="type-body-md text-error">{error || 'Unknown error.'}</div>;
   }
 
   const canDelete = group.your_role === 'owner';
@@ -112,45 +116,66 @@ export default function GroupPage() {
   };
 
   return (
-    <div className="p-8 flex flex-col gap-8">
-      <div className="flex items-start justify-between">
+    <div>
+      {/* Header */}
+      <header className="pb-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
         <div>
-          <h1 className="type-display-lg text-[var(--primary-color)]">{group.name}</h1>
+          <h2 className="type-display-lg text-primary leading-none mb-sm">{group.name}</h2>
           {group.description && (
-            <p className="type-label-md text-[var(--member-color)] mt-1">{group.description}</p>
+            <p className="type-body-lg text-on-surface-variant max-w-2xl">{group.description}</p>
           )}
-          <p className="type-label-sm mt-1 capitalize">Your role: {group.your_role}</p>
+          <div className="mt-4 flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary type-label-sm uppercase tracking-widest capitalize">
+              {group.your_role}
+            </span>
+            <span className="text-on-surface-variant type-label-sm">• {group.members.length} Members</span>
+          </div>
         </div>
         {canDelete && (
-          <WarningButton label="Delete Group" onClick={handleDelete} />
+          <button
+            onClick={handleDelete}
+            className="flex items-center gap-2 px-6 py-3 bg-error-container/20 text-error border border-error/30 rounded-xl type-label-md hover:bg-error-container/40 transition-colors active:scale-95"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>delete</span>
+            Delete Group
+          </button>
         )}
+      </header>
+
+      {/* Bento grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+        <div className="lg:col-span-4">
+          <InviteCodePanel
+            groupId={group.id}
+            invite_code={group.invite_code}
+            your_role={group.your_role}
+            onCodeChanged={(code) => setGroup((g) => g ? { ...g, invite_code: code } : g)}
+          />
+        </div>
+
+        <div className="lg:col-span-8">
+          {currentUser && (
+            <MemberList
+              groupId={group.id}
+              members={group.members}
+              your_role={group.your_role}
+              currentUserId={currentUser.id}
+              onMembersChanged={(updated) => setGroup((g) => g ? { ...g, members: updated } : g)}
+            />
+          )}
+        </div>
+
+        <div className="lg:col-span-12">
+          <SessionList
+            groupId={group.id}
+            sessions={group.sessions}
+            your_role={group.your_role}
+            onSessionCreated={(s: Session) =>
+              setGroup((g) => g ? { ...g, sessions: [s, ...g.sessions] } : g)
+            }
+          />
+        </div>
       </div>
-
-      <InviteCodePanel
-        groupId={group.id}
-        invite_code={group.invite_code}
-        your_role={group.your_role}
-        onCodeChanged={(code) => setGroup((g) => g ? { ...g, invite_code: code } : g)}
-      />
-
-      {currentUser && (
-        <MemberList
-          groupId={group.id}
-          members={group.members}
-          your_role={group.your_role}
-          currentUserId={currentUser.id}
-          onMembersChanged={(updated) => setGroup((g) => g ? { ...g, members: updated } : g)}
-        />
-      )}
-
-      <SessionList
-        groupId={group.id}
-        sessions={group.sessions}
-        your_role={group.your_role}
-        onSessionCreated={(s: Session) =>
-          setGroup((g) => g ? { ...g, sessions: [s, ...g.sessions] } : g)
-        }
-      />
     </div>
   );
 }
