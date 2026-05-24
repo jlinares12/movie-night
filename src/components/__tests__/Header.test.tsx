@@ -12,6 +12,10 @@ jest.mock('react-router-dom', () => ({
   Link: ({ children }: { children: any }) => <div>{children}</div>,
 }));
 
+jest.mock('../../utils/api', () => ({
+  default: { delete: jest.fn().mockResolvedValue({}) },
+}));
+
 describe('Header', () => {
   const mockSignOut = jest.fn();
 
