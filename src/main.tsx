@@ -14,6 +14,7 @@ import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
 import GroupLayout from "./pages/layouts/GroupLayout";
 import GroupPage from "./pages/GroupPage";
+import SessionPage from "./pages/SessionPage";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -42,7 +43,9 @@ const ROUTER = createBrowserRouter([
       {
         element: <GroupLayout/>,
         children: [
-          {path:"/group", element:<GroupPage/>}
+          {path:"/group",                                  element:<GroupPage/>},
+          {path:"/group/:id",                              element:<GroupPage/>},
+          {path:"/group/:id/session/:sessionId",           element:<SessionPage/>},
         ]
       }
     ]
