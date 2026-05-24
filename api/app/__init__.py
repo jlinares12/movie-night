@@ -29,12 +29,14 @@ def create_app(config_class=Config):
 
     # Register blueprints
     from app.routes.groups import bp as groups_bp
+    from app.routes.sessions import bp as sessions_bp
     from app.routes.tech_stack import bp as tech_bp
     from app.routes.webhooks import bp as webhook_bp
     from app.routes.movies import bp as movies_bp
     from app.routes.auth import bp as auth_bp
 
     app.register_blueprint(groups_bp)
+    app.register_blueprint(sessions_bp)
     app.register_blueprint(tech_bp)
     app.register_blueprint(webhook_bp)
     app.register_blueprint(movies_bp)
