@@ -7,7 +7,7 @@ export default function NotFound() {
             <div className="flex items-center text-[var(--primary-color)] h-[384px]">
                 <h1 className="text-[384px]">4</h1>
                 <div className="w-[384px] h-[384px]">
-                    <SearchOff style={{ width: '100%', height: '100%', color: '#40D952' }}/>
+                    <SearchOff style={{ width: '100%', height: '100%', color: 'rgb(var(--color-primary))' }}/>
                 </div>
                 <h1 className="text-[384px]">4</h1>
             </div>
