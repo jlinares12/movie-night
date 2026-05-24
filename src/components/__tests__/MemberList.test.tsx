@@ -73,7 +73,7 @@ describe('MemberList', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Make Admin' })).toBeInTheDocument();
+    expect(screen.getByTitle('Promote to admin')).toBeInTheDocument();
   });
 
   test('owner sees "Demote" button for admins', () => {
@@ -89,7 +89,7 @@ describe('MemberList', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Demote' })).toBeInTheDocument();
+    expect(screen.getByTitle('Demote to member')).toBeInTheDocument();
   });
 
   test('admin does NOT see promote or demote buttons', () => {
@@ -105,8 +105,8 @@ describe('MemberList', () => {
     );
 
     // Assert
-    expect(screen.queryByRole('button', { name: 'Make Admin' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Demote' })).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Promote to admin')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Demote to member')).not.toBeInTheDocument();
   });
 
   test('a member sees a "Leave" button for themselves only', () => {
@@ -122,9 +122,9 @@ describe('MemberList', () => {
     );
 
     // Assert — only their own Leave button
-    const leaveButtons = screen.getAllByRole('button', { name: 'Leave' });
+    const leaveButtons = screen.getAllByTitle('Leave group');
     expect(leaveButtons).toHaveLength(1);
-    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Remove member')).not.toBeInTheDocument();
   });
 
   test('admin cannot remove the owner', () => {
@@ -140,7 +140,7 @@ describe('MemberList', () => {
     );
 
     // Assert — no Remove button for the owner when caller is admin
-    expect(screen.queryByRole('button', { name: 'Remove' })).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Remove member')).not.toBeInTheDocument();
   });
 
   test('clicking "Make Admin" calls updateMemberRole and updates the list', async () => {
@@ -159,7 +159,7 @@ describe('MemberList', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Make Admin' }));
+    await user.click(screen.getByTitle('Promote to admin'));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -184,7 +184,7 @@ describe('MemberList', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Remove' }));
+    await user.click(screen.getByTitle('Remove member'));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
