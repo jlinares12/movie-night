@@ -37,11 +37,11 @@ export default function JoinGroup({ onJoined }: Props) {
       <input
         required
         className="w-full bg-surface py-4 px-6 rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface placeholder:text-on-surface-variant/40 text-center tracking-[0.5em] font-bold"
-        placeholder="######"
-        maxLength={6}
+        placeholder="xxxxxxxx"
+        maxLength={8}
         type="text"
         value={code}
-        onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
+        onChange={(e) => setCode(e.target.value.replace(/[^A-Za-z0-9_-]/g, ''))}
         onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
         disabled={loading}
       />
@@ -51,7 +51,7 @@ export default function JoinGroup({ onJoined }: Props) {
         disabled={loading}
         className="w-full bg-primary-container text-on-primary-container type-headline-sm py-4 rounded-xl shadow-[0_0_20px_rgba(0,230,118,0.2)] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Join Session
+        Join Group
       </button>
     </div>
   );
