@@ -38,7 +38,7 @@ export default function MovieGroups({ refreshRef }: Props) {
 
   if (groups.length === 0) {
     return (
-      <p className="text-sm text-[var(--member-color)] py-4">
+      <p className="type-label-md text-[var(--member-color)] py-4">
         You have no groups yet. Create one or join with a code.
       </p>
     );

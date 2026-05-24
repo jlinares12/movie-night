@@ -1,13 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-    --bk-color: #0C1A0D;
-    --primary-color: #40D952;
-    --primary-gray: #353b36;
-    --light-gray: #d6e4db;
-    --text-color: #ffffff;
-    --name-color: #e2a114;
-    --member-color: #14b9e2;
+  /* Surface */
+  --color-surface:                    19 19 19;
+  --color-surface-dim:                19 19 19;
+  --color-surface-bright:             58 57 57;
+  --color-surface-container-lowest:   14 14 14;
+  --color-surface-container-low:      28 27 27;
+  --color-surface-container:          32 31 31;
+  --color-surface-container-high:     42 42 42;
+  --color-surface-container-highest:  53 53 52;
+  --color-on-surface:                 229 226 225;
+  --color-on-surface-variant:         186 203 185;
+  --color-inverse-surface:            229 226 225;
+  --color-inverse-on-surface:         49 48 48;
+  --color-outline:                    133 149 133;
+  --color-outline-variant:            59 74 61;
+  --color-surface-tint:               0 228 117;
+  --color-surface-variant:            53 53 52;
+  /* Primary */
+  --color-primary:                    117 255 158;
+  --color-on-primary:                 0 57 24;
+  --color-primary-container:          0 230 118;
+  --color-on-primary-container:       0 97 46;
+  --color-inverse-primary:            0 109 53;
+  --color-primary-fixed:              98 255 150;
+  --color-primary-fixed-dim:          0 228 117;
+  --color-on-primary-fixed:           0 33 11;
+  --color-on-primary-fixed-variant:   0 82 38;
+  /* Secondary */
+  --color-secondary:                  188 199 222;
+  --color-on-secondary:               38 49 67;
+  --color-secondary-container:        62 73 93;
+  --color-on-secondary-container:     174 185 208;
+  --color-secondary-fixed:            216 227 251;
+  --color-secondary-fixed-dim:        188 199 222;
+  --color-on-secondary-fixed:         17 28 45;
+  --color-on-secondary-fixed-variant: 60 71 90;
+  /* Tertiary */
+  --color-tertiary:                   215 229 255;
+  --color-on-tertiary:                35 49 68;
+  --color-tertiary-container:         187 201 226;
+  --color-on-tertiary-container:      70 84 105;
+  --color-tertiary-fixed:             213 227 253;
+  --color-tertiary-fixed-dim:         185 199 224;
+  --color-on-tertiary-fixed:          13 28 47;
+  --color-on-tertiary-fixed-variant:  58 72 92;
+  /* Error */
+  --color-error:                      255 180 171;
+  --color-on-error:                   105 0 5;
+  --color-error-container:            147 0 10;
+  --color-on-error-container:         255 218 214;
+  /* Background */
+  --color-background:                 19 19 19;
+  --color-on-background:              229 226 225;
+
+  /* Legacy aliases — existing var() usages unchanged */
+  --bk-color:       rgb(var(--color-surface));
+  --primary-color:  rgb(var(--color-primary));
+  --primary-gray:   rgb(var(--color-surface-container-high));
+  --light-gray:     rgb(var(--color-on-surface-variant));
+  --text-color:     rgb(var(--color-on-surface));
+  --name-color:     rgb(var(--color-primary-container));
+  --member-color:   rgb(var(--color-secondary));
+}
+
+body {
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-on-background));
+  font-family: 'Inter', sans-serif;
+}
+
+@layer base {
+  h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: rgb(var(--color-on-surface));
+  }
+  h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 700;
+    color: rgb(var(--color-on-surface));
+  }
+  h3, h4 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.35;
+    font-weight: 600;
+    color: rgb(var(--color-on-surface));
+  }
+  p {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: rgb(var(--color-on-surface));
+  }
+  small {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: rgb(var(--color-on-surface-variant));
+  }
+}
+
+@layer components {
+  .type-display-lg {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3rem;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-display-lg-mobile {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    line-height: 1.2;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-headline-md {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 700;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-headline-sm {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.35;
+    font-weight: 600;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-body-lg {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.125rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-body-md {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-weight: 400;
+    color: rgb(var(--color-on-surface));
+  }
+  .type-label-md {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: rgb(var(--color-on-surface-variant));
+  }
+  .type-label-sm {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    font-weight: 500;
+    color: rgb(var(--color-on-surface-variant));
+  }
 }

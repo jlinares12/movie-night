@@ -13,19 +13,19 @@ export default function Header() {
             <div className="justify-self-start">
                 <Link to="/">
                     <NavLink
-                        icon={(className) => <Movie className={className} htmlColor="#40D952"/>}
+                        icon={(className) => <Movie className={className} style={{ color: 'rgb(var(--color-primary))' }}/>}
                         label="Movie Nights"
                     />
                 </Link>
             </div>
             <div className="justify-self-center text-[var(--text-color)]">
-                <h1>{user?.username}</h1>
+                <h1 className="type-body-md">{user?.username}</h1>
             </div>
             <div className="grid grid-cols-3 justify-self-end gap-4">
-                    <Notifications className="w-[20px] h-[20px]" htmlColor="#40D952"/>
+                    <Notifications className="w-[20px] h-[20px]" style={{ color: 'rgb(var(--color-primary))' }}/>
                     <Link to={"/profile"}>
                         <NavLink
-                            icon={(className) => <AccountCircle className={className} htmlColor="#40D952"/>}
+                            icon={(className) => <AccountCircle className={className} style={{ color: 'rgb(var(--color-primary))' }}/>}
                             label=""
                         />
                     </Link>
@@ -34,7 +34,7 @@ export default function Header() {
                         signOut({ redirectUrl: '/login' });
                     }}>
                         <NavLink
-                            icon={(className) => <LogoutIcon className={className} htmlColor="#d60303ff"/>}
+                            icon={(className) => <LogoutIcon className={className} style={{ color: 'rgb(var(--color-error))' }}/>}
                             label=""
                         />
                     </button>

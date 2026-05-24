@@ -44,7 +44,7 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm text-[var(--member-color)]">Invite Code</p>
+      <p className="type-label-md text-[var(--member-color)]">Invite Code</p>
       <div className="flex items-center gap-3">
         <code className="font-mono bg-[var(--bk-color)] border border-[var(--primary-gray)] rounded-[8px] px-4 py-2 text-[var(--primary-color)] tracking-widest text-lg select-all">
           {invite_code}
@@ -54,7 +54,7 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
           <FilledButton label="Regenerate" onClick={handleRegenerate} isDisabled={loading} />
         )}
       </div>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      {error && <p className="type-label-md text-red-400">{error}</p>}
     </div>
   );
 }

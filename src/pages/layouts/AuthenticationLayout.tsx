@@ -6,9 +6,9 @@ export default function AuthenticationLayout() {
     <div className="flex flex-col h-screen justify-between">
       <div className="h-screen bg-[var(--bk-color)] text-[var(--text-color)] flex items-center justify-center gap-[10em]">
         <div className="flex flex-col items-center justify-center gap-[2rem]">
-          <h1 className="text-5xl font-bold text-[var(--primary-color)]">Movie Nights</h1>
+          <h1 className="type-display-lg text-[var(--primary-color)]">Movie Nights</h1>
           <div className="w-[300px] h-[250px]">
-            <Movie style={{ width: '100%', height: '100%', color: '#40d952' }}/>
+            <Movie style={{ width: '100%', height: '100%', color: 'rgb(var(--color-primary))' }}/>
           </div>
         </div>
         <Outlet />

@@ -32,20 +32,14 @@ export default function GroupLink({ group, onLeave }: Props) {
   return (
     <li className="grid grid-cols-3 items-center pb-8 pt-8">
       <div className="flex">
-        <div className="cl-group-name text-2xl text-[var(--name-color)] font-extrabold">
-          <h2>{group.name}</h2>
+        <div className="cl-group-name">
+          <h2 className="type-headline-md text-[var(--name-color)]">{group.name}</h2>
         </div>
       </div>
       <div>
-        <div className="text-sm text-[var(--member-color)]">
-          <p>{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</p>
-        </div>
-        <div className="text-sm text-[var(--text-color)]">
-          <p>Created: {formattedDate}</p>
-        </div>
-        <div className="text-xs text-[var(--member-color)] mt-1 capitalize">
-          <p>You: {group.your_role}</p>
-        </div>
+        <p className="type-label-md text-[var(--member-color)]">{group.member_count} {group.member_count === 1 ? 'member' : 'members'}</p>
+        <p className="type-label-md text-[var(--text-color)]">Created: {formattedDate}</p>
+        <p className="type-label-sm capitalize">You: {group.your_role}</p>
       </div>
       <div className="flex gap-2">
         <OutlinedButton label="Nominate Movie" isDisabled />
