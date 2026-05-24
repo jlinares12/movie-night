@@ -1,6 +1,4 @@
 import { useState } from "react";
-import FilledButton from "./buttons/FilledButton";
-import OutlinedButton from "./buttons/OutlinedButton";
 import { regenerateInvite } from "../services/groups";
 import type { UserRole } from "../types/groups";
 
@@ -43,18 +41,52 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="type-label-md text-[var(--member-color)]">Invite Code</p>
-      <div className="flex items-center gap-3">
-        <code className="font-mono bg-[var(--bk-color)] border border-[var(--primary-gray)] rounded-[8px] px-4 py-2 text-[var(--primary-color)] tracking-widest text-lg select-all">
-          {invite_code}
-        </code>
-        <OutlinedButton label={copied ? 'Copied!' : 'Copy'} onClick={handleCopy} />
+    <div className="bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow flex flex-col justify-between h-full">
+      <div>
+        <div className="flex items-center justify-between mb-lg">
+          <h3 className="type-headline-sm text-on-surface">Invite Code</h3>
+          <span className="material-symbols-outlined text-primary">share</span>
+        </div>
+
+        <div className="flex flex-col items-center justify-center py-lg bg-background rounded-lg border border-dashed border-outline-variant">
+          <span className="type-display-lg-mobile text-primary tracking-widest font-mono select-all">
+            {invite_code}
+          </span>
+          <p className="type-label-sm text-on-surface-variant mt-2 uppercase tracking-tighter">
+            Share with friends to invite them
+          </p>
+        </div>
+      </div>
+
+      {error && <p className="type-label-sm text-error mt-sm">{error}</p>}
+
+      <div className="mt-lg flex gap-sm">
+        <button
+          onClick={handleCopy}
+          className="flex-1 bg-surface-variant text-on-surface py-3 rounded-lg type-label-md flex items-center justify-center gap-2 hover:bg-primary/10 hover:text-primary transition-all"
+        >
+          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
+            {copied ? 'check' : 'content_copy'}
+          </span>
+          {copied ? 'Copied!' : 'Copy Code'}
+        </button>
+
         {canRegenerate && (
-          <FilledButton label="Regenerate" onClick={handleRegenerate} isDisabled={loading} />
+          <button
+            onClick={handleRegenerate}
+            disabled={loading}
+            title="Regenerate code"
+            className="px-4 bg-surface-variant text-on-surface py-3 rounded-lg type-label-md flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all disabled:opacity-50"
+          >
+            <span
+              className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}
+              style={{ fontSize: '18px' }}
+            >
+              refresh
+            </span>
+          </button>
         )}
       </div>
-      {error && <p className="type-label-md text-red-400">{error}</p>}
     </div>
   );
 }

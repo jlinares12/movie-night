@@ -1,5 +1,4 @@
 import { useState } from "react";
-import FilledButton from "./buttons/FilledButton";
 import { joinGroup } from "../services/groups";
 
 interface Props {
@@ -34,21 +33,26 @@ export default function JoinGroup({ onJoined }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2">
-        <input
-          required
-          className="w-full border border-[var(--primary-gray)] rounded-[10px] p-4 text-sm bg-transparent focus:border-[var(--primary-color)] focus:outline-none"
-          placeholder="Enter a group code"
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-          disabled={loading}
-        />
-        <FilledButton label="Join" onClick={handleSubmit} isDisabled={loading} />
-      </div>
-      {error && <p className="type-label-md text-red-400 pl-1">{error}</p>}
+    <div className="flex flex-col gap-4">
+      <input
+        required
+        className="w-full bg-surface py-4 px-6 rounded-xl border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface placeholder:text-on-surface-variant/40 text-center tracking-[0.5em] font-bold"
+        placeholder="######"
+        maxLength={6}
+        type="text"
+        value={code}
+        onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
+        onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+        disabled={loading}
+      />
+      {error && <p className="type-label-md text-error -mt-2">{error}</p>}
+      <button
+        onClick={handleSubmit}
+        disabled={loading}
+        className="w-full bg-primary-container text-on-primary-container type-headline-sm py-4 rounded-xl shadow-[0_0_20px_rgba(0,230,118,0.2)] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Join Session
+      </button>
     </div>
   );
 }

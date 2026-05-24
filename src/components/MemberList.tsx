@@ -1,13 +1,11 @@
 import { useState } from "react";
-import WarningButton from "./buttons/DangerButton";
-import FilledButton from "./buttons/FilledButton";
 import { removeMember, updateMemberRole } from "../services/groups";
 import type { GroupMember, UserRole } from "../types/groups";
 
-const ROLE_COLORS: Record<UserRole, string> = {
-  owner: 'text-yellow-400',
-  admin: 'text-blue-400',
-  member: 'text-[var(--member-color)]',
+const ROLE_BADGE: Record<UserRole, { label: string; color: string; border: string }> = {
+  owner:  { label: 'Owner',  color: 'text-primary',            border: 'border-2 border-primary' },
+  admin:  { label: 'Admin',  color: 'text-secondary',          border: 'border-2 border-on-secondary-container' },
+  member: { label: 'Member', color: 'text-on-surface-variant', border: '' },
 };
 
 interface Props {
@@ -38,57 +36,107 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
     setError('');
     try {
       await updateMemberRole(groupId, target.user_id, newRole);
-      onMembersChanged(
-        members.map((m) => m.user_id === target.user_id ? { ...m, role: newRole } : m)
-      );
+      onMembersChanged(members.map((m) => m.user_id === target.user_id ? { ...m, role: newRole } : m));
     } catch (err: any) {
       setError(err?.response?.data?.error ?? 'Could not update role.');
     }
   };
 
   const canRemove = (target: GroupMember): boolean => {
-    const isSelf = target.user_id === currentUserId;
-    if (isSelf) return true;
+    if (target.user_id === currentUserId) return true;
     if (your_role === 'owner') return true;
     if (your_role === 'admin' && target.role === 'member') return true;
     return false;
   };
 
+  const initial = (m: GroupMember) => (m.username ?? '?')[0].toUpperCase();
+
   return (
-    <div className="flex flex-col gap-3">
-      <h3 className="type-headline-sm text-[var(--primary-color)]">Members</h3>
-      {error && <p className="type-label-md text-red-400">{error}</p>}
-      <ul className="divide-y divide-[var(--primary-gray)]">
-        {members.map((m) => (
-          <li key={m.id} className="flex items-center justify-between py-3">
-            <div>
-              <span className="type-body-md text-[var(--text-color)]">
-                {m.username ?? `User #${m.user_id}`}
-              </span>
-              {m.user_id === currentUserId && (
-                <span className="type-label-sm text-[var(--member-color)] ml-2">(you)</span>
+    <div className="bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow h-full">
+      <div className="flex items-center justify-between mb-lg">
+        <h3 className="type-headline-sm text-on-surface">Active Members</h3>
+        <span className="type-label-sm text-on-surface-variant">{members.length} total</span>
+      </div>
+
+      {error && <p className="type-label-sm text-error mb-sm">{error}</p>}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+        {members.map((m) => {
+          const badge = ROLE_BADGE[m.role];
+          const isSelf = m.user_id === currentUserId;
+          return (
+            <div
+              key={m.id}
+              className="flex items-center gap-md p-sm bg-surface-container rounded-lg border border-transparent neon-border-hover transition-all"
+            >
+              {/* Avatar */}
+              <div className={`w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 ${badge.border}`}>
+                <span className="type-label-md text-on-surface">{initial(m)}</span>
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className="type-label-md text-on-surface truncate">
+                  {m.username ?? `User #${m.user_id}`}
+                  {isSelf && <span className="text-on-surface-variant ml-1">(you)</span>}
+                </p>
+                <span className={`text-[10px] uppercase font-bold tracking-widest ${badge.color}`}>
+                  {badge.label}
+                </span>
+              </div>
+
+              {/* Actions */}
+              {(your_role === 'owner' && !isSelf) && (
+                <div className="flex gap-1">
+                  {m.role === 'member' && (
+                    <button
+                      onClick={() => handleRoleChange(m, 'admin')}
+                      title="Promote to admin"
+                      className="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container-highest transition-all"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_upward</span>
+                    </button>
+                  )}
+                  {m.role === 'admin' && (
+                    <button
+                      onClick={() => handleRoleChange(m, 'member')}
+                      title="Demote to member"
+                      className="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all"
+                    >
+                      <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_downward</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleRemove(m)}
+                    title="Remove member"
+                    className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
+                  >
+                    <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>person_remove</span>
+                  </button>
+                </div>
               )}
-              <span className={`ml-3 type-label-sm font-semibold capitalize ${ROLE_COLORS[m.role]}`}>
-                {m.role}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              {your_role === 'owner' && m.user_id !== currentUserId && m.role === 'member' && (
-                <FilledButton label="Make Admin" onClick={() => handleRoleChange(m, 'admin')} />
-              )}
-              {your_role === 'owner' && m.user_id !== currentUserId && m.role === 'admin' && (
-                <FilledButton label="Demote" onClick={() => handleRoleChange(m, 'member')} />
-              )}
-              {canRemove(m) && (
-                <WarningButton
-                  label={m.user_id === currentUserId ? 'Leave' : 'Remove'}
+              {(your_role === 'admin' && m.role === 'member' && !isSelf) && (
+                <button
                   onClick={() => handleRemove(m)}
-                />
+                  title="Remove member"
+                  className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>person_remove</span>
+                </button>
+              )}
+              {isSelf && (
+                <button
+                  onClick={() => handleRemove(m)}
+                  title="Leave group"
+                  className="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>logout</span>
+                </button>
               )}
             </div>
-          </li>
-        ))}
-      </ul>
+          );
+        })}
+      </div>
     </div>
   );
 }

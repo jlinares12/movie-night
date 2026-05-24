@@ -12,7 +12,6 @@ import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
-import GroupLayout from "./pages/layouts/GroupLayout";
 import GroupPage from "./pages/GroupPage";
 import SessionPage from "./pages/SessionPage";
 
@@ -37,15 +36,9 @@ const ROUTER = createBrowserRouter([
         element: <MainLayout/>,
         children: [
           {path:"/", element: <Home/>},
-          {path:"/profile", element:<ProfilePage/>}
-        ]
-      },
-      {
-        element: <GroupLayout/>,
-        children: [
-          {path:"/group",                                  element:<GroupPage/>},
-          {path:"/group/:id",                              element:<GroupPage/>},
-          {path:"/group/:id/session/:sessionId",           element:<SessionPage/>},
+          {path:"/profile", element:<ProfilePage/>},
+          {path:"/group/:id", element:<GroupPage/>},
+          {path:"/group/:id/session/:sessionId", element:<SessionPage/>},
         ]
       }
     ]
