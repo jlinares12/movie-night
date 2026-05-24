@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import DangerButton from '../DangerButton';
 
 describe('DangerButton', () => {
@@ -33,5 +34,18 @@ describe('DangerButton', () => {
 
     // Assert
     expect(screen.getByRole('button', { name: label })).toBeDisabled();
+  });
+
+  test('fires onClick when clicked', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+
+    // Act
+    render(<DangerButton label="Leave Group" onClick={onClick} />);
+    await user.click(screen.getByRole('button', { name: 'Leave Group' }));
+
+    // Assert
+    expect(onClick).toHaveBeenCalledTimes(1);
   });
 });
