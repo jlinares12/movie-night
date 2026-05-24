@@ -115,11 +115,11 @@ export default function GroupPage() {
     <div className="p-8 flex flex-col gap-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-[var(--primary-color)]">{group.name}</h1>
+          <h1 className="type-display-lg text-[var(--primary-color)]">{group.name}</h1>
           {group.description && (
-            <p className="text-sm text-[var(--member-color)] mt-1">{group.description}</p>
+            <p className="type-label-md text-[var(--member-color)] mt-1">{group.description}</p>
           )}
-          <p className="text-xs text-[var(--member-color)] mt-1 capitalize">Your role: {group.your_role}</p>
+          <p className="type-label-sm mt-1 capitalize">Your role: {group.your_role}</p>
         </div>
         {canDelete && (
           <WarningButton label="Delete Group" onClick={handleDelete} />

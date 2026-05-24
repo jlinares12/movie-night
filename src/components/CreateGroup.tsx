@@ -45,7 +45,7 @@ export default function CreateGroup({ onCreated }: Props) {
         />
         <FilledButton label="Create" onClick={handleSubmit} isDisabled={loading} />
       </div>
-      {error && <p className="text-red-400 text-sm pl-1">{error}</p>}
+      {error && <p className="type-label-md text-red-400 pl-1">{error}</p>}
     </div>
   );
 }

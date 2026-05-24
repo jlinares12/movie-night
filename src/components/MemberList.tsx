@@ -56,19 +56,19 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="text-lg font-bold text-[var(--primary-color)]">Members</h3>
-      {error && <p className="text-red-400 text-sm">{error}</p>}
+      <h3 className="type-headline-sm text-[var(--primary-color)]">Members</h3>
+      {error && <p className="type-label-md text-red-400">{error}</p>}
       <ul className="divide-y divide-[var(--primary-gray)]">
         {members.map((m) => (
           <li key={m.id} className="flex items-center justify-between py-3">
             <div>
-              <span className="text-[var(--text-color)] font-medium">
+              <span className="type-body-md text-[var(--text-color)]">
                 {m.username ?? `User #${m.user_id}`}
               </span>
               {m.user_id === currentUserId && (
-                <span className="text-xs text-[var(--member-color)] ml-2">(you)</span>
+                <span className="type-label-sm text-[var(--member-color)] ml-2">(you)</span>
               )}
-              <span className={`ml-3 text-xs font-semibold capitalize ${ROLE_COLORS[m.role]}`}>
+              <span className={`ml-3 type-label-sm font-semibold capitalize ${ROLE_COLORS[m.role]}`}>
                 {m.role}
               </span>
             </div>
