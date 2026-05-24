@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createGroup } from "../services/groups";
+import FilledButton from "./buttons/FilledButton";
 
 interface Props {
   onCreated: () => void;
@@ -42,13 +43,7 @@ export default function CreateGroup({ onCreated }: Props) {
         disabled={loading}
       />
       {error && <p className="type-label-md text-error -mt-2">{error}</p>}
-      <button
-        onClick={handleSubmit}
-        disabled={loading}
-        className="w-full bg-primary-container text-on-primary-container type-headline-sm py-4 rounded-xl shadow-[0_0_20px_rgba(0,230,118,0.2)] hover:shadow-[0_0_30px_rgba(0,230,118,0.4)] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Create Group
-      </button>
+      <FilledButton size="lg" label={loading ? 'Creating…' : 'Create Group'} isDisabled={loading} onClick={handleSubmit} />
     </div>
   );
 }
