@@ -34,7 +34,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    await user.click(screen.getByRole('button', { name: /copy code/i }));
 
     // Assert
     expect(writeTextSpy).toHaveBeenCalledWith('aB3xYz');
@@ -48,11 +48,11 @@ describe('InviteCodePanel', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    await user.click(screen.getByRole('button', { name: /copy code/i }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Copied!' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /copied!/i })).toBeInTheDocument();
   });
 
   test('Regenerate button is visible to owner', () => {
@@ -62,7 +62,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Regenerate' })).toBeInTheDocument();
+    expect(screen.getByTitle('Regenerate code')).toBeInTheDocument();
   });
 
   test('Regenerate button is visible to admin', () => {
@@ -72,7 +72,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Regenerate' })).toBeInTheDocument();
+    expect(screen.getByTitle('Regenerate code')).toBeInTheDocument();
   });
 
   test('Regenerate button is NOT visible to a plain member', () => {
@@ -82,7 +82,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Assert
-    expect(screen.queryByRole('button', { name: 'Regenerate' })).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Regenerate code')).not.toBeInTheDocument();
   });
 
   test('clicking Regenerate calls regenerateInvite and notifies the parent with the new code', async () => {
@@ -96,7 +96,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Regenerate' }));
+    await user.click(screen.getByTitle('Regenerate code'));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -113,7 +113,7 @@ describe('InviteCodePanel', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Regenerate' }));
+    await user.click(screen.getByTitle('Regenerate code'));
 
     // Assert
     expect(mockRegenerate).not.toHaveBeenCalled();

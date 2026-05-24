@@ -51,8 +51,8 @@ describe('SessionList', () => {
     );
 
     // Assert
-    expect(screen.getByText('open')).toBeInTheDocument();
-    expect(screen.getByText('voting')).toBeInTheDocument();
+    expect(screen.getByText(/^open$/i)).toBeInTheDocument();
+    expect(screen.getByText(/voting/i)).toBeInTheDocument();
   });
 
   test('clicking a session row navigates to the session detail page', async () => {
@@ -68,7 +68,7 @@ describe('SessionList', () => {
     );
 
     // Act
-    await user.click(screen.getByText('open'));
+    await user.click(screen.getByText(/^open$/i));
 
     // Assert
     expect(mockNavigate).toHaveBeenCalledWith('/group/5/session/10');
@@ -81,7 +81,7 @@ describe('SessionList', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'New Session' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /new session/i })).toBeInTheDocument();
   });
 
   test('"New Session" button is visible to admin', () => {
@@ -91,7 +91,7 @@ describe('SessionList', () => {
     );
 
     // Assert
-    expect(screen.getByRole('button', { name: 'New Session' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /new session/i })).toBeInTheDocument();
   });
 
   test('"New Session" button is NOT visible to a plain member', () => {
@@ -101,7 +101,7 @@ describe('SessionList', () => {
     );
 
     // Assert
-    expect(screen.queryByRole('button', { name: 'New Session' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /new session/i })).not.toBeInTheDocument();
   });
 
   test('clicking "New Session" shows the create form', async () => {
@@ -112,7 +112,7 @@ describe('SessionList', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'New Session' }));
+    await user.click(screen.getByRole('button', { name: /new session/i }));
 
     // Assert
     expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
@@ -130,7 +130,7 @@ describe('SessionList', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'New Session' }));
+    await user.click(screen.getByRole('button', { name: /new session/i }));
     await user.click(screen.getByRole('button', { name: 'Create' }));
     await act(async () => { await Promise.resolve(); });
 
@@ -147,7 +147,7 @@ describe('SessionList', () => {
     );
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'New Session' }));
+    await user.click(screen.getByRole('button', { name: /new session/i }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     // Assert
