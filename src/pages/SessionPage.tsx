@@ -96,34 +96,34 @@ export default function SessionPage() {
     <div className="p-8 flex flex-col gap-6">
       <div>
         <button
-          className="text-sm text-[var(--member-color)] hover:text-[var(--text-color)] mb-4"
+          className="type-label-md text-[var(--member-color)] hover:text-[var(--text-color)] mb-4"
           onClick={() => navigate(`/group/${groupId}`)}
         >
           ← Back to group
         </button>
-        <h1 className="text-2xl font-extrabold text-[var(--primary-color)]">Movie Night Session</h1>
+        <h1 className="type-display-lg text-[var(--primary-color)]">Movie Night Session</h1>
       </div>
 
       <div className="border border-[var(--primary-gray)] rounded-[10px] p-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
-          <span className="text-sm text-[var(--member-color)]">Status</span>
-          <span className={`text-base font-bold capitalize ${STATUS_COLORS[session.status as SessionStatus]}`}>
+          <span className="type-label-md text-[var(--member-color)]">Status</span>
+          <span className={`type-body-md font-bold capitalize ${STATUS_COLORS[session.status as SessionStatus]}`}>
             {session.status}
           </span>
         </div>
 
         {session.scheduled_for && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-[var(--member-color)]">Scheduled</span>
-            <span className="text-sm text-[var(--text-color)]">
+            <span className="type-label-md text-[var(--member-color)]">Scheduled</span>
+            <span className="type-label-md text-[var(--text-color)]">
               {new Date(session.scheduled_for).toLocaleString()}
             </span>
           </div>
         )}
 
         <div className="flex items-center gap-3">
-          <span className="text-sm text-[var(--member-color)]">Created</span>
-          <span className="text-sm text-[var(--text-color)]">
+          <span className="type-label-md text-[var(--member-color)]">Created</span>
+          <span className="type-label-md text-[var(--text-color)]">
             {new Date(session.created_at).toLocaleString()}
           </span>
         </div>

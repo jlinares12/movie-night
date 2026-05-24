@@ -12,8 +12,8 @@ export default function NotFound() {
                 <h1 className="text-[384px]">4</h1>
             </div>
             <div className="text-[var(--text-color)] flex flex-col justify-between gap-5">
-                <p className="text-lg">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable</p>
-                <Link to={"/"} className="text-xl self-center p-2 outline outline-[1px] outline-offset-2 outline-[var(--primary-color)] rounded-md text-lg">
+                <p className="type-body-lg text-[var(--text-color)]">The page you are looking for might have been removed, had its name changed, or is temporarily unavailable</p>
+                <Link to={"/"} className="type-headline-sm self-center p-2 outline outline-[1px] outline-offset-2 outline-[var(--primary-color)] rounded-md">
                     Return Home
                 </Link>
             </div>

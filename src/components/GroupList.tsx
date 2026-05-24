@@ -13,14 +13,14 @@ export default function GroupList() {
   if (groups.length === 0) {
     return (
       <aside className="p-4">
-        <p className="text-sm text-[var(--member-color)]">No groups.</p>
+        <p className="type-label-md text-[var(--member-color)]">No groups.</p>
       </aside>
     );
   }
 
   return (
     <aside className="p-4">
-      <h2 className="text-sm font-bold text-[var(--member-color)] uppercase tracking-widest mb-3">
+      <h2 className="type-label-md text-[var(--member-color)] uppercase tracking-widest mb-3">
         Your Groups
       </h2>
       <ul className="flex flex-col gap-1">
@@ -29,7 +29,7 @@ export default function GroupList() {
             <NavLink
               to={`/group/${g.id}`}
               className={({ isActive }) =>
-                `block px-3 py-2 rounded-[8px] text-sm truncate transition-colors ${
+                `block px-3 py-2 rounded-[8px] type-label-md truncate transition-colors ${
                   isActive
                     ? 'bg-[var(--primary-color)] text-black font-bold'
                     : 'text-[var(--text-color)] hover:bg-[var(--primary-gray)]'

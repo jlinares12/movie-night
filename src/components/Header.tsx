@@ -19,7 +19,7 @@ export default function Header() {
                 </Link>
             </div>
             <div className="justify-self-center text-[var(--text-color)]">
-                <h1>{user?.username}</h1>
+                <h1 className="type-body-md">{user?.username}</h1>
             </div>
             <div className="grid grid-cols-3 justify-self-end gap-4">
                     <Notifications className="w-[20px] h-[20px]" style={{ color: 'rgb(var(--color-primary))' }}/>
