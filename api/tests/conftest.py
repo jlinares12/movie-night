@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from app import create_app
 from app.extensions import db as _db
-from app.models import User
+from app.models.user import User
 
 
 @pytest.fixture(scope='session')
@@ -44,6 +44,16 @@ def authenticated_client(client):
         client.post('/api/auth/session', json={'token': 'fake_token'})
 
     return client, 'user_authed_test'
+
+
+@pytest.fixture()
+def as_user(app, client):
+    def _as_user(user_pk):
+        with app.app_context():
+            user = _db.session.get(User, user_pk)
+        with patch('app.routes.auth._verify_clerk_token', return_value=user.user_id):
+            client.post('/api/auth/session', json={'token': 'fake_token'})
+    return _as_user
 
 
 @pytest.fixture()
