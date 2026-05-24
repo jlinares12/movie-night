@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import OutlinedButton from "./buttons/OutlinedButton";
+import DangerButton from "./buttons/DangerButton";
 import { removeMember } from "../services/groups";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import type { GroupSummary, UserRole } from "../types/groups";
@@ -77,14 +78,7 @@ export default function GroupLink({ group, onLeave }: Props) {
       {/* Actions */}
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <OutlinedButton label="Nominate Movie" isDisabled />
-        <button
-          onClick={handleLeave}
-          title="Leave group"
-          className="ml-auto flex items-center gap-1 px-3 py-2 rounded-xl type-label-sm text-error/50 hover:text-error hover:bg-error/10 transition-all duration-200"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>logout</span>
-          Leave
-        </button>
+        <DangerButton icon="logout" label="Leave" onClick={handleLeave} />
       </div>
     </div>
   );

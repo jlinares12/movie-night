@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { regenerateInvite } from "../services/groups";
+import OutlinedButton from "./buttons/OutlinedButton";
+import IconButton from "./buttons/IconButton";
 import type { UserRole } from "../types/groups";
 
 interface Props {
@@ -61,30 +63,11 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
       {error && <p className="type-label-sm text-error mt-sm">{error}</p>}
 
       <div className="mt-lg flex gap-sm">
-        <button
-          onClick={handleCopy}
-          className="flex-1 bg-surface-variant text-on-surface py-3 rounded-lg type-label-md flex items-center justify-center gap-2 hover:bg-primary/10 hover:text-primary transition-all"
-        >
-          <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>
-            {copied ? 'check' : 'content_copy'}
-          </span>
-          {copied ? 'Copied!' : 'Copy Code'}
-        </button>
-
+        <div className="flex-1">
+          <OutlinedButton icon={copied ? 'check' : 'content_copy'} label={copied ? 'Copied!' : 'Copy Code'} onClick={handleCopy} />
+        </div>
         {canRegenerate && (
-          <button
-            onClick={handleRegenerate}
-            disabled={loading}
-            title="Regenerate code"
-            className="px-4 bg-surface-variant text-on-surface py-3 rounded-lg type-label-md flex items-center justify-center hover:bg-primary/10 hover:text-primary transition-all disabled:opacity-50"
-          >
-            <span
-              className={`material-symbols-outlined ${loading ? 'animate-spin' : ''}`}
-              style={{ fontSize: '18px' }}
-            >
-              refresh
-            </span>
-          </button>
+          <IconButton icon="refresh" title="Regenerate code" loading={loading} isDisabled={loading} onClick={handleRegenerate} size={18} />
         )}
       </div>
     </div>
