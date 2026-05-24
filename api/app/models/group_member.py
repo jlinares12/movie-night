@@ -23,4 +23,5 @@ class GroupMember(db.Model):
             'group_id':  self.group_id,
             'role':      self.role,
             'joined_at': self.joined_at.isoformat() if self.joined_at else None,
+            'username':  self.user.username if self.user else None,
         }
