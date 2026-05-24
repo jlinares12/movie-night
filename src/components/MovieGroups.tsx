@@ -1,63 +1,54 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, type RefObject } from "react";
 import GroupLinkSkeleton from "./skeletons/GroupLinkSkeleton";
 import GroupLink from "./GroupLink";
-import api from "../utils/api";
+import { listGroups } from "../services/groups";
+import type { GroupSummary } from "../types/groups";
 
-interface Group {
-    id: number;
-    name: string;
-    user_count: number;
-    date: string;
+interface Props {
+  refreshRef?: RefObject<(() => void) | null>;
 }
 
-export default function MovieGroups() {
-  const [data, setData] = useState<Group[]>([]);
+export default function MovieGroups({ refreshRef }: Props) {
+  const [groups, setGroups] = useState<GroupSummary[]>([]);
   const [loading, setLoading] = useState(true);
 
-useEffect(() => {
-  let intervalId: ReturnType<typeof setInterval>;
-
-  const fetchAPI = async () => {
+  const fetch = useCallback(async () => {
     try {
-        const response = await api.get<Group[]>("api/groups");
-        setData(response.data);
-        setLoading(false);
-        if (response.data.length >= 0) {
-            clearInterval(intervalId);
-        }
-    } catch (err: any) {
-        if (err?.response?.status === 401) {
-            clearInterval(intervalId);
-        }
-        setLoading(true);
+      const res = await listGroups();
+      setGroups(res.data);
+      setLoading(false);
+    } catch {
+      // 401 redirected globally by axios interceptor
     }
-  };
+  }, []);
 
-  fetchAPI();
-  intervalId = setInterval(fetchAPI, 2000);
-  return () => clearInterval(intervalId);
-}, []);
+  useEffect(() => {
+    fetch();
+    if (refreshRef) refreshRef.current = fetch;
+  }, [fetch, refreshRef]);
 
+  if (loading) {
     return (
-        <div className="flex flex-col items-center justify-center">
-            <div className="w-full justify-self-start">
-                {loading ? (
-                    <div className="divide-y divide-[var(--primary-gray)]">
-                        <GroupLinkSkeleton/>
-                        <GroupLinkSkeleton/>
-                    </div>
-                ) : (
-                <ul className="list-none divide-y divide-[var(--primary-gray)]">
-                    {data.map((group) => (
-                        <GroupLink
-                            key={group["id"]}
-                            name={group["name"]}
-                            user_count={group["user_count"] as number}
-                            date={group["date"]}/>
-                    ))}
-                </ul>
-                )}
-            </div>
-        </div>
-    )
+      <div className="divide-y divide-[var(--primary-gray)]">
+        <GroupLinkSkeleton/>
+        <GroupLinkSkeleton/>
+      </div>
+    );
+  }
+
+  if (groups.length === 0) {
+    return (
+      <p className="text-sm text-[var(--member-color)] py-4">
+        You have no groups yet. Create one or join with a code.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="list-none divide-y divide-[var(--primary-gray)]">
+      {groups.map((g) => (
+        <GroupLink key={g.id} group={g} onLeave={fetch} />
+      ))}
+    </ul>
+  );
 }

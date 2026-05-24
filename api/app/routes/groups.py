@@ -61,7 +61,9 @@ def get_group(group_id):
     if not _get_membership(group_id, g.current_user):
         return jsonify({'error': 'forbidden'}), 403
 
+    membership = _get_membership(group_id, g.current_user)
     data = group.to_dict()
+    data['your_role'] = membership.role
     data['members'] = [m.to_dict() for m in group.members]
     data['sessions'] = [s.to_dict() for s in group.sessions]
     return jsonify(data), 200

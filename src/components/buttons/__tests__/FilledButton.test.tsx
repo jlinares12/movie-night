@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import FilledButton from '../FilledButton';
 
 describe('FilledButton', () => {
@@ -44,5 +45,31 @@ describe('FilledButton', () => {
 
     // Assert
     expect(screen.getByRole('button', { name: label })).toHaveClass('animate-pulse');
+  });
+
+  test('fires onClick when clicked', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+
+    // Act
+    render(<FilledButton label="Submit" onClick={onClick} />);
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    // Assert
+    expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not fire onClick when disabled', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const onClick = jest.fn();
+
+    // Act
+    render(<FilledButton label="Submit" onClick={onClick} isDisabled={true} />);
+    await user.click(screen.getByRole('button', { name: 'Submit' }));
+
+    // Assert
+    expect(onClick).not.toHaveBeenCalled();
   });
 });
