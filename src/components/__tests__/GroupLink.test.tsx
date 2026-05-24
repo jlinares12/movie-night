@@ -46,7 +46,7 @@ describe('GroupLink', () => {
     render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
     // Assert
-    expect(screen.getByText('5 members')).toBeInTheDocument();
+    expect(screen.getByText(/5 members/i)).toBeInTheDocument();
   });
 
   test('renders "1 member" in singular when count is 1', () => {
@@ -57,24 +57,24 @@ describe('GroupLink', () => {
     render(<GroupLink group={group} onLeave={jest.fn()} />);
 
     // Assert
-    expect(screen.getByText('1 member')).toBeInTheDocument();
+    expect(screen.getByText(/^1 member$/i)).toBeInTheDocument();
   });
 
   test('renders the user role badge', () => {
     // Arrange / Act
     render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
-    // Assert — the "You: <role>" label is distinct from the member count text
-    expect(screen.getByText(/you: member/i)).toBeInTheDocument();
+    // Assert — the role badge shows the role label
+    expect(screen.getByText(/^Member$/)).toBeInTheDocument();
   });
 
-  test('Open button navigates to the group detail page', async () => {
+  test('clicking the card navigates to the group detail page', async () => {
     // Arrange
     const user = userEvent.setup();
     render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Open' }));
+    await user.click(screen.getByText('Action Fans'));
 
     // Assert
     expect(mockNavigate).toHaveBeenCalledWith('/group/7');
@@ -89,7 +89,7 @@ describe('GroupLink', () => {
     render(<GroupLink group={defaultGroup} onLeave={onLeave} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Leave Group' }));
+    await user.click(screen.getByRole('button', { name: /leave/i }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -105,7 +105,7 @@ describe('GroupLink', () => {
     render(<GroupLink group={defaultGroup} onLeave={onLeave} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Leave Group' }));
+    await user.click(screen.getByRole('button', { name: /leave/i }));
 
     // Assert
     expect(mockRemoveMember).not.toHaveBeenCalled();
@@ -121,7 +121,7 @@ describe('GroupLink', () => {
     render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Leave Group' }));
+    await user.click(screen.getByRole('button', { name: /leave/i }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert

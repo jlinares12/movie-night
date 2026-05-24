@@ -14,8 +14,8 @@ describe('CreateGroup', () => {
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Assert
-    expect(screen.getByPlaceholderText(/name for your group/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Create' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/group name/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create Group' })).toBeInTheDocument();
   });
 
   test('calls createGroup with the trimmed name on button click', async () => {
@@ -25,8 +25,8 @@ describe('CreateGroup', () => {
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
-    await user.type(screen.getByPlaceholderText(/name for your group/i), '  Weekend Club  ');
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.type(screen.getByPlaceholderText(/group name/i), '  Weekend Club  ');
+    await user.click(screen.getByRole('button', { name: 'Create Group' }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -40,7 +40,7 @@ describe('CreateGroup', () => {
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
-    await user.type(screen.getByPlaceholderText(/name for your group/i), 'Horror Nights{Enter}');
+    await user.type(screen.getByPlaceholderText(/group name/i), 'Horror Nights{Enter}');
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -53,11 +53,11 @@ describe('CreateGroup', () => {
     const onCreated = jest.fn();
     mockCreateGroup.mockResolvedValue({} as any);
     render(<CreateGroup onCreated={onCreated} />);
-    const input = screen.getByPlaceholderText(/name for your group/i);
+    const input = screen.getByPlaceholderText(/group name/i);
 
     // Act
     await user.type(input, 'My Group');
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Group' }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -72,8 +72,8 @@ describe('CreateGroup', () => {
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
-    await user.type(screen.getByPlaceholderText(/name for your group/i), 'x');
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.type(screen.getByPlaceholderText(/group name/i), 'x');
+    await user.click(screen.getByRole('button', { name: 'Create Group' }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
@@ -86,7 +86,7 @@ describe('CreateGroup', () => {
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Create' }));
+    await user.click(screen.getByRole('button', { name: 'Create Group' }));
 
     // Assert
     expect(screen.getByText(/name is required/i)).toBeInTheDocument();

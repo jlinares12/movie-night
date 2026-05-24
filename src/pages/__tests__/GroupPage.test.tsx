@@ -134,7 +134,7 @@ describe('GroupPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(screen.getByRole('button', { name: 'Delete Group' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /delete group/i })).toBeInTheDocument();
   });
 
   test('"Delete Group" button is NOT visible to admin or member', async () => {
@@ -147,7 +147,7 @@ describe('GroupPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(screen.queryByRole('button', { name: 'Delete Group' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /delete group/i })).not.toBeInTheDocument();
   });
 
   test('Delete Group calls deleteGroup and navigates to / after confirmation', async () => {
@@ -162,7 +162,7 @@ describe('GroupPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Act
-    await user.click(screen.getByRole('button', { name: 'Delete Group' }));
+    await user.click(screen.getByRole('button', { name: /delete group/i }));
     await act(async () => { await Promise.resolve(); });
 
     // Assert
