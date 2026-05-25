@@ -14,6 +14,7 @@ import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
 import GroupPage from "./pages/GroupPage";
 import SessionPage from "./pages/SessionPage";
+import { LoadingProvider } from "./context/LoadingContext";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -79,7 +80,9 @@ ReactDOM.createRoot(ROOT).render(
         }
       }}
       >
-        <RouterProvider router={ROUTER}/>
+        <LoadingProvider>
+          <RouterProvider router={ROUTER}/>
+        </LoadingProvider>
       </ClerkProvider>
     </StrictMode>
   );
