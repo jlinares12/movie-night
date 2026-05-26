@@ -5,9 +5,16 @@ const LOADING_SETTLED = '[data-testid="global-loading"][data-loading="false"]';
 const LOADING_ACTIVE  = '[data-testid="global-loading"][data-loading="true"]';
 
 test('route navigation: loading bar activates then settles', async ({ authedPage: page }) => {
-  // Intercept the loading bar before navigation starts
+  // Start on /profile so loadingSetterRef is registered and document stays alive
+  await page.goto('/profile');
+  await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
+
+  // Watch for active state before SPA navigation
   const activatedPromise = page.waitForSelector(LOADING_ACTIVE, { state: 'attached', timeout: 5_000 });
-  await page.goto('/');
+
+  // Client-side navigation — no document replacement
+  await page.getByRole('link', { name: /My Groups/i }).click();
+
   await activatedPromise;
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 
