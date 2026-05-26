@@ -48,21 +48,19 @@ export default async function globalSetup(config: FullConfig) {
   fs.mkdirSync(AUTH_DIR, { recursive: true });
 
   const stamp = Date.now();
-  const ownerEmail = `e2e-owner-${stamp}@example.com`;
-  const memberEmail = `e2e-member-${stamp}@example.com`;
+  const ownerEmail = `e2e-owner-${stamp}@clerk-test.com`;
+  const memberEmail = `e2e-member-${stamp}@clerk-test.com`;
 
   const [ownerUser, memberUser] = await Promise.all([
     clerkClient.users.createUser({
       emailAddress: [ownerEmail],
       password: 'E2eTestPass1!',
-      firstName: 'E2E',
-      lastName: 'Owner',
+      username: `e2e-owner-${stamp}`,
     }),
     clerkClient.users.createUser({
       emailAddress: [memberEmail],
       password: 'E2eTestPass1!',
-      firstName: 'E2E',
-      lastName: 'Member',
+      username: `e2e-member-${stamp}`,
     }),
   ]);
 

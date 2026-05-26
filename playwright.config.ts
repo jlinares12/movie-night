@@ -4,11 +4,13 @@ export default defineConfig({
   testDir: './e2e/specs',
   globalSetup: './e2e/global-setup',
   globalTeardown: './e2e/global-teardown',
+  reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
     storageState: 'e2e/.auth/owner.json',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    trace: 'retain-on-failure',
   },
   timeout: 30_000,
   projects: [
