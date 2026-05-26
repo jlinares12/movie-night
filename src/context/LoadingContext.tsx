@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useLayoutEffect, useState, type ReactNode } from 'react'
 import { GlobalLoadingBar } from '../components/GlobalLoadingBar'
 
 export const loadingSetterRef = { current: null as ((v: boolean) => void) | null }
@@ -13,7 +13,7 @@ export function LoadingProvider({
   indicator?: ReactNode
 }) {
   const [loading, setLoading] = useState(false)
-  useEffect(() => { loadingSetterRef.current = setLoading }, [])
+  useLayoutEffect(() => { loadingSetterRef.current = setLoading }, [])
 
   return (
     <LoadingContext.Provider value={loading}>
