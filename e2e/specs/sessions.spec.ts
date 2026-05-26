@@ -48,7 +48,7 @@ test('status transitions: open → voting → decided → closed', async ({ auth
   for (const { advanceTo, badge } of transitions) {
     await page.getByRole('button', { name: new RegExp(`Advance to ${advanceTo}`, 'i') }).click();
     await page.waitForSelector(LOADING, { state: 'attached' });
-    await expect(page.getByText(badge)).toBeVisible();
+    await expect(page.locator('section').getByText(badge)).toBeVisible();
   }
 });
 
