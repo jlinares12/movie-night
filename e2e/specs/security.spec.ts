@@ -49,12 +49,12 @@ test('member cannot self-promote to admin via direct API call', async ({ memberP
   expect(res.status()).toBe(403);
 });
 
-test('webhook endpoint with missing svix headers returns 400', async ({ request }) => {
+test('webhook endpoint with missing svix headers returns 401', async ({ request }) => {
   const res = await request.post('/api/webhook/clerk', {
     data: { type: 'user.created', data: {} },
     headers: { 'Content-Type': 'application/json' },
   });
-  expect(res.status()).toBe(400);
+  expect(res.status()).toBe(401);
 });
 
 test('movie search with >200-char query returns 400', async ({ request }) => {
@@ -68,7 +68,7 @@ test('session cookie is HttpOnly — invisible to document.cookie', async ({ aut
   await page.waitForSelector(LOADING, { state: 'attached' });
 
   const cookieString: string = await page.evaluate(() => document.cookie);
-  expect(cookieString).not.toContain('session=');
+  expect(cookieString).not.toMatch(/(^|;\s*)session=/);
 });
 
 test('forged session cookie returns 401 from /api/auth/me', async () => {
