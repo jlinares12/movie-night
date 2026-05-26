@@ -24,6 +24,7 @@ test('create a group via UI → appears in the list', async ({ authedPage: page 
   const name = `UI-Group-${Date.now()}`;
   await page.goto('/');
   await page.waitForSelector(LOADING, { state: 'attached' });
+  await page.waitForURL(`**/`);
 
   await page.getByPlaceholder(/Group Name/).fill(name);
   await page.getByRole('button', { name: /Create Group/ }).click();
@@ -47,13 +48,14 @@ test('join a group via invite code → success', async ({ memberPage }) => {
   await memberPage.getByRole('button', { name: /Join Group/ }).click();
   await memberPage.waitForSelector(LOADING, { state: 'attached' });
 
-  // No error message visible — join succeeded
-  await expect(memberPage.locator('.text-error')).not.toBeVisible();
+  // Confirmation that group is showing and allowing us to leave
+  await expect(memberPage.getByRole('button', { name: /Leave/ })).toBeVisible();
 });
 
 test('regenerate invite code → code changes', async ({ authedPage: page }) => {
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
+  await page.waitForURL(`**/group/${groupId}`);
 
   const codeLocator = page.locator('.tracking-widest.font-mono');
   const originalCode = await codeLocator.textContent();
@@ -69,6 +71,7 @@ test('regenerate invite code → code changes', async ({ authedPage: page }) => 
 test('owner can delete group → removed from list', async ({ authedPage: page }) => {
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
+  await page.waitForURL(`**/group/${groupId}`);
 
   page.once('dialog', d => d.accept());
   await page.getByRole('button', { name: /Delete Group/ }).click();
@@ -90,6 +93,7 @@ test('member cannot see Delete Group button', async ({ memberPage, request }) =>
   );
 
   await memberPage.goto(`/group/${groupId}`);
+  await memberPage.waitForURL(`**/group/${groupId}`);
   await memberPage.waitForSelector(LOADING, { state: 'attached' });
 
   await expect(memberPage.getByRole('button', { name: /Delete Group/ })).not.toBeVisible();
@@ -100,6 +104,7 @@ test('owner promotes member to admin', async ({ authedPage: page, memberPage, re
 
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
+  await page.waitForURL(`**/group/${groupId}`);
 
   await page.locator('[title="Promote to admin"]').first().click();
   await page.waitForSelector(LOADING, { state: 'attached' });
@@ -112,6 +117,7 @@ test('owner demotes admin back to member', async ({ authedPage: page, memberPage
 
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
+  await page.waitForURL(`**/group/${groupId}`);
 
   // Promote first
   await page.locator('[title="Promote to admin"]').first().click();
