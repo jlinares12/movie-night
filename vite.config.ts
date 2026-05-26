@@ -8,5 +8,6 @@ export default defineConfig({
     proxy: {
       '/api': process.env.API_URL ?? 'http://localhost:5000'
     },
+    allowedHosts: process.env.VITE_ALLOWED_HOSTS ? process.env.VITE_ALLOWED_HOSTS.split(',') : undefined,
   }
 })
