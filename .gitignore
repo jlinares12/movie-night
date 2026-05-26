@@ -14,6 +14,12 @@ dist-ssr
 .vite
 .env
 .env.test
+.env.e2e
+
+# Playwright
+e2e/.auth/
+playwright-report/
+test-results/
 
 # Editor directories and files
 .vscode/*
