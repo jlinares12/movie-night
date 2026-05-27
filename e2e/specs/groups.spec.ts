@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { test, expect } from '../fixtures/auth';
 import { apiCreateGroup, apiDeleteGroup, apiJoinGroup } from '../helpers/api';
 
@@ -34,9 +33,9 @@ test('create a group via UI → appears in the list', async ({ authedPage: page 
 
   // Cleanup the UI-created group via API
   const res = await page.request.get('/api/groups');
-  const groups: { id: number; name: string }[] = (await res.json()).groups ?? await res.json();
-  const created = (Array.isArray(groups) ? groups : (groups as any).groups ?? [])
-    .find((g: { name: string }) => g.name === name);
+  const json = await res.json();
+  const groups: { id: number; name: string }[] = Array.isArray(json) ? json : (json.groups ?? []);
+  const created = groups.find((g: { name: string }) => g.name === name);
   if (created) await apiDeleteGroup(page.request, created.id);
 });
 
@@ -85,7 +84,7 @@ test('owner can delete group → removed from list', async ({ authedPage: page }
   await expect(page.getByRole('heading', { name: /Your Movie Groups/i })).toBeVisible();
 });
 
-test('member cannot see Delete Group button', async ({ memberPage, request }) => {
+test('member cannot see Delete Group button', async ({ memberPage }) => {
   // Join the group as member first
   await apiJoinGroup(
     await memberPage.context().request,
@@ -99,7 +98,7 @@ test('member cannot see Delete Group button', async ({ memberPage, request }) =>
   await expect(memberPage.getByRole('button', { name: /Delete Group/ })).not.toBeVisible();
 });
 
-test('owner promotes member to admin', async ({ authedPage: page, memberPage, request }) => {
+test('owner promotes member to admin', async ({ authedPage: page, memberPage }) => {
   await apiJoinGroup(await memberPage.context().request, inviteCode);
 
   await page.goto(`/group/${groupId}`);
