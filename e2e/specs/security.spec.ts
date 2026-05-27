@@ -32,7 +32,7 @@ test('non-member group page shows "not a member" error', async ({ memberPage }) 
 
 test('member cannot self-promote to admin via direct API call', async ({ memberPage, request }) => {
   const group = await request.get(`/api/groups/${groupId}`);
-  const { invite_code, members } = await group.json();
+  const { invite_code } = await group.json();
 
   // Member joins
   const memberReq = memberPage.context().request;
