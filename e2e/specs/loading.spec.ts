@@ -5,38 +5,60 @@ const LOADING_SETTLED = '[data-testid="global-loading"][data-loading="false"]';
 const LOADING_ACTIVE  = '[data-testid="global-loading"][data-loading="true"]';
 
 test('route navigation: loading bar activates then settles', async ({ authedPage: page }) => {
-  // Start on /profile so loadingSetterRef is registered and document stays alive
   await page.goto('/profile');
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 
-  // Watch for active state before SPA navigation
-  const activatedPromise = page.waitForSelector(LOADING_ACTIVE, { state: 'attached', timeout: 5_000 });
+  // Hold the groups fetch so React has a guaranteed window to flush
+  // data-loading="true". Without this, React 18 batches setLoading(true) +
+  // setLoading(false) into one render and the "true" state is never painted.
+  let release!: () => void;
+  // { times: 1 } — auto-deregisters after the first match so subsequent
+  // requests to /api/groups pass through and don't get stuck holding "true".
+  await page.route('**/api/groups', async (route) => {
+    await new Promise<void>((r) => { release = r; });
+    await route.continue();
+  }, { times: 1 });
 
-  // Client-side navigation — no document replacement
+  // SPA navigation — triggers the paused groups fetch
   await page.getByRole('link', { name: /My Groups/i }).click();
 
-  await activatedPromise;
-  await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
+  // With the fetch held open, the loading bar must become active
+  await expect(page.locator('[data-testid="global-loading"]'))
+    .toHaveAttribute('data-loading', 'true', { timeout: 5_000 });
 
-  const attr = await page
-    .locator('[data-testid="global-loading"]')
-    .getAttribute('data-loading');
-  expect(attr).toBe('false');
+  // Release the fetch — route auto-deregisters, all further requests pass through
+  release();
+
+  await expect(page.locator('[data-testid="global-loading"]'))
+    .toHaveAttribute('data-loading', 'false');
 });
 
 test('API action (create group) activates loading bar, then settles', async ({ authedPage: page }) => {
   await page.goto('/');
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 
+  // Delay the POST so React has time to flush data-loading="true" before the
+  // response arrives. Without this, React 18 batches setLoading(true) +
+  // setLoading(false) into one render and the DOM never shows "true".
+  await page.route('**/api/groups', async (route) => {
+    if (route.request().method() === 'POST') {
+      await new Promise<void>((r) => setTimeout(r, 200));
+    }
+    await route.continue();
+  });
+
   const name = `Loading-Test-${Date.now()}`;
   await page.getByPlaceholder(/Group Name/).fill(name);
 
-  // Start watching for active state before the click
+  // waitForSelector registered before the click so the observer is in place
+  // when the request interceptor fires setLoading(true).
   const activatedPromise = page.waitForSelector(LOADING_ACTIVE, { state: 'attached', timeout: 5_000 });
   await page.getByRole('button', { name: /Create Group/ }).click();
 
   await activatedPromise;
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
+
+  await page.unroute('**/api/groups');
 
   // Cleanup
   const res = await page.request.get('/api/groups');
