@@ -1,4 +1,4 @@
-import { test as base, type Page } from '@playwright/test';
+import { test as base, type Page, type APIRequestContext } from '@playwright/test';
 import path from 'node:path';
 import fs from 'node:fs';
 import { setupClerkTestingToken, clerk } from '@clerk/testing/playwright';
@@ -7,6 +7,8 @@ import { createClerkClient } from '@clerk/backend';
 type AuthFixtures = {
   authedPage: Page;
   memberPage: Page;
+  ownerRequest: APIRequestContext;
+  memberRequest: APIRequestContext;
 };
 
 // Mint a fresh token per fixture call. clerkSetup() skips generation if
@@ -47,10 +49,8 @@ function readTestUsers(): { ownerEmail: string; memberEmail: string } {
 export const test = base.extend<AuthFixtures>({
   authedPage: async ({ browser }, run) => {
     await refreshTestingToken();
-    // Explicitly empty storageState to prevent inheriting the project-level
-    // owner.json from playwright.config.ts. If the context loads with an existing
-    // Clerk session, page.goto('/login') finds the user already signed in and
-    // window.Clerk.client is undefined when clerk.signIn() evaluates.
+    // Explicitly empty storageState so the context starts clean and
+    // clerk.signIn() can run without finding a pre-existing session.
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await setupClerkTestingToken({ page });
@@ -75,6 +75,19 @@ export const test = base.extend<AuthFixtures>({
       await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
       await context.close();
     }
+  },
+
+  // Expose the authenticated request context from authedPage so tests and
+  // hooks can make owner-authenticated API calls without depending on the
+  // project-level storageState default.
+  ownerRequest: async ({ authedPage }, use) => {
+    await use(authedPage.context().request);
+  },
+
+  // Expose the authenticated request context from memberPage so tests can
+  // make member-authenticated API calls without memberPage.context().request.
+  memberRequest: async ({ memberPage }, use) => {
+    await use(memberPage.context().request);
   },
 });
 
