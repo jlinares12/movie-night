@@ -1,0 +1,56 @@
+services:
+  e2e-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: movie-night-e2e
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d movie-night-e2e"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  e2e-api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+      target: dev
+    env_file:
+      - .env.e2e
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@e2e-db:5432/movie-night-e2e
+      FLASK_ENV: testing
+      CORS_ALLOWED_ORIGINS: http://e2e-frontend:5173
+    depends_on:
+      e2e-db:
+        condition: service_healthy
+
+  e2e-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    env_file:
+      - .env.e2e
+    environment:
+      API_URL: http://e2e-api:5000
+      VITE_ALLOWED_HOSTS: e2e-frontend
+    depends_on:
+      - e2e-api
+
+  playwright:
+    build:
+      context: .
+      dockerfile: e2e/Dockerfile
+    platform: linux/amd64
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+    env_file:
+      - .env.e2e
+    environment:
+      BASE_URL: http://e2e-frontend:5173
+    restart: "no"
+    profiles: [e2e]
+    depends_on:
+      - e2e-frontend
