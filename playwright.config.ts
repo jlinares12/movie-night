@@ -7,7 +7,6 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
-    storageState: 'e2e/.auth/owner.json',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
     trace: 'retain-on-failure',

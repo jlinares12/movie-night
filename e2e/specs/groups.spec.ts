@@ -6,13 +6,13 @@ const LOADING = '[data-testid="global-loading"][data-loading="false"]';
 let groupId = 0;
 let inviteCode = '';
 
-test.beforeEach(async ({ request }) => {
+test.beforeEach(async ({ ownerRequest: request }) => {
   const group = await apiCreateGroup(request, `PW-Group-${Date.now()}`);
   groupId = group.id;
   inviteCode = group.invite_code;
 });
 
-test.afterEach(async ({ request }) => {
+test.afterEach(async ({ ownerRequest: request }) => {
   if (groupId) {
     try { await apiDeleteGroup(request, groupId); } catch { /* already deleted in test */ }
   }
@@ -84,10 +84,10 @@ test('owner can delete group → removed from list', async ({ authedPage: page }
   await expect(page.getByRole('heading', { name: /Your Movie Groups/i })).toBeVisible();
 });
 
-test('member cannot see Delete Group button', async ({ memberPage }) => {
+test('member cannot see Delete Group button', async ({ memberPage, memberRequest }) => {
   // Join the group as member first
   await apiJoinGroup(
-    await memberPage.context().request,
+    memberRequest,
     inviteCode,
   );
 
@@ -98,8 +98,8 @@ test('member cannot see Delete Group button', async ({ memberPage }) => {
   await expect(memberPage.getByRole('button', { name: /Delete Group/ })).not.toBeVisible();
 });
 
-test('owner promotes member to admin', async ({ authedPage: page, memberPage }) => {
-  await apiJoinGroup(await memberPage.context().request, inviteCode);
+test('owner promotes member to admin', async ({ authedPage: page, memberPage, memberRequest }) => {
+  await apiJoinGroup(memberRequest, inviteCode);
 
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
@@ -111,8 +111,8 @@ test('owner promotes member to admin', async ({ authedPage: page, memberPage }) 
   await expect(page.getByText('Admin').first()).toBeVisible();
 });
 
-test('owner demotes admin back to member', async ({ authedPage: page, memberPage }) => {
-  await apiJoinGroup(await memberPage.context().request, inviteCode);
+test('owner demotes admin back to member', async ({ authedPage: page, memberPage, memberRequest }) => {
+  await apiJoinGroup(memberRequest, inviteCode);
 
   await page.goto(`/group/${groupId}`);
   await page.waitForSelector(LOADING, { state: 'attached' });
