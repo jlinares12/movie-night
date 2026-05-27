@@ -20,7 +20,6 @@ export function LoadingProvider({
       <div
         data-testid="global-loading"
         data-loading={String(loading)}
-        style={{ display: 'none' }}
       />
       {indicator}
       {children}
