@@ -15,4 +15,18 @@ api.interceptors.response.use(
     }
 );
 
+api.interceptors.request.use(config => {
+    window.dispatchEvent(new CustomEvent('loading:start'));
+    return config;
+});
+
+const settle = () => {
+    window.dispatchEvent(new CustomEvent('loading:end'));
+};
+
+api.interceptors.response.use(
+    res => { settle(); return res; },
+    err => { settle(); return Promise.reject(err); }
+);
+
 export default api;
