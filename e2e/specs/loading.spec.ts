@@ -68,7 +68,7 @@ test('API action (create group) activates loading bar, then settles', async ({ a
   if (created) await apiDeleteGroup(page.request, created.id);
 });
 
-test('loading bar stays active until all concurrent requests settle', async ({ authedPage: page, request }) => {
+test('loading bar stays active until all concurrent requests settle', async ({ authedPage: page, ownerRequest: request }) => {
   await page.goto('/');
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 

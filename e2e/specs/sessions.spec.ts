@@ -10,12 +10,12 @@ const LOADING = '[data-testid="global-loading"][data-loading="false"]';
 
 let groupId = 0;
 
-test.beforeEach(async ({ request }) => {
+test.beforeEach(async ({ ownerRequest: request }) => {
   const group = await apiCreateGroup(request, `PW-Sessions-${Date.now()}`);
   groupId = group.id;
 });
 
-test.afterEach(async ({ request }) => {
+test.afterEach(async ({ ownerRequest: request }) => {
   if (groupId) {
     try { await apiDeleteGroup(request, groupId); } catch { /* already gone */ }
     groupId = 0;
@@ -33,7 +33,7 @@ test('create session via UI → appears in session list', async ({ authedPage: p
   await expect(page.getByText(/Session #1/i)).toBeVisible();
 });
 
-test('status transitions: open → voting → decided → closed', async ({ authedPage: page, request }) => {
+test('status transitions: open → voting → decided → closed', async ({ authedPage: page, ownerRequest: request }) => {
   const session = await apiCreateSession(request, groupId);
 
   await page.goto(`/group/${groupId}/session/${session.id}`);
@@ -52,7 +52,7 @@ test('status transitions: open → voting → decided → closed', async ({ auth
   }
 });
 
-test('invalid transition (decided → open) is rejected by the API', async ({ request }) => {
+test('invalid transition (decided → open) is rejected by the API', async ({ ownerRequest: request }) => {
   const session = await apiCreateSession(request, groupId);
 
   // Advance to decided
@@ -70,11 +70,11 @@ test('invalid transition (decided → open) is rejected by the API', async ({ re
   expect(res.status()).toBeGreaterThanOrEqual(400);
 });
 
-test('member cannot see New Session button', async ({ memberPage, request }) => {
+test('member cannot see New Session button', async ({ memberPage, memberRequest, ownerRequest: request }) => {
   const group = await request.get(`/api/groups/${groupId}`);
   const { invite_code } = await group.json();
 
-  await apiJoinGroup(await memberPage.context().request, invite_code);
+  await apiJoinGroup(memberRequest, invite_code);
 
   await memberPage.goto(`/group/${groupId}`);
   await memberPage.waitForSelector(LOADING, { state: 'attached' });
@@ -82,7 +82,7 @@ test('member cannot see New Session button', async ({ memberPage, request }) => 
   await expect(memberPage.getByRole('button', { name: /New Session/ })).not.toBeVisible();
 });
 
-test('admin can delete a session', async ({ authedPage: page, request }) => {
+test('admin can delete a session', async ({ authedPage: page, ownerRequest: request }) => {
   const session = await apiCreateSession(request, groupId);
 
   await page.goto(`/group/${groupId}/session/${session.id}`);

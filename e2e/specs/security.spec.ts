@@ -6,21 +6,21 @@ const LOADING = '[data-testid="global-loading"][data-loading="false"]';
 
 let groupId = 0;
 
-test.beforeEach(async ({ request }) => {
+test.beforeEach(async ({ ownerRequest: request }) => {
   const group = await apiCreateGroup(request, `PW-Security-${Date.now()}`);
   groupId = group.id;
 });
 
-test.afterEach(async ({ request }) => {
+test.afterEach(async ({ ownerRequest: request }) => {
   if (groupId) {
     try { await apiDeleteGroup(request, groupId); } catch { /* already gone */ }
     groupId = 0;
   }
 });
 
-test('user B cannot GET user A private group — API returns 403', async ({ memberPage }) => {
+test('user B cannot GET user A private group — API returns 403', async ({ memberPage, memberRequest }) => {
   // Owner created the group; member never joined
-  const res = await memberPage.context().request.get(`/api/groups/${groupId}`);
+  const res = await memberRequest.get(`/api/groups/${groupId}`);
   expect(res.status()).toBe(403);
 });
 
@@ -30,20 +30,19 @@ test('non-member group page shows "not a member" error', async ({ memberPage }) 
   await expect(memberPage.getByText(/not a member/i)).toBeVisible();
 });
 
-test('member cannot self-promote to admin via direct API call', async ({ memberPage, request }) => {
+test('member cannot self-promote to admin via direct API call', async ({ memberPage, memberRequest, ownerRequest: request }) => {
   const group = await request.get(`/api/groups/${groupId}`);
   const { invite_code } = await group.json();
 
   // Member joins
-  const memberReq = memberPage.context().request;
-  await apiJoinGroup(memberReq, invite_code);
+  await apiJoinGroup(memberRequest, invite_code);
 
   // Get member's own user id
-  const meRes = await memberReq.get('/api/auth/me');
+  const meRes = await memberRequest.get('/api/auth/me');
   const { id: memberId } = await meRes.json();
 
   // Attempt self-promotion
-  const res = await memberReq.patch(`/api/groups/${groupId}/members/${memberId}`, {
+  const res = await memberRequest.patch(`/api/groups/${groupId}/members/${memberId}`, {
     data: { role: 'admin' },
   });
   expect(res.status()).toBe(403);
