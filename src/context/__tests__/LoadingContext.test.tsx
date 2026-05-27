@@ -1,5 +1,5 @@
 import { render, screen, act } from '@testing-library/react';
-import { LoadingProvider, loadingSetterRef, useLoading } from '../LoadingContext';
+import { LoadingProvider, useLoading } from '../LoadingContext';
 
 jest.mock('../../components/GlobalLoadingBar', () => ({
   GlobalLoadingBar: () => <div data-testid="mock-loading-bar" />,
@@ -35,7 +35,7 @@ describe('LoadingProvider', () => {
       render(<LoadingProvider>content</LoadingProvider>);
 
       // Act
-      act(() => { loadingSetterRef.current?.(true); });
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
 
       // Assert
       expect(screen.getByTestId('global-loading')).toHaveAttribute('data-loading', 'true');
@@ -44,10 +44,10 @@ describe('LoadingProvider', () => {
     test('data-loading returns to "false" when loading clears', () => {
       // Arrange
       render(<LoadingProvider>content</LoadingProvider>);
-      act(() => { loadingSetterRef.current?.(true); });
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
 
       // Act
-      act(() => { loadingSetterRef.current?.(false); });
+      act(() => { window.dispatchEvent(new CustomEvent('loading:end')); });
 
       // Assert
       expect(screen.getByTestId('global-loading')).toHaveAttribute('data-loading', 'false');
@@ -68,7 +68,7 @@ describe('LoadingProvider', () => {
       render(<LoadingProvider indicator={null}>content</LoadingProvider>);
 
       // Act
-      act(() => { loadingSetterRef.current?.(true); });
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
 
       // Assert
       expect(screen.getByTestId('global-loading')).toHaveAttribute('data-loading', 'true');
@@ -111,7 +111,7 @@ describe('LoadingProvider', () => {
       render(<LoadingProvider><LoadingConsumer /></LoadingProvider>);
 
       // Act
-      act(() => { loadingSetterRef.current?.(true); });
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
 
       // Assert
       expect(screen.getByTestId('consumer')).toHaveAttribute('data-loading', 'true');
