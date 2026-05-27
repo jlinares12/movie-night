@@ -45,7 +45,7 @@ function readTestUsers(): { ownerEmail: string; memberEmail: string } {
 }
 
 export const test = base.extend<AuthFixtures>({
-  authedPage: async ({ browser }, use) => {
+  authedPage: async ({ browser }, run) => {
     await refreshTestingToken();
     // Explicitly empty storageState to prevent inheriting the project-level
     // owner.json from playwright.config.ts. If the context loads with an existing
@@ -56,21 +56,21 @@ export const test = base.extend<AuthFixtures>({
     await setupClerkTestingToken({ page });
     await signInUser(page, readTestUsers().ownerEmail);
     try {
-      await use(page);
+      await run(page);
     } finally {
       await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
       await context.close();
     }
   },
 
-  memberPage: async ({ browser }, use) => {
+  memberPage: async ({ browser }, run) => {
     await refreshTestingToken();
     const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page = await context.newPage();
     await setupClerkTestingToken({ page });
     await signInUser(page, readTestUsers().memberEmail);
     try {
-      await use(page);
+      await run(page);
     } finally {
       await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
       await context.close();
