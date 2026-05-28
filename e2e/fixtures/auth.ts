@@ -80,14 +80,14 @@ export const test = base.extend<AuthFixtures>({
   // Expose the authenticated request context from authedPage so tests and
   // hooks can make owner-authenticated API calls without depending on the
   // project-level storageState default.
-  ownerRequest: async ({ authedPage }, use) => {
-    await use(authedPage.context().request);
+  ownerRequest: async ({ authedPage }, run) => {
+    await run(authedPage.context().request);
   },
 
   // Expose the authenticated request context from memberPage so tests can
   // make member-authenticated API calls without memberPage.context().request.
-  memberRequest: async ({ memberPage }, use) => {
-    await use(memberPage.context().request);
+  memberRequest: async ({ memberPage }, run) => {
+    await run(memberPage.context().request);
   },
 });
 
