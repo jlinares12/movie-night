@@ -98,7 +98,7 @@ test('member cannot see Delete Group button', async ({ memberPage, memberRequest
   await expect(memberPage.getByRole('button', { name: /Delete Group/ })).not.toBeVisible();
 });
 
-test('owner promotes member to admin', async ({ authedPage: page, memberPage, memberRequest }) => {
+test('owner promotes member to admin', async ({ authedPage: page, memberRequest }) => {
   await apiJoinGroup(memberRequest, inviteCode);
 
   await page.goto(`/group/${groupId}`);
@@ -111,7 +111,7 @@ test('owner promotes member to admin', async ({ authedPage: page, memberPage, me
   await expect(page.getByText('Admin').first()).toBeVisible();
 });
 
-test('owner demotes admin back to member', async ({ authedPage: page, memberPage, memberRequest }) => {
+test('owner demotes admin back to member', async ({ authedPage: page, memberRequest }) => {
   await apiJoinGroup(memberRequest, inviteCode);
 
   await page.goto(`/group/${groupId}`);

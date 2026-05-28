@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { ApiError } from "../services/apiError";
 import OutlinedButton from "./buttons/OutlinedButton";
 import DangerButton from "./buttons/DangerButton";
 import { removeMember } from "../services/groups";
@@ -36,9 +37,8 @@ export default function GroupLink({ group, onLeave }: Props) {
     try {
       await removeMember(group.id, currentUser.id);
       onLeave();
-    } catch (err: any) {
-      const msg = err?.response?.data?.error ?? 'Could not leave group.';
-      alert(msg);
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not leave group.');
     }
   };
 

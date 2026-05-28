@@ -1,13 +1,14 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate, useParams } from 'react-router-dom';
+import type { ReactNode } from 'react';
 import GroupPage from '../GroupPage';
 import { getGroup, deleteGroup } from '../../services/groups';
-import { useGroupEvents } from '../../hooks/useGroupEvents';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { ApiError } from '../../services/apiError';
 import type { GroupDetail } from '../../types/groups';
 
-jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn(), Link: ({ children }: any) => children }));
+jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn(), Link: ({ children }: { children: ReactNode }) => children }));
 jest.mock('../../services/groups');
 jest.mock('../../hooks/useGroupEvents', () => ({ useGroupEvents: jest.fn() }));
 jest.mock('../../hooks/useCurrentUser');
@@ -73,7 +74,7 @@ describe('GroupPage', () => {
   test('renders the group name after a successful fetch', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail() } as any);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail() } as unknown as Awaited<ReturnType<typeof getGroup>>);
 
     // Act
     render(<GroupPage />);
@@ -86,7 +87,7 @@ describe('GroupPage', () => {
   test('renders the invite panel, member list, and session list', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail() } as any);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail() } as unknown as Awaited<ReturnType<typeof getGroup>>);
 
     // Act
     render(<GroupPage />);
@@ -101,7 +102,7 @@ describe('GroupPage', () => {
   test('shows "Access denied" on a 403 response', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '2' });
-    mockGetGroup.mockRejectedValue({ response: { status: 403 } });
+    mockGetGroup.mockRejectedValue(new ApiError(403, 'Forbidden'));
 
     // Act
     render(<GroupPage />);
@@ -114,7 +115,7 @@ describe('GroupPage', () => {
   test('shows "Group not found" on a 404 response', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '999' });
-    mockGetGroup.mockRejectedValue({ response: { status: 404 } });
+    mockGetGroup.mockRejectedValue(new ApiError(404, 'Not found'));
 
     // Act
     render(<GroupPage />);
@@ -127,7 +128,7 @@ describe('GroupPage', () => {
   test('"Delete Group" button is visible to the owner', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as any);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
 
     // Act
     render(<GroupPage />);
@@ -140,7 +141,7 @@ describe('GroupPage', () => {
   test('"Delete Group" button is NOT visible to admin or member', async () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'admin' }) } as any);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'admin' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
 
     // Act
     render(<GroupPage />);
@@ -155,8 +156,8 @@ describe('GroupPage', () => {
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as any);
-    mockDeleteGroup.mockResolvedValue({} as any);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
+    mockDeleteGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof deleteGroup>>);
 
     render(<GroupPage />);
     await act(async () => { await Promise.resolve(); });

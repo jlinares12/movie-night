@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getGroup, deleteGroup } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import { useGroupEvents } from "../hooks/useGroupEvents";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import InviteCodePanel from "../components/InviteCodePanel";
 import MemberList from "../components/MemberList";
 import SessionList from "../components/SessionList";
 import DangerButton from "../components/buttons/DangerButton";
-import type { GroupDetail, GroupMember, Session, SessionStatus } from "../types/groups";
+import type { GroupDetail, GroupMember, Session, SessionStatus, UserRole } from "../types/groups";
 
 export default function GroupPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,10 +27,13 @@ export default function GroupPage() {
     getGroup(groupId)
       .then((res) => { setGroup(res.data); setLoading(false); })
       .catch((err) => {
-        const status = err?.response?.status;
-        if (status === 403) setError('You are not a member of this group.');
-        else if (status === 404) setError('Group not found.');
-        else setError('Failed to load group.');
+        if (err instanceof ApiError) {
+          if (err.status === 403) setError('You are not a member of this group.');
+          else if (err.status === 404) setError('Group not found.');
+          else setError(err.message);
+        } else {
+          setError('Failed to load group.');
+        }
         setLoading(false);
       });
   }, [groupId]);
@@ -41,7 +45,7 @@ export default function GroupPage() {
         id: Date.now(),
         user_id: data.user_id,
         group_id: group.id,
-        role: data.role as any,
+        role: data.role as UserRole,
         joined_at: data.joined_at,
         username: data.username,
       };
@@ -53,7 +57,7 @@ export default function GroupPage() {
     onMemberRoleChanged: (data) => {
       setGroup((g) => g ? {
         ...g,
-        members: g.members.map((m) => m.user_id === data.user_id ? { ...m, role: data.new_role as any } : m),
+        members: g.members.map((m) => m.user_id === data.user_id ? { ...m, role: data.new_role as UserRole } : m),
       } : g);
     },
     onSessionCreated: (data) => {
@@ -111,8 +115,8 @@ export default function GroupPage() {
     try {
       await deleteGroup(group.id);
       navigate('/');
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not delete group.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not delete group.');
     }
   };
 

@@ -28,7 +28,7 @@ describe('GroupList', () => {
 
   test('shows "No groups" when the API returns an empty list', async () => {
     // Arrange
-    mockListGroups.mockResolvedValue({ data: [] } as any);
+    mockListGroups.mockResolvedValue({ data: [] } as unknown as Awaited<ReturnType<typeof listGroups>>);
 
     // Act
     render(<GroupList />);
@@ -42,7 +42,7 @@ describe('GroupList', () => {
     // Arrange
     mockListGroups.mockResolvedValue({
       data: [makeGroup(1, 'Action Fans'), makeGroup(2, 'Horror Club')],
-    } as any);
+    } as unknown as Awaited<ReturnType<typeof listGroups>>);
 
     // Act
     render(<GroupList />);
@@ -55,7 +55,7 @@ describe('GroupList', () => {
 
   test('each group link points to the correct group URL', async () => {
     // Arrange
-    mockListGroups.mockResolvedValue({ data: [makeGroup(5, 'Cine Club')] } as any);
+    mockListGroups.mockResolvedValue({ data: [makeGroup(5, 'Cine Club')] } as unknown as Awaited<ReturnType<typeof listGroups>>);
 
     // Act
     render(<GroupList />);

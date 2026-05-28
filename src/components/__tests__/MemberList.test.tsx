@@ -21,7 +21,6 @@ const makeMember = (overrides: Partial<GroupMember>): GroupMember => ({
 const OWNER   = makeMember({ id: 1, user_id: 1, role: 'owner',  username: 'owner_user' });
 const ADMIN   = makeMember({ id: 2, user_id: 2, role: 'admin',  username: 'admin_user' });
 const MEMBER  = makeMember({ id: 3, user_id: 3, role: 'member', username: 'plain_user' });
-const CURRENT = { id: 99, user_id: 'clerk', username: 'me', created_at: '' };
 
 describe('MemberList', () => {
   afterEach(() => jest.clearAllMocks());
@@ -147,7 +146,7 @@ describe('MemberList', () => {
     // Arrange
     const user = userEvent.setup();
     const onMembersChanged = jest.fn();
-    mockUpdateRole.mockResolvedValue({} as any);
+    mockUpdateRole.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof updateMemberRole>>);
     render(
       <MemberList
         groupId={1}
@@ -172,7 +171,7 @@ describe('MemberList', () => {
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
     const onMembersChanged = jest.fn();
-    mockRemove.mockResolvedValue({} as any);
+    mockRemove.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof removeMember>>);
     render(
       <MemberList
         groupId={1}

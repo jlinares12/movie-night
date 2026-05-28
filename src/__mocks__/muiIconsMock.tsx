@@ -1,4 +1,4 @@
-const MockIcon = (_props: any) => <span data-testid="mock-icon" />;
+const MockIcon = () => <span data-testid="mock-icon" />;
 
 export const Movie = MockIcon;
 export const Notifications = MockIcon;

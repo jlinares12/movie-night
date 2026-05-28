@@ -42,7 +42,7 @@ describe('MovieGroups', () => {
   test('renders a group card for each group returned by the API', async () => {
     // Arrange
     const groups = [makeGroup({ id: 1, name: 'Action Fans' }), makeGroup({ id: 2, name: 'Horror Club' })];
-    mockListGroups.mockResolvedValue({ data: groups } as any);
+    mockListGroups.mockResolvedValue({ data: groups } as unknown as Awaited<ReturnType<typeof listGroups>>);
 
     // Act
     render(<MovieGroups />);
@@ -56,7 +56,7 @@ describe('MovieGroups', () => {
 
   test('shows an empty-state message when the API returns no groups', async () => {
     // Arrange
-    mockListGroups.mockResolvedValue({ data: [] } as any);
+    mockListGroups.mockResolvedValue({ data: [] } as unknown as Awaited<ReturnType<typeof listGroups>>);
 
     // Act
     render(<MovieGroups />);
@@ -82,7 +82,7 @@ describe('MovieGroups', () => {
 
   test('exposes a refresh function via refreshRef', async () => {
     // Arrange
-    mockListGroups.mockResolvedValue({ data: [makeGroup()] } as any);
+    mockListGroups.mockResolvedValue({ data: [makeGroup()] } as unknown as Awaited<ReturnType<typeof listGroups>>);
     const refreshRef = { current: null as (() => void) | null };
 
     // Act

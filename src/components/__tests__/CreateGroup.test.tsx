@@ -2,6 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CreateGroup from '../CreateGroup';
 import { createGroup } from '../../services/groups';
+import { ApiError } from '../../services/apiError';
 
 jest.mock('../../services/groups');
 const mockCreateGroup = createGroup as jest.MockedFunction<typeof createGroup>;
@@ -21,7 +22,7 @@ describe('CreateGroup', () => {
   test('calls createGroup with the trimmed name on button click', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockCreateGroup.mockResolvedValue({} as any);
+    mockCreateGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof createGroup>>);
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
@@ -36,7 +37,7 @@ describe('CreateGroup', () => {
   test('calls createGroup when Enter is pressed in the input', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockCreateGroup.mockResolvedValue({} as any);
+    mockCreateGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof createGroup>>);
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
@@ -51,7 +52,7 @@ describe('CreateGroup', () => {
     // Arrange
     const user = userEvent.setup();
     const onCreated = jest.fn();
-    mockCreateGroup.mockResolvedValue({} as any);
+    mockCreateGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof createGroup>>);
     render(<CreateGroup onCreated={onCreated} />);
     const input = screen.getByPlaceholderText(/group name/i);
 
@@ -68,7 +69,7 @@ describe('CreateGroup', () => {
   test('shows an error message when the API returns 400', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockCreateGroup.mockRejectedValue({ response: { status: 400, data: { error: 'name is required' } } });
+    mockCreateGroup.mockRejectedValue(new ApiError(400, 'name is required'));
     render(<CreateGroup onCreated={jest.fn()} />);
 
     // Act
