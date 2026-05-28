@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { ApiError } from '../services/apiError';
 
 const api = axios.create({ withCredentials: true });
 
@@ -11,7 +12,12 @@ api.interceptors.response.use(
         ) {
             window.location.href = '/login';
         }
-        return Promise.reject(err);
+        return Promise.reject(
+            new ApiError(
+                err.response?.status ?? 0,
+                err.response?.data?.error ?? 'An unexpected error occurred.'
+            )
+        );
     }
 );
 
