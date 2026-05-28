@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createGroup } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import FilledButton from "./buttons/FilledButton";
 
 interface Props {
@@ -23,8 +24,8 @@ export default function CreateGroup({ onCreated }: Props) {
       await createGroup(trimmed);
       setName('');
       onCreated();
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Could not create group.');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not create group.');
     } finally {
       setLoading(false);
     }
