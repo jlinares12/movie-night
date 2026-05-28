@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getSession, updateSession, deleteSession, getGroup } from "../services/groups";
+import { getSession, updateSession, deleteSession, getGroup, listProposals, createProposal, deleteProposal } from "../services/groups";
 import { ApiError } from "../services/apiError";
 import { useGroupEvents } from "../hooks/useGroupEvents";
-import type { Session, UserRole, SessionStatus, GroupDetail } from "../types/groups";
+import { useCurrentUser } from "../hooks/useCurrentUser";
+import MovieSearchPanel from "../components/MovieSearchPanel";
+import NominationCard from "../components/NominationCard";
+import type { Session, UserRole, SessionStatus, GroupDetail, MovieProposal } from "../types/groups";
+import type { MovieSearchResult } from "../types/movies";
 
 const NEXT_STATUS: Record<SessionStatus, SessionStatus | null> = {
   open: 'voting',
@@ -30,6 +34,7 @@ interface PotluckItem { name: string; item: string; }
 export default function SessionPage() {
   const { id, sessionId } = useParams<{ id: string; sessionId: string }>();
   const navigate = useNavigate();
+  const currentUser = useCurrentUser();
 
   const [session,   setSession]   = useState<Session | null>(null);
   const [group,     setGroup]     = useState<GroupDetail | null>(null);
@@ -37,6 +42,10 @@ export default function SessionPage() {
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState('');
   const [advancing, setAdvancing] = useState(false);
+
+  const [proposals,    setProposals]    = useState<MovieProposal[]>([]);
+  const [showSearch,   setShowSearch]   = useState(false);
+  const [nominatingId, setNominatingId] = useState<number | null>(null);
 
   const [potluckItems, setPotluckItems] = useState<PotluckItem[]>([]);
   const [potluckInput, setPotluckInput] = useState('');
@@ -46,11 +55,12 @@ export default function SessionPage() {
 
   useEffect(() => {
     if (!groupId || !sesId) return;
-    Promise.all([getSession(groupId, sesId), getGroup(groupId)])
-      .then(([sesRes, grpRes]) => {
+    Promise.all([getSession(groupId, sesId), getGroup(groupId), listProposals(groupId, sesId)])
+      .then(([sesRes, grpRes, propRes]) => {
         setSession(sesRes.data);
         setGroup(grpRes.data);
         setYourRole(grpRes.data.your_role);
+        setProposals(propRes.data);
         setLoading(false);
       })
       .catch((err) => {
@@ -95,6 +105,36 @@ export default function SessionPage() {
       navigate(`/group/${groupId}`);
     } catch (err) {
       alert(err instanceof ApiError ? err.message : 'Could not delete session.');
+    }
+  };
+
+  const handleNominate = async (movie: MovieSearchResult) => {
+    if (!groupId || !sesId) return;
+    setNominatingId(movie.tmdb_id);
+    try {
+      const res = await createProposal(groupId, sesId, {
+        tmdb_id: movie.tmdb_id,
+        title: movie.title,
+        poster_url: movie.poster_url ?? undefined,
+        overview: movie.overview ?? undefined,
+        runtime_minutes: movie.runtime_minutes ?? undefined,
+      });
+      setProposals((prev) => [...prev, res.data]);
+      setShowSearch(false);
+    } catch (err: any) {
+      alert(err?.response?.data?.error ?? 'Could not nominate movie.');
+    } finally {
+      setNominatingId(null);
+    }
+  };
+
+  const handleDeleteProposal = async (proposalId: number) => {
+    if (!groupId || !sesId) return;
+    try {
+      await deleteProposal(groupId, sesId, proposalId);
+      setProposals((prev) => prev.filter((p) => p.id !== proposalId));
+    } catch (err: any) {
+      alert(err?.response?.data?.error ?? 'Could not remove nomination.');
     }
   };
 
@@ -216,7 +256,34 @@ export default function SessionPage() {
             </p>
           </div>
 
-          {session.status === 'open' && (
+          {/* Add Nomination button */}
+          {session.status === 'open' && !showSearch && (
+            <button
+              onClick={() => setShowSearch(true)}
+              className="flex items-center gap-xs bg-primary text-on-primary font-bold px-md py-sm rounded-xl text-label-md hover:brightness-110 active:scale-95 transition-all neon-glow"
+            >
+              <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>add</span>
+              Add Nomination
+            </button>
+          )}
+
+          {/* Movie search panel */}
+          {session.status === 'open' && showSearch && (
+            <MovieSearchPanel onNominate={handleNominate} nominatingId={nominatingId} />
+          )}
+
+          {/* Nomination cards */}
+          {proposals.map((p) => (
+            <NominationCard
+              key={p.id}
+              proposal={p}
+              canDelete={p.proposed_by_id === currentUser?.id || canManage}
+              onDelete={handleDeleteProposal}
+            />
+          ))}
+
+          {/* Empty state: open with no nominations */}
+          {session.status === 'open' && proposals.length === 0 && !showSearch && (
             <div className="border-2 border-dashed border-outline-variant/40 rounded-[24px] p-lg flex flex-col items-center justify-center gap-sm text-center min-h-[200px]">
               <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '48px' }}>movie_filter</span>
               <p className="text-headline-sm text-on-surface-variant">No nominations yet</p>
