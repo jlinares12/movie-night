@@ -1,5 +1,5 @@
 import api from '../utils/api';
-import type { GroupSummary, GroupDetail, Session } from '../types/groups';
+import type { GroupSummary, GroupDetail, Session, MovieProposal } from '../types/groups';
 
 export const listGroups = () =>
   api.get<GroupSummary[]>('/api/groups');
@@ -45,3 +45,15 @@ export const updateSession = (
 
 export const deleteSession = (groupId: number, sessionId: number) =>
   api.delete(`/api/groups/${groupId}/sessions/${sessionId}`);
+
+export const listProposals = (groupId: number, sessionId: number) =>
+  api.get<MovieProposal[]>(`/api/groups/${groupId}/sessions/${sessionId}/proposals`);
+
+export const createProposal = (
+  groupId: number,
+  sessionId: number,
+  body: { tmdb_id?: number; title: string; poster_url?: string; overview?: string; runtime_minutes?: number },
+) => api.post<MovieProposal>(`/api/groups/${groupId}/sessions/${sessionId}/proposals`, body);
+
+export const deleteProposal = (groupId: number, sessionId: number, proposalId: number) =>
+  api.delete(`/api/groups/${groupId}/sessions/${sessionId}/proposals/${proposalId}`);
