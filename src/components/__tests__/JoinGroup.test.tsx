@@ -2,6 +2,7 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JoinGroup from '../JoinGroup';
 import { joinGroup } from '../../services/groups';
+import { ApiError } from '../../services/apiError';
 
 jest.mock('../../services/groups');
 const mockJoinGroup = joinGroup as jest.MockedFunction<typeof joinGroup>;
@@ -21,7 +22,7 @@ describe('JoinGroup', () => {
   test('calls joinGroup with the trimmed invite code on button click', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockJoinGroup.mockResolvedValue({} as any);
+    mockJoinGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof joinGroup>>);
     render(<JoinGroup onJoined={jest.fn()} />);
 
     // Act
@@ -37,7 +38,7 @@ describe('JoinGroup', () => {
     // Arrange
     const user = userEvent.setup();
     const onJoined = jest.fn();
-    mockJoinGroup.mockResolvedValue({} as any);
+    mockJoinGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof joinGroup>>);
     render(<JoinGroup onJoined={onJoined} />);
     const input = screen.getByPlaceholderText('xxxxxxxx');
 
@@ -54,7 +55,7 @@ describe('JoinGroup', () => {
   test('shows "Invalid invite code" on a 404 response', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockJoinGroup.mockRejectedValue({ response: { status: 404 } });
+    mockJoinGroup.mockRejectedValue(new ApiError(404, 'Not found'));
     render(<JoinGroup onJoined={jest.fn()} />);
 
     // Act
@@ -69,7 +70,7 @@ describe('JoinGroup', () => {
   test('shows "already a member" on a 409 response', async () => {
     // Arrange
     const user = userEvent.setup();
-    mockJoinGroup.mockRejectedValue({ response: { status: 409 } });
+    mockJoinGroup.mockRejectedValue(new ApiError(409, 'Conflict'));
     render(<JoinGroup onJoined={jest.fn()} />);
 
     // Act
@@ -176,7 +177,7 @@ describe('JoinGroup', () => {
     test('submits a realistic invite code and calls joinGroup with the exact value', async () => {
       // Arrange
       const user = userEvent.setup();
-      mockJoinGroup.mockResolvedValue({} as any);
+      mockJoinGroup.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof joinGroup>>);
       render(<JoinGroup onJoined={jest.fn()} />);
 
       // Act

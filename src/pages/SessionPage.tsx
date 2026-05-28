@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSession, updateSession, deleteSession, getGroup } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import { useGroupEvents } from "../hooks/useGroupEvents";
 import type { Session, UserRole, SessionStatus, GroupDetail } from "../types/groups";
 
@@ -53,10 +54,13 @@ export default function SessionPage() {
         setLoading(false);
       })
       .catch((err) => {
-        const status = err?.response?.status;
-        if (status === 403)      setError('Access denied.');
-        else if (status === 404) setError('Session not found.');
-        else                     setError('Failed to load session.');
+        if (err instanceof ApiError) {
+          if (err.status === 403)      setError('Access denied.');
+          else if (err.status === 404) setError('Session not found.');
+          else                         setError(err.message);
+        } else {
+          setError('Failed to load session.');
+        }
         setLoading(false);
       });
   }, [groupId, sesId]);
@@ -76,8 +80,8 @@ export default function SessionPage() {
     try {
       const res = await updateSession(groupId, sesId, { status: nextStatus });
       setSession(res.data);
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not advance status.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not advance status.');
     } finally {
       setAdvancing(false);
     }
@@ -89,8 +93,8 @@ export default function SessionPage() {
     try {
       await deleteSession(groupId, sesId);
       navigate(`/group/${groupId}`);
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not delete session.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not delete session.');
     }
   };
 
