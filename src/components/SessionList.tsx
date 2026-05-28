@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createSession } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import FilledButton from "./buttons/FilledButton";
 import OutlinedButton from "./buttons/OutlinedButton";
 import type { Session, SessionStatus, UserRole } from "../types/groups";
@@ -43,8 +44,8 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
       onSessionCreated(res.data);
       setShowForm(false);
       setScheduledFor('');
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Could not create session.');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not create session.');
     } finally {
       setLoading(false);
     }

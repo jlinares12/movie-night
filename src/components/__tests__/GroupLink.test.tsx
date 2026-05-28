@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GroupLink from '../GroupLink';
 import { removeMember } from '../../services/groups';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import { ApiError } from '../../services/apiError';
 import type { GroupSummary } from '../../types/groups';
 
 jest.mock('react-router-dom', () => ({ useNavigate: jest.fn() }));
@@ -84,7 +85,7 @@ describe('GroupLink', () => {
     // Arrange
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
-    mockRemoveMember.mockResolvedValue({} as any);
+    mockRemoveMember.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof removeMember>>);
     const onLeave = jest.fn();
     render(<GroupLink group={defaultGroup} onLeave={onLeave} />);
 
@@ -117,7 +118,7 @@ describe('GroupLink', () => {
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
     global.alert = jest.fn();
-    mockRemoveMember.mockRejectedValue({ response: { data: { error: 'owner cannot leave as sole member' } } });
+    mockRemoveMember.mockRejectedValue(new ApiError(422, 'owner cannot leave as sole member'));
     render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
     // Act

@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
+import type { Session } from '../types/groups';
 
 export interface SSEHandlers {
   onMemberJoined?: (data: { user_id: number; username: string; role: string; joined_at: string }) => void;
   onMemberLeft?: (data: { user_id: number }) => void;
   onMemberRoleChanged?: (data: { user_id: number; new_role: string }) => void;
-  onSessionCreated?: (data: any) => void;
+  onSessionCreated?: (data: Session) => void;
   onSessionUpdated?: (data: { session_id: number; status: string; scheduled_for: string | null }) => void;
   onSessionDeleted?: (data: { session_id: number }) => void;
   onInviteCodeChanged?: (data: { invite_code: string }) => void;
@@ -16,7 +17,7 @@ export function useGroupEvents(groupId: number, handlers: SSEHandlers) {
   useEffect(() => {
     const es = new EventSource(`/api/groups/${groupId}/events`, { withCredentials: true });
 
-    const register = (event: string, cb?: (...args: any[]) => void) => {
+    const register = <T>(event: string, cb?: (data: T) => void) => {
       if (!cb) return;
       es.addEventListener(event, (e: MessageEvent) => {
         try {
@@ -40,5 +41,5 @@ export function useGroupEvents(groupId: number, handlers: SSEHandlers) {
     }
 
     return () => es.close();
-  }, [groupId]);
+  }, [groupId, handlers]);
 }

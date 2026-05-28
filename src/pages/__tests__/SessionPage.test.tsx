@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { useNavigate, useParams } from 'react-router-dom';
 import SessionPage from '../SessionPage';
 import { getSession, getGroup, updateSession, deleteSession } from '../../services/groups';
-import { useGroupEvents } from '../../hooks/useGroupEvents';
+import { ApiError } from '../../services/apiError';
 import type { Session, GroupDetail } from '../../types/groups';
 
 jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn() }));
@@ -34,8 +34,8 @@ const makeGroupDetail = (overrides: Partial<GroupDetail> = {}): GroupDetail => (
 });
 
 const setup = async (session: Session, group: GroupDetail) => {
-  mockGetSession.mockResolvedValue({ data: session } as any);
-  mockGetGroup.mockResolvedValue({ data: group } as any);
+  mockGetSession.mockResolvedValue({ data: session } as unknown as Awaited<ReturnType<typeof getSession>>);
+  mockGetGroup.mockResolvedValue({ data: group } as unknown as Awaited<ReturnType<typeof getGroup>>);
   render(<SessionPage />);
   await act(async () => { await Promise.resolve(); });
 };
@@ -60,8 +60,8 @@ describe('SessionPage', () => {
   });
 
   test('shows "Access denied" on a 403 response', async () => {
-    mockGetSession.mockRejectedValue({ response: { status: 403 } });
-    mockGetGroup.mockRejectedValue({ response: { status: 403 } });
+    mockGetSession.mockRejectedValue(new ApiError(403, 'Forbidden'));
+    mockGetGroup.mockRejectedValue(new ApiError(403, 'Forbidden'));
 
     render(<SessionPage />);
     await act(async () => { await Promise.resolve(); });
@@ -70,8 +70,8 @@ describe('SessionPage', () => {
   });
 
   test('shows "Session not found" on a 404 response', async () => {
-    mockGetSession.mockRejectedValue({ response: { status: 404 } });
-    mockGetGroup.mockRejectedValue({ response: { status: 404 } });
+    mockGetSession.mockRejectedValue(new ApiError(404, 'Not found'));
+    mockGetGroup.mockRejectedValue(new ApiError(404, 'Not found'));
 
     render(<SessionPage />);
     await act(async () => { await Promise.resolve(); });
@@ -243,9 +243,9 @@ describe('SessionPage', () => {
   test('clicking the advance button calls updateSession with the next status', async () => {
     const user = userEvent.setup();
     const updatedSession = makeSession({ status: 'voting' });
-    mockGetSession.mockResolvedValue({ data: makeSession({ status: 'open' }) } as any);
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as any);
-    mockUpdateSession.mockResolvedValue({ data: updatedSession } as any);
+    mockGetSession.mockResolvedValue({ data: makeSession({ status: 'open' }) } as unknown as Awaited<ReturnType<typeof getSession>>);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
+    mockUpdateSession.mockResolvedValue({ data: updatedSession } as unknown as Awaited<ReturnType<typeof updateSession>>);
 
     render(<SessionPage />);
     await act(async () => { await Promise.resolve(); });
@@ -286,9 +286,9 @@ describe('SessionPage', () => {
   test('Delete Session calls deleteSession and navigates back to the group', async () => {
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
-    mockGetSession.mockResolvedValue({ data: makeSession() } as any);
-    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as any);
-    mockDeleteSession.mockResolvedValue({} as any);
+    mockGetSession.mockResolvedValue({ data: makeSession() } as unknown as Awaited<ReturnType<typeof getSession>>);
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ your_role: 'owner' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
+    mockDeleteSession.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof deleteSession>>);
 
     render(<SessionPage />);
     await act(async () => { await Promise.resolve(); });

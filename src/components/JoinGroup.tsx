@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { joinGroup } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import FilledButton from "./buttons/FilledButton";
 
 interface Props {
@@ -23,11 +24,14 @@ export default function JoinGroup({ onJoined }: Props) {
       await joinGroup(trimmed);
       setCode('');
       onJoined();
-    } catch (err: any) {
-      const status = err?.response?.status;
-      if (status === 404) setError('Invalid invite code.');
-      else if (status === 409) setError("You're already a member of this group.");
-      else setError(err?.response?.data?.error ?? 'Could not join group.');
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 404) setError('Invalid invite code.');
+        else if (err.status === 409) setError("You're already a member of this group.");
+        else setError(err.message);
+      } else {
+        setError('Could not join group.');
+      }
     } finally {
       setLoading(false);
     }

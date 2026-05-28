@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { removeMember, updateMemberRole } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import IconButton from "./buttons/IconButton";
 import type { GroupMember, UserRole } from "../types/groups";
 
@@ -21,6 +22,7 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
   const [error, setError] = useState('');
 
   const handleRemove = async (target: GroupMember) => {
+    if (!canRemove(target)) return;
     const isSelf = target.user_id === currentUserId;
     const label = isSelf ? 'Leave group?' : `Remove ${target.username ?? 'this member'}?`;
     if (!confirm(label)) return;
@@ -28,8 +30,8 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
     try {
       await removeMember(groupId, target.user_id);
       onMembersChanged(members.filter((m) => m.user_id !== target.user_id));
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Action failed.');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Action failed.');
     }
   };
 
@@ -38,8 +40,8 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
     try {
       await updateMemberRole(groupId, target.user_id, newRole);
       onMembersChanged(members.map((m) => m.user_id === target.user_id ? { ...m, role: newRole } : m));
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Could not update role.');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not update role.');
     }
   };
 

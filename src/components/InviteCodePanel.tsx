@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { regenerateInvite } from "../services/groups";
+import { ApiError } from "../services/apiError";
 import OutlinedButton from "./buttons/OutlinedButton";
 import IconButton from "./buttons/IconButton";
 import type { UserRole } from "../types/groups";
@@ -35,8 +36,8 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
     try {
       const res = await regenerateInvite(groupId);
       onCodeChanged(res.data.invite_code);
-    } catch (err: any) {
-      setError(err?.response?.data?.error ?? 'Could not regenerate code.');
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : 'Could not regenerate code.');
     } finally {
       setLoading(false);
     }

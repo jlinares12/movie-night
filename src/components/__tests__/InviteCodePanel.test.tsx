@@ -90,7 +90,7 @@ describe('InviteCodePanel', () => {
     const user = userEvent.setup();
     global.confirm = jest.fn().mockReturnValue(true);
     const onCodeChanged = jest.fn();
-    mockRegenerate.mockResolvedValue({ data: { invite_code: 'newCode' } } as any);
+    mockRegenerate.mockResolvedValue({ data: { invite_code: 'newCode' } } as unknown as Awaited<ReturnType<typeof regenerateInvite>>);
     render(
       <InviteCodePanel groupId={3} invite_code="aB3xYz" your_role="owner" onCodeChanged={onCodeChanged} />
     );

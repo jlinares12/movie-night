@@ -124,7 +124,7 @@ describe('SessionList', () => {
     const user = userEvent.setup();
     const newSession = makeSession({ id: 99 });
     const onSessionCreated = jest.fn();
-    mockCreateSession.mockResolvedValue({ data: newSession } as any);
+    mockCreateSession.mockResolvedValue({ data: newSession } as unknown as Awaited<ReturnType<typeof createSession>>);
     render(
       <SessionList groupId={5} sessions={[]} your_role="owner" onSessionCreated={onSessionCreated} />
     );

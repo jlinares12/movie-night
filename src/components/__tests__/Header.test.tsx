@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useClerk, useUser } from '@clerk/clerk-react';
+import type { ReactNode } from 'react';
 import Header from '../Header';
 
 jest.mock('@clerk/clerk-react', () => ({
@@ -9,7 +10,7 @@ jest.mock('@clerk/clerk-react', () => ({
 }));
 
 jest.mock('react-router-dom', () => ({
-  Link: ({ children }: { children: any }) => <div>{children}</div>,
+  Link: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 jest.mock('../../utils/api', () => ({
