@@ -23,7 +23,7 @@ export function useBackendAuth() {
                 navigate('/login');
             }
         })();
-    }, [isSignedIn]);
+    }, [isSignedIn, getToken, navigate]);
 
     return { sessionReady };
 }
