@@ -2,19 +2,44 @@ import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate, useParams } from 'react-router-dom';
 import SessionPage from '../SessionPage';
-import { getSession, getGroup, updateSession, deleteSession } from '../../services/groups';
+import { getSession, getGroup, updateSession, deleteSession, listProposals, createProposal, deleteProposal } from '../../services/groups';
 import { ApiError } from '../../services/apiError';
-import type { Session, GroupDetail } from '../../types/groups';
+import type { Session, GroupDetail, MovieProposal } from '../../types/groups';
+import { useCurrentUser } from '../../hooks/useCurrentUser';
 
 jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn() }));
 jest.mock('../../services/groups');
 jest.mock('../../hooks/useGroupEvents', () => ({ useGroupEvents: jest.fn() }));
+jest.mock('../../hooks/useCurrentUser', () => ({ useCurrentUser: jest.fn() }));
+jest.mock('../../components/MovieSearchPanel', () => ({
+  __esModule: true,
+  default: ({ onNominate }: { onNominate: (movie: any) => Promise<void>; nominatingId: number | null }) => (
+    <button
+      onClick={() => onNominate({ tmdb_id: 123, title: 'Inception', poster_url: null, overview: null, runtime_minutes: null })}
+    >
+      Test Nominate
+    </button>
+  ),
+}));
+jest.mock('../../components/NominationCard', () => ({
+  __esModule: true,
+  default: ({ proposal, canDelete, onDelete }: { proposal: any; canDelete: boolean; onDelete: (id: number) => void }) => (
+    <div data-testid="nomination-card">
+      <span>{proposal.title}</span>
+      {canDelete && <button onClick={() => onDelete(proposal.id)}>Remove nomination</button>}
+    </div>
+  ),
+}));
 
 const mockNavigate = jest.fn();
 const mockGetSession = getSession as jest.MockedFunction<typeof getSession>;
 const mockGetGroup = getGroup as jest.MockedFunction<typeof getGroup>;
 const mockUpdateSession = updateSession as jest.MockedFunction<typeof updateSession>;
 const mockDeleteSession = deleteSession as jest.MockedFunction<typeof deleteSession>;
+const mockListProposals = listProposals as jest.MockedFunction<typeof listProposals>;
+const mockCreateProposal = createProposal as jest.MockedFunction<typeof createProposal>;
+const mockDeleteProposal = deleteProposal as jest.MockedFunction<typeof deleteProposal>;
+const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>;
 
 const makeSession = (overrides: Partial<Session> = {}): Session => ({
   id: 10,
@@ -33,9 +58,24 @@ const makeGroupDetail = (overrides: Partial<GroupDetail> = {}): GroupDetail => (
   ...overrides,
 });
 
-const setup = async (session: Session, group: GroupDetail) => {
+const makeProposal = (overrides: Partial<MovieProposal> = {}): MovieProposal => ({
+  id: 1,
+  session_id: 10,
+  proposed_by_id: 99,
+  proposed_by_username: 'alice',
+  title: 'Inception',
+  tmdb_id: 123,
+  poster_url: null,
+  overview: null,
+  runtime_minutes: null,
+  proposed_at: '2024-03-01T00:00:00Z',
+  ...overrides,
+});
+
+const setup = async (session: Session, group: GroupDetail, proposals: MovieProposal[] = []) => {
   mockGetSession.mockResolvedValue({ data: session } as unknown as Awaited<ReturnType<typeof getSession>>);
   mockGetGroup.mockResolvedValue({ data: group } as unknown as Awaited<ReturnType<typeof getGroup>>);
+  mockListProposals.mockResolvedValue({ data: proposals } as unknown as Awaited<ReturnType<typeof listProposals>>);
   render(<SessionPage />);
   await act(async () => { await Promise.resolve(); });
 };
@@ -45,6 +85,7 @@ describe('SessionPage', () => {
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
     (useParams as jest.Mock).mockReturnValue({ id: '1', sessionId: '10' });
     mockNavigate.mockClear();
+    mockUseCurrentUser.mockReturnValue({ id: 42, user_id: 'clerk_42', username: 'me', created_at: '' });
   });
   afterEach(() => jest.clearAllMocks());
 
@@ -403,5 +444,156 @@ describe('SessionPage', () => {
     expect(screen.getByText('Popcorn')).toBeInTheDocument();
     expect(screen.getByText('Soda')).toBeInTheDocument();
     expect(screen.getByText('Nachos')).toBeInTheDocument();
+  });
+
+  // ── Nominations ───────────────────────────────────────────────────────────
+
+  test('listProposals_isCalledOnMount_withCorrectGroupAndSessionIds', async () => {
+    // Arrange / Act
+    await setup(makeSession(), makeGroupDetail());
+
+    // Assert
+    expect(mockListProposals).toHaveBeenCalledWith(1, 10);
+  });
+
+  test('renders_aNominationCard_forEachProposalReturnedByListProposals', async () => {
+    // Arrange
+    const proposals = [makeProposal({ id: 1, title: 'Inception' }), makeProposal({ id: 2, title: 'Interstellar' })];
+
+    // Act
+    await setup(makeSession({ status: 'open' }), makeGroupDetail(), proposals);
+
+    // Assert
+    expect(screen.getAllByTestId('nomination-card')).toHaveLength(2);
+    expect(screen.getByText('Inception')).toBeInTheDocument();
+    expect(screen.getByText('Interstellar')).toBeInTheDocument();
+  });
+
+  test('"Add Nomination" button is visible when session status is open', async () => {
+    // Arrange / Act
+    await setup(makeSession({ status: 'open' }), makeGroupDetail());
+
+    // Assert
+    expect(screen.getByRole('button', { name: /add nomination/i })).toBeInTheDocument();
+  });
+
+  test('"Add Nomination" button is NOT shown when session status is voting', async () => {
+    // Arrange / Act
+    await setup(makeSession({ status: 'voting' }), makeGroupDetail());
+
+    // Assert
+    expect(screen.queryByRole('button', { name: /add nomination/i })).not.toBeInTheDocument();
+  });
+
+  test('"Add Nomination" button is NOT shown when session status is decided', async () => {
+    // Arrange / Act
+    await setup(makeSession({ status: 'decided' }), makeGroupDetail());
+
+    // Assert
+    expect(screen.queryByRole('button', { name: /add nomination/i })).not.toBeInTheDocument();
+  });
+
+  test('clicking "Add Nomination" reveals the MovieSearchPanel', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    await setup(makeSession({ status: 'open' }), makeGroupDetail());
+
+    // Act
+    await user.click(screen.getByRole('button', { name: /add nomination/i }));
+
+    // Assert — the mock MovieSearchPanel renders a "Test Nominate" button
+    expect(screen.getByRole('button', { name: /test nominate/i })).toBeInTheDocument();
+  });
+
+  test('nominating a movie calls createProposal and adds a card to the list', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const proposal = makeProposal({ title: 'Inception' });
+    mockCreateProposal.mockResolvedValue({ data: proposal } as unknown as Awaited<ReturnType<typeof createProposal>>);
+    await setup(makeSession({ status: 'open' }), makeGroupDetail());
+    await user.click(screen.getByRole('button', { name: /add nomination/i }));
+
+    // Act — mock panel's "Test Nominate" button triggers handleNominate
+    await user.click(screen.getByRole('button', { name: /test nominate/i }));
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert
+    expect(mockCreateProposal).toHaveBeenCalledWith(1, 10, expect.objectContaining({ tmdb_id: 123, title: 'Inception' }));
+    expect(screen.getAllByTestId('nomination-card')).toHaveLength(1);
+  });
+
+  test('shows an alert when createProposal rejects', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    global.alert = jest.fn();
+    mockCreateProposal.mockRejectedValue({ response: { data: { error: 'Already nominated.' } } });
+    await setup(makeSession({ status: 'open' }), makeGroupDetail());
+    await user.click(screen.getByRole('button', { name: /add nomination/i }));
+
+    // Act
+    await user.click(screen.getByRole('button', { name: /test nominate/i }));
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert
+    expect(global.alert).toHaveBeenCalledWith('Already nominated.');
+  });
+
+  test('deleting a proposal calls deleteProposal and removes the card', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    const proposal = makeProposal({ id: 5, proposed_by_id: 42 });
+    mockDeleteProposal.mockResolvedValue({} as unknown as Awaited<ReturnType<typeof deleteProposal>>);
+    await setup(makeSession({ status: 'open' }), makeGroupDetail(), [proposal]);
+
+    // Act
+    await user.click(screen.getByRole('button', { name: /remove nomination/i }));
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert
+    expect(mockDeleteProposal).toHaveBeenCalledWith(1, 10, 5);
+    expect(screen.queryByTestId('nomination-card')).not.toBeInTheDocument();
+  });
+
+  test('shows an alert when deleteProposal rejects', async () => {
+    // Arrange
+    const user = userEvent.setup();
+    global.alert = jest.fn();
+    const proposal = makeProposal({ id: 5, proposed_by_id: 42 });
+    mockDeleteProposal.mockRejectedValue({ response: { data: { error: 'Cannot remove.' } } });
+    await setup(makeSession({ status: 'open' }), makeGroupDetail(), [proposal]);
+
+    // Act
+    await user.click(screen.getByRole('button', { name: /remove nomination/i }));
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert
+    expect(global.alert).toHaveBeenCalledWith('Cannot remove.');
+  });
+
+  test('trash icon is visible for own proposal when viewer is a plain member', async () => {
+    // Arrange — proposal proposed by the current user (id 42)
+    const proposal = makeProposal({ proposed_by_id: 42 });
+    await setup(makeSession({ status: 'open' }), makeGroupDetail({ your_role: 'member' }), [proposal]);
+
+    // Assert
+    expect(screen.getByRole('button', { name: /remove nomination/i })).toBeInTheDocument();
+  });
+
+  test('trash icon is NOT visible for another user\'s proposal when viewer is a plain member', async () => {
+    // Arrange — proposal by user 99, current user is 42
+    const proposal = makeProposal({ proposed_by_id: 99 });
+    await setup(makeSession({ status: 'open' }), makeGroupDetail({ your_role: 'member' }), [proposal]);
+
+    // Assert
+    expect(screen.queryByRole('button', { name: /remove nomination/i })).not.toBeInTheDocument();
+  });
+
+  test('trash icon is visible for any proposal when viewer is owner', async () => {
+    // Arrange — proposal by someone else, viewer is owner
+    const proposal = makeProposal({ proposed_by_id: 99 });
+    await setup(makeSession({ status: 'open' }), makeGroupDetail({ your_role: 'owner' }), [proposal]);
+
+    // Assert
+    expect(screen.getByRole('button', { name: /remove nomination/i })).toBeInTheDocument();
   });
 });

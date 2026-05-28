@@ -41,3 +41,16 @@ export interface GroupDetail {
   members: GroupMember[];
   sessions: Session[];
 }
+
+export interface MovieProposal {
+  id: number;
+  session_id: number;
+  proposed_by_id: number;
+  proposed_by_username: string | null;
+  title: string;
+  tmdb_id: number | null;
+  poster_url: string | null;
+  overview: string | null;
+  runtime_minutes: number | null;
+  proposed_at: string;
+}

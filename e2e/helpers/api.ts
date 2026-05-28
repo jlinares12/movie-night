@@ -67,3 +67,41 @@ export async function apiDeleteSession(
 ): Promise<void> {
   await request.delete(`/api/groups/${groupId}/sessions/${sessionId}`);
 }
+
+export interface Proposal {
+  id: number;
+  session_id: number;
+  proposed_by_id: number;
+  proposed_by_username: string | null;
+  title: string;
+  tmdb_id: number | null;
+  poster_url: string | null;
+  overview: string | null;
+  runtime_minutes: number | null;
+  proposed_at: string;
+}
+
+export async function apiCreateProposal(
+  request: APIRequestContext,
+  groupId: number,
+  sessionId: number,
+  body: { title: string; tmdb_id?: number; poster_url?: string; overview?: string; runtime_minutes?: number },
+): Promise<Proposal> {
+  const res = await request.post(
+    `/api/groups/${groupId}/sessions/${sessionId}/proposals`,
+    { data: body },
+  );
+  if (!res.ok()) throw new Error(`createProposal ${res.status()}: ${await res.text()}`);
+  return res.json();
+}
+
+export async function apiDeleteProposal(
+  request: APIRequestContext,
+  groupId: number,
+  sessionId: number,
+  proposalId: number,
+): Promise<void> {
+  await request.delete(
+    `/api/groups/${groupId}/sessions/${sessionId}/proposals/${proposalId}`,
+  );
+}
