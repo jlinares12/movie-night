@@ -18,7 +18,7 @@ test.afterEach(async ({ ownerRequest: request }) => {
   }
 });
 
-test('user B cannot GET user A private group — API returns 403', async ({ memberPage, memberRequest }) => {
+test('user B cannot GET user A private group — API returns 403', async ({ memberRequest }) => {
   // Owner created the group; member never joined
   const res = await memberRequest.get(`/api/groups/${groupId}`);
   expect(res.status()).toBe(403);
@@ -30,7 +30,7 @@ test('non-member group page shows "not a member" error', async ({ memberPage }) 
   await expect(memberPage.getByText(/not a member/i)).toBeVisible();
 });
 
-test('member cannot self-promote to admin via direct API call', async ({ memberPage, memberRequest, ownerRequest: request }) => {
+test('member cannot self-promote to admin via direct API call', async ({ memberRequest, ownerRequest: request }) => {
   const group = await request.get(`/api/groups/${groupId}`);
   const { invite_code } = await group.json();
 
