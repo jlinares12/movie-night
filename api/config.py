@@ -9,9 +9,15 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
-        "pool_size": 10,
-        "max_overflow": 20,
+        "pool_size": 4,
+        "max_overflow": 8,
     }
+
+    _cloud_sql_conn = os.getenv('CLOUD_SQL_CONNECTION_NAME')
+    if _cloud_sql_conn:
+        SQLALCHEMY_ENGINE_OPTIONS["connect_args"] = {
+            "host": f"/cloudsql/{_cloud_sql_conn}"
+        }
 
     CLERK_SECRET_KEY = os.environ.get('CLERK_SECRET_KEY')
     # Clerk JWKS endpoint, e.g. https://<frontend-api>/.well-known/jwks.json
