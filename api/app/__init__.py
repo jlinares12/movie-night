@@ -35,6 +35,7 @@ def create_app(config_class=Config):
     from app.routes.movies import bp as movies_bp
     from app.routes.auth import bp as auth_bp
     from app.routes.proposals import bp as proposals_bp
+    from app.routes.health import bp as health_bp
 
     app.register_blueprint(groups_bp)
     app.register_blueprint(sessions_bp)
@@ -43,5 +44,6 @@ def create_app(config_class=Config):
     app.register_blueprint(movies_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(proposals_bp)
+    app.register_blueprint(health_bp)
 
     return app
