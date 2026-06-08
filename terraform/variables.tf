@@ -14,8 +14,25 @@ variable "environment" {
     type        = string
 }
 
+# SQL MODULE VARIABLES
+
+variable "db_name" {
+    description = "Name of the PostgreSQL database"
+    type        = string
+}
+
 variable "db_password" {
     description = "The Cloud SQL app user password"
     type        = string
     sensitive   = true
+}
+
+variable "db_user" {
+    description = "Name of the PostgreSQL app user"
+    type        = string
+}
+
+variable "deletion_protection" {
+    description = "States if we want to enable deletion protection"
+    type        = bool
 }
