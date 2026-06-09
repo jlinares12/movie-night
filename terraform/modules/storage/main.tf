@@ -1,25 +1,9 @@
-variable "project_id" {
-    description = "GCP project ID"
-    type        = string
-}
-
-variable "region" {
-    description = "Where to deploy resources"
-    type        = string
-    default     = "us-central1"
-}
-
-variable "environment" {
-    description = "Name resources and toggle behaviors (dev or prod)"
-    type        = string
-}
-
 resource "google_storage_bucket" "gcs_state_bucket" {
     name     = "${var.project_id}-${var.environment}-tfstate"
     project  = var.project_id
     location = var.region
     versioning {
-      enabled = true
+        enabled = true
     }
 }
 
@@ -37,6 +21,6 @@ resource "google_artifact_registry_repository" "docker-repo" {
     location      = var.region
     project  = var.project_id
     repository_id = "${var.project_id}-${var.environment}-artifact-registry"
-    description   = "example docker repository"
+    description   = "Docker images for the ${var.environment} environment"
     format        = "DOCKER"
 }

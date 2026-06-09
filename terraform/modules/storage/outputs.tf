@@ -1,6 +1,6 @@
 output "artifact_registry" {
     description = "Artifact Registry repository URL"
-    value = google_artifact_registry_repository.docker-repo.id
+    value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.docker-repo.repository_id}"
 }
 
 output "frontend_bucket_name" {
