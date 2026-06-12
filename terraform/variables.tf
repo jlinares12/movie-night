@@ -36,3 +36,14 @@ variable "deletion_protection" {
     description = "States if we want to enable deletion protection"
     type        = bool
 }
+
+# IAM Module Variables
+variable "github_repo" {
+  description = "My github org and repo name"
+  type = string
+}
+
+variable "project_number" {
+  description = "Project number"
+  type = string
+}
