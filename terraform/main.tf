@@ -41,4 +41,6 @@ module "iam" {
   project_id = var.project_id
   environment = var.environment
   frontend_bucket_name = module.storage.frontend_bucket_name
+  project_number = var.project_number
+  github_repo = var.github_repo
 }
