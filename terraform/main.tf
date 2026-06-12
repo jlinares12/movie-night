@@ -44,3 +44,10 @@ module "iam" {
   project_number = var.project_number
   github_repo = var.github_repo
 }
+
+module "networking" {
+  source = "./modules/networking"
+
+  project_id  = var.project_id
+  environment = var.environment
+}
