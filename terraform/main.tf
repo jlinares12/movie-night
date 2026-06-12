@@ -34,3 +34,11 @@ module "sql" {
     db_name             = var.db_name
     db_user             = var.db_user
 }
+
+module "iam" {
+  source = "./modules/iam"
+
+  project_id = var.project_id
+  environment = var.environment
+  frontend_bucket_name = module.storage.frontend_bucket_name
+}
