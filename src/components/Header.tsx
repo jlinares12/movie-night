@@ -14,7 +14,7 @@ export default function Header() {
                 <Link to="/">
                     <NavLink
                         icon={(className) => <Movie className={className} style={{ color: 'rgb(var(--color-primary))' }}/>}
-                        label="Movie Nights"
+                        label="Call Time"
                     />
                 </Link>
             </div>

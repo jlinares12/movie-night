@@ -4,8 +4,8 @@ MSG     ?= migration
 DEV_COMPOSE  = docker compose --env-file .env -f docker-compose.dev.yml
 PROD_COMPOSE = docker compose --env-file .env.prod -f docker-compose.prod.yml
 
-E2E_COMPOSE  = docker compose -p movie-night-e2e --env-file .env.e2e -f docker-compose.e2e.yml --profile e2e
-E2E_CONTAINER := movie-night-playwright
+E2E_COMPOSE  = docker compose -p call-time-e2e --env-file .env.e2e -f docker-compose.e2e.yml --profile e2e
+E2E_CONTAINER := call-time-playwright
 SPEC_PATH    = e2e/specs/
 FILE         ?=
 
@@ -36,7 +36,7 @@ test-e2e-report:
 	npx playwright show-report
 
 down-e2e:
-	docker compose -p movie-night-e2e --env-file .env.e2e -f docker-compose.e2e.yml down -v
+	docker compose -p call-time-e2e --env-file .env.e2e -f docker-compose.e2e.yml down -v
 
 test:
 	$(MAKE) test-backend && $(MAKE) test-frontend && $(MAKE) test-e2e

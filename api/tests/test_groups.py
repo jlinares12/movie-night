@@ -1,5 +1,5 @@
 """
-Route-level unit tests for the Movie Night Groups API (TDD).
+Route-level unit tests for the Call Time Groups API (TDD).
 
 These tests will fail until the feature is implemented. Auth is stubbed via the
 `as_user` fixture in conftest.py, which patches `app.routes.groups.get_current_user`.
