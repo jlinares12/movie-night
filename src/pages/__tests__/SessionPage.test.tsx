@@ -122,10 +122,10 @@ describe('SessionPage', () => {
 
   // ── Hero section ─────────────────────────────────────────────────────────
 
-  test('always renders the "Movie Night Session" hero title', async () => {
+  test('always renders the "Call Time Session" hero title', async () => {
     await setup(makeSession(), makeGroupDetail());
 
-    expect(screen.getByText('Movie Night Session')).toBeInTheDocument();
+    expect(screen.getByText('Call Time Session')).toBeInTheDocument();
   });
 
   test('shows the group name in the hero', async () => {

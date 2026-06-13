@@ -1,8 +1,8 @@
 from app.extensions import db
 
 
-class MovieNightSession(db.Model):
-    __tablename__ = 'movie_night_session'
+class CallTimeSession(db.Model):
+    __tablename__ = 'call_time_session'
 
     id             = db.Column(db.Integer, primary_key=True)
     group_id       = db.Column(db.Integer, db.ForeignKey('group.id', ondelete='CASCADE'), nullable=False, index=True)

@@ -21,7 +21,7 @@ export default function Sidebar() {
   return (
     <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container shadow-xl flex flex-col py-lg px-4 z-50">
       <div className="mb-10 px-2">
-        <h1 className="type-display-lg-mobile text-primary tracking-tighter">Movie Nights</h1>
+        <h1 className="type-display-lg-mobile text-primary tracking-tighter">Call Time</h1>
         <p className="type-label-sm opacity-70">Cinematic Coordination</p>
       </div>
 

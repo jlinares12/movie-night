@@ -23,7 +23,7 @@ def create_app(config_class=Config):
 
     # Register models (keeps them in Alembic's metadata scope)
     from app.models import (
-        User, Group, GroupMember, MovieNightSession,
+        User, Group, GroupMember, CallTimeSession,
         SessionResult, MovieProposal, Vote, FoodItem, Movie,
     )
 
