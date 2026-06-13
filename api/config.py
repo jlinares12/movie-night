@@ -31,7 +31,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_NAME = 'movie_night_session'
+    SESSION_COOKIE_NAME = 'call_time_session'
     SESSION_SQLALCHEMY_TABLE = 'flask_sessions'
 
     # CORS — restrict origins list when production domain is known

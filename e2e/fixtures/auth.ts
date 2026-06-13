@@ -22,7 +22,7 @@ async function refreshTestingToken() {
 }
 
 // Mirror the global-setup sign-in flow so the context has a live Clerk session
-// and a valid movie_night_session cookie before the test body runs.
+// and a valid call_time_session cookie before the test body runs.
 // Relying on storageState alone fails because the __session JWT expires after
 // 60 s and the async FAPI refresh resolves after waitForURL/waitForSelector,
 // causing Clerk to report SignedOut and redirect to /login mid-test.

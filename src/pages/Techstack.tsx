@@ -15,7 +15,7 @@ export default function Techstack() {
 
   return (
     <div>
-      <h1>Movie Night</h1>
+      <h1>Call Time</h1>
       <h3>This project is going to use the following tech stack:</h3>
       {(typeof data.tech === 'undefined') ? (
         <p>Loading</p>

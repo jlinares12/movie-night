@@ -1,7 +1,7 @@
 from app.extensions import db
 from app.models.group import Group
 from app.models.group_member import GroupMember
-from app.models.movie_night_session import MovieNightSession
+from app.models.call_time_session import CallTimeSession
 from app.models.movie_proposal import MovieProposal
 from app.models.user import User
 
@@ -28,15 +28,15 @@ def _add_member(user: User, group: Group, role: str = 'member') -> GroupMember:
     return m
 
 
-def _make_session(group: Group, created_by: User, status: str = 'open') -> MovieNightSession:
-    s = MovieNightSession(group_id=group.id, created_by_id=created_by.id, status=status)
+def _make_session(group: Group, created_by: User, status: str = 'open') -> CallTimeSession:
+    s = CallTimeSession(group_id=group.id, created_by_id=created_by.id, status=status)
     db.session.add(s)
     db.session.flush()
     return s
 
 
 def _make_proposal(
-    session: MovieNightSession,
+    session: CallTimeSession,
     user: User,
     title: str = 'Inception',
     tmdb_id: int = 27205,

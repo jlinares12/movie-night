@@ -14,7 +14,7 @@ class Group(db.Model):
 
     created_by = db.relationship('User', foreign_keys=[created_by_id])
     members    = db.relationship('GroupMember', back_populates='group', cascade='all, delete-orphan')
-    sessions   = db.relationship('MovieNightSession', back_populates='group', cascade='all, delete-orphan')
+    sessions   = db.relationship('CallTimeSession', back_populates='group', cascade='all, delete-orphan')
 
     def __init__(self, **kwargs):
         if 'invite_code' not in kwargs:

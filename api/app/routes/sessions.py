@@ -3,7 +3,7 @@ from flask import Blueprint, g, jsonify, request
 from app.extensions import db
 from app.models.group import Group
 from app.models.group_member import GroupMember
-from app.models.movie_night_session import MovieNightSession
+from app.models.call_time_session import CallTimeSession
 from app.utils.auth import require_auth
 
 bp = Blueprint('sessions', __name__)
@@ -33,7 +33,7 @@ def create_session(group_id):
         except (ValueError, AttributeError):
             return jsonify({'error': 'malformed scheduled_for'}), 400
 
-    movie_session = MovieNightSession(
+    movie_session = CallTimeSession(
         group_id=group_id,
         created_by_id=g.current_user.id,
         scheduled_for=scheduled_for,
@@ -54,9 +54,9 @@ def list_sessions(group_id):
         return jsonify({'error': 'forbidden'}), 403
 
     sessions = (
-        MovieNightSession.query
+        CallTimeSession.query
         .filter_by(group_id=group_id)
-        .order_by(MovieNightSession.created_at.desc())
+        .order_by(CallTimeSession.created_at.desc())
         .all()
     )
     return jsonify([s.to_dict() for s in sessions]), 200
@@ -71,7 +71,7 @@ def get_session(group_id, session_id):
     if not _get_membership(group_id, g.current_user):
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
     return jsonify(movie_session.to_dict()), 200
@@ -87,7 +87,7 @@ def update_session(group_id, session_id):
     if not membership or membership.role == 'member':
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
 
@@ -123,7 +123,7 @@ def delete_session(group_id, session_id):
     if not membership or membership.role == 'member':
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
 
