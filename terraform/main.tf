@@ -93,3 +93,11 @@ module "networking" {
   environment = var.environment
   depends_on  = [ google_project_service.compute ]
 }
+
+module "secrets" {
+  source = "./modules/secrets"
+
+  project_id = var.project_id
+  secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key" ]
+  depends_on = [ google_project_service.secret-manager ]
+}
