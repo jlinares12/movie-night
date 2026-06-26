@@ -98,14 +98,6 @@ module "iam" {
   depends_on           = [ google_project_service.iam ]
 }
 
-module "networking" {
-  source      = "./modules/networking"
-
-  project_id  = var.project_id
-  environment = var.environment
-  depends_on  = [ google_project_service.compute ]
-}
-
 module "secrets" {
   source       = "./modules/secrets"
 
