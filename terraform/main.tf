@@ -76,18 +76,18 @@ module "sql" {
 }
 
 module "iam" {
-  source = "./modules/iam"
+  source               = "./modules/iam"
 
-  project_id = var.project_id
-  environment = var.environment
+  project_id           = var.project_id
+  environment          = var.environment
   frontend_bucket_name = module.storage.frontend_bucket_name
-  project_number = var.project_number
-  github_repo = var.github_repo
-  depends_on = [ google_project_service.iam ]
+  project_number       = var.project_number
+  github_repo          = var.github_repo
+  depends_on           = [ google_project_service.iam ]
 }
 
 module "networking" {
-  source = "./modules/networking"
+  source      = "./modules/networking"
 
   project_id  = var.project_id
   environment = var.environment
@@ -95,9 +95,18 @@ module "networking" {
 }
 
 module "secrets" {
-  source = "./modules/secrets"
+  source       = "./modules/secrets"
 
-  project_id = var.project_id
+  project_id   = var.project_id
   secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key" ]
-  depends_on = [ google_project_service.secret-manager ]
+  depends_on   = [ google_project_service.secret-manager ]
+}
+
+module "run" {
+  source                      = "./modules/run"
+
+  secret_ids                  = module.secrets.secret_ids
+  service-account-email       = module.iam.sql-service-account-email
+  db-instance-connection-name = module.sql.db_instance_connection_name
+  region                      = var.region
 }
