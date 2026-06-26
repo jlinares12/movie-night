@@ -4,17 +4,17 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "service-account-email" {
+variable "service_account_email" {
   description = "Service account email from IAM module"
-  type = string
+  type        = string
 }
 
-variable "db-instance-connection-name" {
+variable "db_instance_connection_name" {
   description = "DB connection name from SQL module"
-  type = string
+  type        = string
 }
 
 variable "secret_ids" {
   description = "Map of all secret IDs"
-  type = map(string)
+  type        = map(string)
 }
