@@ -47,3 +47,8 @@ variable "project_number" {
   description = "Project number"
   type = string
 }
+
+variable "domain" {
+  description = "The domain of call time"
+  type = string
+}

@@ -53,6 +53,18 @@ resource "google_project_service" "sql" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "dns" {
+  project            = var.project_id
+  service            = "dns.googleapis.com"
+  disable_on_destroy = false
+}
+
+resource "google_project_service" "domains" {
+  project            = var.project_id
+  service            = "domains.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Modules
 module "storage" {
     source = "./modules/storage"
@@ -76,20 +88,56 @@ module "sql" {
 }
 
 module "iam" {
-  source = "./modules/iam"
+  source               = "./modules/iam"
 
-  project_id = var.project_id
-  environment = var.environment
+  project_id           = var.project_id
+  environment          = var.environment
   frontend_bucket_name = module.storage.frontend_bucket_name
-  project_number = var.project_number
-  github_repo = var.github_repo
-  depends_on = [ google_project_service.iam ]
+  project_number       = var.project_number
+  github_repo          = var.github_repo
+  depends_on           = [ google_project_service.iam ]
 }
 
 module "networking" {
-  source = "./modules/networking"
+  source      = "./modules/networking"
 
   project_id  = var.project_id
   environment = var.environment
   depends_on  = [ google_project_service.compute ]
+}
+
+module "secrets" {
+  source       = "./modules/secrets"
+
+  project_id   = var.project_id
+  secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key" ]
+  depends_on   = [ google_project_service.secret-manager ]
+}
+
+module "run" {
+  source                      = "./modules/run"
+
+  secret_ids                  = module.secrets.secret_ids
+  service_account_email       = module.iam.sql-service-account-email
+  db_instance_connection_name = module.sql.db_instance_connection_name
+  region                      = var.region
+  depends_on                  = [ google_project_service.google-run ]
+}
+
+module "lb" {
+  source               = "./modules/lb"
+
+  domain               = var.domain
+  cloud_run_name       = module.run.cloud-run-service-name
+  service_location     = module.run.service-location
+  frontend_bucket_name = module.storage.frontend_bucket_name
+  depends_on           = [ google_project_service.compute ]
+}
+
+module "dns" {
+  source     = "./modules/dns"
+
+  domain     = var.domain
+  lb_ip      = module.lb.lb_ip
+  depends_on = [ google_project_service.dns ]
 }
