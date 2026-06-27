@@ -121,8 +121,8 @@ export default function SessionPage() {
       });
       setProposals((prev) => [...prev, res.data]);
       setShowSearch(false);
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not nominate movie.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not nominate movie.');
     } finally {
       setNominatingId(null);
     }
@@ -133,8 +133,8 @@ export default function SessionPage() {
     try {
       await deleteProposal(groupId, sesId, proposalId);
       setProposals((prev) => prev.filter((p) => p.id !== proposalId));
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not remove nomination.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not remove nomination.');
     }
   };
 
