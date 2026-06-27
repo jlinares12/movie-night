@@ -1,5 +1,7 @@
 SERVICE ?=
 MSG     ?= migration
+# override with RUFF=ruff if installed on PATH/venv
+RUFF    ?= pipx run ruff
 
 DEV_COMPOSE  = docker compose --env-file .env -f docker-compose.dev.yml
 PROD_COMPOSE = docker compose --env-file .env.prod -f docker-compose.prod.yml
@@ -13,6 +15,7 @@ FILE         ?=
         dev dev-build down logs \
         migrate \
         prod down-prod \
+        lint-backend \
         help
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
@@ -60,6 +63,11 @@ logs:
 migrate:
 	$(DEV_COMPOSE) exec api flask db migrate -m "$(MSG)"
 
+# ── Lint ──────────────────────────────────────────────────────────────────────
+
+lint-backend:
+	$(RUFF) check api/
+
 # ── Prod ──────────────────────────────────────────────────────────────────────
 
 prod:
@@ -89,6 +97,9 @@ help:
 	@echo "  dev-build          Rebuild images and start dev stack"
 	@echo "  down               Stop dev stack"
 	@echo "  logs               Follow dev logs"
+	@echo ""
+	@echo "Lint"
+	@echo "  lint-backend       Run ruff on api/ (RUFF= to override the ruff command)"
 	@echo ""
 	@echo "Database  (dev stack must be running)"
 	@echo "  migrate            Generate a migration (MSG= for message, default: 'migration')"

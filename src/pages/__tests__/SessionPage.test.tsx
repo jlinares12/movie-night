@@ -6,6 +6,7 @@ import { getSession, getGroup, updateSession, deleteSession, listProposals, crea
 import { ApiError } from '../../services/apiError';
 import type { Session, GroupDetail, MovieProposal } from '../../types/groups';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import type { MovieSearchResult } from '../../types/movies';
 
 jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn() }));
 jest.mock('../../services/groups');
@@ -13,9 +14,9 @@ jest.mock('../../hooks/useGroupEvents', () => ({ useGroupEvents: jest.fn() }));
 jest.mock('../../hooks/useCurrentUser', () => ({ useCurrentUser: jest.fn() }));
 jest.mock('../../components/MovieSearchPanel', () => ({
   __esModule: true,
-  default: ({ onNominate }: { onNominate: (movie: any) => Promise<void>; nominatingId: number | null }) => (
+  default: ({ onNominate }: { onNominate: (movie: MovieSearchResult) => Promise<void>; nominatingId: number | null }) => (
     <button
-      onClick={() => onNominate({ tmdb_id: 123, title: 'Inception', poster_url: null, overview: null, runtime_minutes: null })}
+      onClick={() => onNominate({ id: 1, tmdb_id: 123, title: 'Inception', original_title: null, overview: null, poster_url: null, release_date: null, vote_average: null, runtime_minutes: null })}
     >
       Test Nominate
     </button>
@@ -23,7 +24,7 @@ jest.mock('../../components/MovieSearchPanel', () => ({
 }));
 jest.mock('../../components/NominationCard', () => ({
   __esModule: true,
-  default: ({ proposal, canDelete, onDelete }: { proposal: any; canDelete: boolean; onDelete: (id: number) => void }) => (
+  default: ({ proposal, canDelete, onDelete }: { proposal: MovieProposal; canDelete: boolean; onDelete: (id: number) => void }) => (
     <div data-testid="nomination-card">
       <span>{proposal.title}</span>
       {canDelete && <button onClick={() => onDelete(proposal.id)}>Remove nomination</button>}
@@ -526,7 +527,7 @@ describe('SessionPage', () => {
     // Arrange
     const user = userEvent.setup();
     global.alert = jest.fn();
-    mockCreateProposal.mockRejectedValue({ response: { data: { error: 'Already nominated.' } } });
+    mockCreateProposal.mockRejectedValue(new ApiError(409, 'you already nominated a movie'));
     await setup(makeSession({ status: 'open' }), makeGroupDetail());
     await user.click(screen.getByRole('button', { name: /add nomination/i }));
 
@@ -535,7 +536,7 @@ describe('SessionPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(global.alert).toHaveBeenCalledWith('Already nominated.');
+    expect(global.alert).toHaveBeenCalledWith('you already nominated a movie');
   });
 
   test('deleting a proposal calls deleteProposal and removes the card', async () => {
@@ -559,7 +560,7 @@ describe('SessionPage', () => {
     const user = userEvent.setup();
     global.alert = jest.fn();
     const proposal = makeProposal({ id: 5, proposed_by_id: 42 });
-    mockDeleteProposal.mockRejectedValue({ response: { data: { error: 'Cannot remove.' } } });
+    mockDeleteProposal.mockRejectedValue(new ApiError(403, 'forbidden'));
     await setup(makeSession({ status: 'open' }), makeGroupDetail(), [proposal]);
 
     // Act
@@ -567,7 +568,7 @@ describe('SessionPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(global.alert).toHaveBeenCalledWith('Cannot remove.');
+    expect(global.alert).toHaveBeenCalledWith('forbidden');
   });
 
   test('trash icon is visible for own proposal when viewer is a plain member', async () => {
