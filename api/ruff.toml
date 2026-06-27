@@ -1,0 +1,4 @@
+extend-exclude = ["migrations"]   # Alembic autogenerates these
+
+[lint.per-file-ignores]
+"app/__init__.py" = ["F401"]      # deliberate model imports — keep them in Alembic's metadata scope
