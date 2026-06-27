@@ -50,7 +50,7 @@ describe('useMovieSearch', () => {
 
   test('useMovieSearch_withQueryAfterDebounce_callsSearchMoviesWithQuery', async () => {
     // Arrange
-    mockSearchMovies.mockResolvedValue({ data: [] } as any);
+    mockSearchMovies.mockResolvedValue({ data: [] } as unknown as Awaited<ReturnType<typeof searchMovies>>);
     const { result } = renderHook(() => useMovieSearch());
 
     // Act
@@ -64,7 +64,7 @@ describe('useMovieSearch', () => {
   test('useMovieSearch_onSuccessfulSearch_setsResultsAndClearsLoading', async () => {
     // Arrange
     const movies = [{ id: 1, tmdb_id: 123, title: 'Inception' }];
-    mockSearchMovies.mockResolvedValue({ data: movies } as any);
+    mockSearchMovies.mockResolvedValue({ data: movies } as unknown as Awaited<ReturnType<typeof searchMovies>>);
     const { result } = renderHook(() => useMovieSearch());
 
     // Act
@@ -93,7 +93,7 @@ describe('useMovieSearch', () => {
   test('useMovieSearch_whenQueryClearedAfterResults_resetsResultsToEmpty', async () => {
     // Arrange
     const movies = [{ id: 1, tmdb_id: 123, title: 'Inception' }];
-    mockSearchMovies.mockResolvedValue({ data: movies } as any);
+    mockSearchMovies.mockResolvedValue({ data: movies } as unknown as Awaited<ReturnType<typeof searchMovies>>);
     const { result } = renderHook(() => useMovieSearch());
     act(() => { result.current.setQuery('Inception'); });
     await act(async () => { jest.advanceTimersByTime(300); });
