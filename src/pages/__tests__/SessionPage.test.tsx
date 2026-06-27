@@ -6,6 +6,7 @@ import { getSession, getGroup, updateSession, deleteSession, listProposals, crea
 import { ApiError } from '../../services/apiError';
 import type { Session, GroupDetail, MovieProposal } from '../../types/groups';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
+import type { MovieSearchResult } from '../../types/movies';
 
 jest.mock('react-router-dom', () => ({ useNavigate: jest.fn(), useParams: jest.fn() }));
 jest.mock('../../services/groups');
@@ -13,9 +14,9 @@ jest.mock('../../hooks/useGroupEvents', () => ({ useGroupEvents: jest.fn() }));
 jest.mock('../../hooks/useCurrentUser', () => ({ useCurrentUser: jest.fn() }));
 jest.mock('../../components/MovieSearchPanel', () => ({
   __esModule: true,
-  default: ({ onNominate }: { onNominate: (movie: any) => Promise<void>; nominatingId: number | null }) => (
+  default: ({ onNominate }: { onNominate: (movie: MovieSearchResult) => Promise<void>; nominatingId: number | null }) => (
     <button
-      onClick={() => onNominate({ tmdb_id: 123, title: 'Inception', poster_url: null, overview: null, runtime_minutes: null })}
+      onClick={() => onNominate({ id: 1, tmdb_id: 123, title: 'Inception', original_title: null, overview: null, poster_url: null, release_date: null, vote_average: null, runtime_minutes: null })}
     >
       Test Nominate
     </button>
@@ -23,7 +24,7 @@ jest.mock('../../components/MovieSearchPanel', () => ({
 }));
 jest.mock('../../components/NominationCard', () => ({
   __esModule: true,
-  default: ({ proposal, canDelete, onDelete }: { proposal: any; canDelete: boolean; onDelete: (id: number) => void }) => (
+  default: ({ proposal, canDelete, onDelete }: { proposal: MovieProposal; canDelete: boolean; onDelete: (id: number) => void }) => (
     <div data-testid="nomination-card">
       <span>{proposal.title}</span>
       {canDelete && <button onClick={() => onDelete(proposal.id)}>Remove nomination</button>}
