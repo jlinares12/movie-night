@@ -527,7 +527,7 @@ describe('SessionPage', () => {
     // Arrange
     const user = userEvent.setup();
     global.alert = jest.fn();
-    mockCreateProposal.mockRejectedValue({ response: { data: { error: 'Already nominated.' } } });
+    mockCreateProposal.mockRejectedValue(new ApiError(409, 'you already nominated a movie'));
     await setup(makeSession({ status: 'open' }), makeGroupDetail());
     await user.click(screen.getByRole('button', { name: /add nomination/i }));
 
@@ -536,7 +536,7 @@ describe('SessionPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(global.alert).toHaveBeenCalledWith('Already nominated.');
+    expect(global.alert).toHaveBeenCalledWith('you already nominated a movie');
   });
 
   test('deleting a proposal calls deleteProposal and removes the card', async () => {
@@ -560,7 +560,7 @@ describe('SessionPage', () => {
     const user = userEvent.setup();
     global.alert = jest.fn();
     const proposal = makeProposal({ id: 5, proposed_by_id: 42 });
-    mockDeleteProposal.mockRejectedValue({ response: { data: { error: 'Cannot remove.' } } });
+    mockDeleteProposal.mockRejectedValue(new ApiError(403, 'forbidden'));
     await setup(makeSession({ status: 'open' }), makeGroupDetail(), [proposal]);
 
     // Act
@@ -568,7 +568,7 @@ describe('SessionPage', () => {
     await act(async () => { await Promise.resolve(); });
 
     // Assert
-    expect(global.alert).toHaveBeenCalledWith('Cannot remove.');
+    expect(global.alert).toHaveBeenCalledWith('forbidden');
   });
 
   test('trash icon is visible for own proposal when viewer is a plain member', async () => {
