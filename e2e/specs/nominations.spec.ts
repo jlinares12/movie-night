@@ -24,11 +24,29 @@ test.beforeEach(async ({ ownerRequest, memberRequest }) => {
 });
 
 test.afterEach(async ({ ownerRequest }) => {
-  if (proposalId) { try { await apiDeleteProposal(ownerRequest, groupId, sessionId, proposalId); } catch {} }
+  if (proposalId) {
+    try {
+      await apiDeleteProposal(ownerRequest, groupId, sessionId, proposalId);
+    } catch (err) {
+      console.warn(`Cleanup: failed to delete proposal ${proposalId}:`, err);
+    }
+  }
   proposalId = 0;
-  if (sessionId) { try { await apiDeleteSession(ownerRequest, groupId, sessionId); } catch {} }
+  if (sessionId) {
+    try {
+      await apiDeleteSession(ownerRequest, groupId, sessionId);
+    } catch (err) {
+      console.warn(`Cleanup: failed to delete session ${sessionId}:`, err);
+    }
+  }
   sessionId = 0;
-  if (groupId) { try { await apiDeleteGroup(ownerRequest, groupId); } catch {} }
+  if (groupId) {
+    try {
+      await apiDeleteGroup(ownerRequest, groupId);
+    } catch (err) {
+      console.warn(`Cleanup: failed to delete group ${groupId}:`, err);
+    }
+  }
   groupId = 0;
 });
 
