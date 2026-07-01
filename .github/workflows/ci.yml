@@ -68,7 +68,7 @@ jobs:
                 DATABASE_URL: postgresql://postgres:postgres@localhost:5432/call-time-test
                 SECRET_KEY: test-secret-key
                 TMDB_API_KEY: test-key
-                CLERK_WEBHOOK_SECRET: testwebhooksecret
+                CLERK_WEBHOOK_SECRET: testwebhooks==
             run: |
                 cd api
                 pytest tests/ -v
