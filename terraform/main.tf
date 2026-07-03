@@ -65,6 +65,12 @@ resource "google_project_service" "domains" {
   disable_on_destroy = false
 }
 
+resource "google_project_service" "cloud-build" {
+  project            = var.project_id
+  service            = "cloudbuild.googleapis.com"
+  disable_on_destroy = false
+}
+
 # Modules
 module "storage" {
     source = "./modules/storage"
