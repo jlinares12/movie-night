@@ -140,3 +140,12 @@ module "dns" {
   create_zone = var.environment == "prod"
   depends_on  = [ google_project_service.dns ]
 }
+
+module "cloudbuild" {
+  source                            = "./modules/cloudbuild"
+
+  region                            = var.region
+  github_app_installation_id        = var.github_app_installation_id
+  github_oauth_token_secret_version = var.github_oauth_token_secret_version
+  github_repo_url                   = var.github_repo_url
+}
