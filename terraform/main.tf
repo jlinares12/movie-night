@@ -98,9 +98,11 @@ module "iam" {
   source               = "./modules/iam"
 
   project_id           = var.project_id
+  region               = var.region
   environment          = var.environment
   frontend_bucket_name = module.storage.frontend_bucket_name
   project_number       = var.project_number
+  artifact_registry_repository_id = module.storage.artifact_registry_repository_id
   depends_on           = [ google_project_service.iam ]
 }
 
