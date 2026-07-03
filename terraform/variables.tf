@@ -38,10 +38,6 @@ variable "deletion_protection" {
 }
 
 # IAM Module Variables
-variable "github_repo" {
-  description = "My github org and repo name"
-  type = string
-}
 
 variable "project_number" {
   description = "Project number"
