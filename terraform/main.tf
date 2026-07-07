@@ -109,6 +109,7 @@ module "secrets" {
 module "run" {
   source                      = "./modules/run"
 
+  environment                 = var.environment
   secret_ids                  = module.secrets.secret_ids
   service_account_email       = module.iam.sql-service-account-email
   db_instance_connection_name = module.sql.db_instance_connection_name
@@ -116,20 +117,19 @@ module "run" {
   depends_on                  = [ google_project_service.google-run ]
 }
 
-module "lb" {
-  source               = "./modules/lb"
-
-  domain               = var.domain
-  cloud_run_name       = module.run.cloud-run-service-name
-  service_location     = module.run.service-location
-  frontend_bucket_name = module.storage.frontend_bucket_name
-  depends_on           = [ google_project_service.compute ]
+data "terraform_remote_state" "shared" {
+  backend = "gcs"
+  config  = {
+    bucket = "call-time-498809-shared-tfstate"
+    prefix = "terraform/state"
+  }
 }
 
 module "dns" {
   source     = "./modules/dns"
 
   domain     = var.domain
-  lb_ip      = module.lb.lb_ip
+  lb_ip      = data.terraform_remote_state.shared.outputs.lb_ip
+  create_zone = var.environment == "prod"
   depends_on = [ google_project_service.dns ]
 }
