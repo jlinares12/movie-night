@@ -1,5 +1,5 @@
 resource "google_cloud_run_v2_service" "call-time" {
-  name     = "call-time-cloud-run"
+  name     = "call-time-cloud-run-${var.environment}"
   location = var.region
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
   template {
