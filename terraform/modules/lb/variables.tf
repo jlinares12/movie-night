@@ -1,19 +1,27 @@
 variable "service_location" {
-    description = "Cloud Run's service location"
-    type        = string
-}
-
-variable "cloud_run_name" {
-  description = "Cloud Run's service name"
   type = string
 }
 
-variable "frontend_bucket_name" {
-  description = "The bucket name of where our frontend lives"
+variable "dev_cloud_run_name" {
   type = string
 }
 
-variable "domain" {
-  description = "The domain of call time"
+variable "prod_cloud_run_name" {
+  type = string
+}
+
+variable "dev_frontend_bucket_name" {
+  type = string
+}
+
+variable "prod_frontend_bucket_name" {
+  type = string
+}
+
+variable "dev_domain" {
+  type = string
+}
+
+variable "prod_domain" {
   type = string
 }
