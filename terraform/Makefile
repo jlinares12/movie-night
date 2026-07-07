@@ -1,45 +1,52 @@
 # Terraform workflow for the Call Time infra.
 # Usage:
-#   make dev  init                       # init backend for the dev env
-#   make dev  plan                       # plan dev
-#   make dev  apply                      # apply dev
-#   make dev  plan  TARGET=module.secrets   # plan only one module
-#   make prod plan                       # same, prod env
+#   make dev    init                       # init backend for the dev env
+#   make dev    plan                       # plan dev
+#   make dev    apply                      # apply dev
+#   make dev    plan  TARGET=module.secrets   # plan only one module
+#   make prod   plan                       # same, prod env
+#   make shared plan                       # plans terraform/shared (the shared LB)
 #
-# `dev` / `prod` are env-selector goals (they do nothing on their own);
+# `dev` / `prod` / `shared` are env-selector goals (they do nothing on their own);
 # `init` / `plan` / `apply` are the real actions and read the selected env.
-
-# Default env if neither `dev` nor `prod` is named on the command line.
+# Default env if none is named on the command line.
 ENV := dev
 ifneq (,$(filter prod,$(MAKECMDGOALS)))
-  ENV := prod
+ENV := prod
 endif
+ifneq (,$(filter shared,$(MAKECMDGOALS)))
+ENV := shared
+endif
+
+# shared lives in its own subdirectory; dev/prod run against the root module (".")
+CHDIR := $(if $(filter shared,$(ENV)),shared,.)
 
 # Optional: `make dev plan TARGET=module.secrets` -> adds `-target=module.secrets`
 TARGET ?=
 TARGET_FLAG := $(if $(TARGET),-target=$(TARGET),)
 
-# Both var-files: non-secret config + the git-ignored secrets file.
+# shared has no secrets var-file; dev/prod do. Paths are relative to CHDIR,
+# so shared's need an extra `../` to reach the top-level envs/ directory.
+ifeq ($(ENV),shared)
+VAR_FILES := -var-file=../envs/shared.tfvars
+BACKEND_CONFIG := ../envs/shared.backend.tfvars
+else
 VAR_FILES := -var-file=envs/$(ENV).tfvars -var-file=envs/$(ENV).secrets.tfvars
+BACKEND_CONFIG := envs/$(ENV).backend.tfvars
+endif
 
-.PHONY: dev prod init plan apply fmt validate
+.PHONY: dev prod shared init plan apply fmt validate
 
-# Env selectors: no-op recipes whose only job is to put `dev`/`prod`
-# on the command line so the ENV logic above can read it.
-dev prod:
+dev prod shared:
 	@:
 
 init:
-	terraform init -reconfigure -backend-config=envs/$(ENV).backend.tfvars
-
+	terraform -chdir=$(CHDIR) init -reconfigure -backend-config=$(BACKEND_CONFIG)
 plan:
-	terraform plan $(VAR_FILES) $(TARGET_FLAG)
-
+	terraform -chdir=$(CHDIR) plan $(VAR_FILES) $(TARGET_FLAG)
 apply:
-	terraform apply $(VAR_FILES) $(TARGET_FLAG)
-
+	terraform -chdir=$(CHDIR) apply $(VAR_FILES) $(TARGET_FLAG)
 fmt:
 	terraform fmt -recursive
-
 validate:
-	terraform validate
+	terraform -chdir=$(CHDIR) validate
