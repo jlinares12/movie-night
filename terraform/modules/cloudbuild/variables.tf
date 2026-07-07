@@ -19,7 +19,7 @@ variable "github_repo_url" {
   type        = string
 }
 
-variable "cloud_run_sa_id" {
-  description = "Service account id for cloud run from iam module"
+variable "cloudbuild_sa_id" {
+  description = "Service account id for cloudbuild from iam module"
   type = string
 }

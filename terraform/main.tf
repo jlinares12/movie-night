@@ -150,6 +150,6 @@ module "cloudbuild" {
   github_app_installation_id        = var.github_app_installation_id
   github_oauth_token_secret_version = var.github_oauth_token_secret_version
   github_repo_url                   = var.github_repo_url
-  cloud_run_sa_id                = module.iam.cloud-build-service-account-id
+  cloudbuild_sa_id                = module.iam.cloud-build-service-account-id
   depends_on                        = [ module.iam, google_project_service.cloud-build ]
 }
