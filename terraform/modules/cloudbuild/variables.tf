@@ -18,3 +18,8 @@ variable "github_repo_url" {
   description = "Repository url for Call Time repository"
   type        = string
 }
+
+variable "cloud_run_sa_email" {
+  description = "Service account email for cloud run from iam module"
+  type = string
+}
