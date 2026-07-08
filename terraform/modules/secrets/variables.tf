@@ -7,3 +7,7 @@ variable "secret_names" {
   type        = list(string)
   description = "The short names of the secrets to create"
 }
+
+variable "environment" {
+  type = string
+}
