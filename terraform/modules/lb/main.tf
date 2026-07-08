@@ -62,6 +62,34 @@ resource "google_compute_url_map" "cloud_run_url_map" {
     path_matcher = "dev-paths"
   }
 
+  host_rule {
+    hosts        = ["www.${var.prod_domain}"]
+    path_matcher = "prod-www-redirect"
+  }
+
+  host_rule {
+    hosts        = ["www.${var.dev_domain}"]
+    path_matcher = "dev-www-redirect"
+  }
+
+  path_matcher {
+    name = "prod-www-redirect"
+    default_url_redirect {
+      host_redirect = var.prod_domain
+      https_redirect = true
+      strip_query    = false
+    }
+  }
+
+  path_matcher {
+    name = "dev-www-redirect"
+    default_url_redirect {
+      host_redirect = var.dev_domain
+      https_redirect = true
+      strip_query    = false
+    }
+  }
+
   path_matcher {
     name            = "prod-paths"
     default_service = google_compute_backend_bucket.prod_frontend_gcs_bucket_backend.id
@@ -89,17 +117,41 @@ resource "google_compute_url_map" "http_to_https_url_map" {
   }
 }
 
-resource "google_compute_managed_ssl_certificate" "ssl_certificate" {
-  name = "call-time-ssl-certs"
+# --- SSL Certificates for each domain ---
+resource "google_compute_managed_ssl_certificate" "prod_ssl_certificate" {
+  name = "calltime-prod-ssl-certs"
   managed {
-    domains = [var.prod_domain, var.dev_domain]
+    domains = [var.prod_domain, "www.${var.prod_domain}"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
+resource "google_compute_managed_ssl_certificate" "dev_ssl_certificate" {
+  name = "calltime-dev-ssl-certs"
+  managed {
+    domains = [var.dev_domain, "www.${var.dev_domain}"]
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# --- HTTPS Proxy with both certificates ---
 resource "google_compute_target_https_proxy" "https_proxy" {
   name             = "call-time-https-proxy"
   url_map          = google_compute_url_map.cloud_run_url_map.id
-  ssl_certificates = [google_compute_managed_ssl_certificate.ssl_certificate.id]
+  ssl_certificates = [
+    google_compute_managed_ssl_certificate.prod_ssl_certificate.id,
+    google_compute_managed_ssl_certificate.dev_ssl_certificate.id
+  ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_compute_target_http_proxy" "http_proxy" {
