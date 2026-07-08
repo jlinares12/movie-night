@@ -4,3 +4,4 @@ db_user             = "me"
 deletion_protection = false
 github_repo         = "jlinares12/call-time"
 project_number      = "434409087496"
+domain              = "devel.calltime.dev"
