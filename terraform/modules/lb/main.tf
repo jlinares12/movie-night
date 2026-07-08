@@ -119,7 +119,7 @@ resource "google_compute_url_map" "http_to_https_url_map" {
 
 # --- SSL Certificates for each domain ---
 resource "google_compute_managed_ssl_certificate" "prod_ssl_certificate" {
-  name = "calltime-prod-ssl-certs"
+  name = "calltime-prod-ssl-certs-v2"
   managed {
     domains = [var.prod_domain, "www.${var.prod_domain}"]
   }
@@ -130,7 +130,7 @@ resource "google_compute_managed_ssl_certificate" "prod_ssl_certificate" {
 }
 
 resource "google_compute_managed_ssl_certificate" "dev_ssl_certificate" {
-  name = "calltime-dev-ssl-certs"
+  name = "calltime-dev-ssl-certs-v2"
   managed {
     domains = [var.dev_domain, "www.${var.dev_domain}"]
   }
