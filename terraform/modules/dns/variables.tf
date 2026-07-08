@@ -7,6 +7,6 @@ variable "lb_ip" {
 }
 
 variable "create_zone" {
-  type = bool
+  type    = bool
   default = false
 }
