@@ -102,6 +102,7 @@ module "secrets" {
   source       = "./modules/secrets"
 
   project_id   = var.project_id
+  environment  = var.environment
   secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key" ]
   depends_on   = [ google_project_service.secret-manager ]
 }
@@ -126,10 +127,10 @@ data "terraform_remote_state" "shared" {
 }
 
 module "dns" {
-  source     = "./modules/dns"
+  source      = "./modules/dns"
 
-  domain     = var.domain
-  lb_ip      = data.terraform_remote_state.shared.outputs.lb_ip
+  domain      = var.domain
+  lb_ip       = data.terraform_remote_state.shared.outputs.lb_ip
   create_zone = var.environment == "prod"
-  depends_on = [ google_project_service.dns ]
+  depends_on  = [ google_project_service.dns ]
 }
