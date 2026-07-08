@@ -18,3 +18,7 @@ variable "secret_ids" {
   description = "Map of all secret IDs"
   type        = map(string)
 }
+
+variable "environment" {
+  type = string
+}
