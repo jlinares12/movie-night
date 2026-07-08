@@ -18,5 +18,13 @@ resource "google_dns_record_set" "a_record" {
   type         = "A"
   ttl          = 300
   managed_zone = local.managed_zone_name
-  rrdatas      = [ var.lb_ip ]
+  rrdatas      = [var.lb_ip]
+}
+
+resource "google_dns_record_set" "www_a_record" {
+  name         = "www.${var.domain}."
+  type         = "A"
+  ttl          = 300
+  managed_zone = local.managed_zone_name
+  rrdatas      = [var.lb_ip]
 }
