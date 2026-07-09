@@ -1,25 +1,30 @@
+variable "project_id" {
+  type = string
+}
+
 variable "region" {
-  description = "Where to deploy resources"
-  type        = string
-  default     = "us-central1"
+  type    = string
+  default = "us-central1"
 }
 
 variable "github_app_installation_id" {
-  description = "The installation id for github"
-  type        = string
+  type = string
 }
 
 variable "github_oauth_token_secret_version" {
-  description = "github token"
-  type        = string
+  type = string
 }
 
 variable "github_repo_url" {
-  description = "Repository url for Call Time repository"
-  type        = string
+  type = string
 }
 
-variable "cloudbuild_sa_id" {
-  description = "Service account id for cloudbuild from iam module"
-  type = string
+variable "dev_domain" {
+  type    = string
+  default = "devel.calltime.dev"
+}
+
+variable "prod_domain" {
+  type    = string
+  default = "calltime.dev"
 }
