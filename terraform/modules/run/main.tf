@@ -44,3 +44,54 @@ resource "google_cloud_run_v2_service_iam_member" "cloud_run_service_member" {
   role      = "roles/run.invoker"
   location  = var.region
 }
+
+resource "google_cloud_run_v2_job" "call-time-migrate" {
+  name     = "call-time-migrate-${var.environment}"
+  location = var.region
+  project  = var.project_id
+
+  template {
+    template {
+      service_account = var.service_account_email
+
+      containers {
+        image   = "us-docker.pkg.dev/cloudrun/container/hello" # placeholder — Cloud Build overwrites per-deploy
+        command = ["flask"]
+        args    = ["db", "upgrade"]
+
+        volume_mounts {
+          name       = "cloudsql"
+          mount_path = "/cloudsql"
+        }
+
+        dynamic "env" {
+          for_each = var.secret_ids
+          content {
+            name = upper(replace(env.key, "-", "_"))
+            value_source {
+              secret_key_ref {
+                secret  = env.value
+                version = "latest"
+              }
+            }
+          }
+        }
+      }
+
+      volumes {
+        name = "cloudsql"
+        cloud_sql_instance {
+          instances = [var.db_instance_connection_name]
+        }
+      }
+
+      max_retries = 0 # a failed migration should fail the build, not silently retry
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].template[0].containers[0].image,
+    ]
+  }
+}

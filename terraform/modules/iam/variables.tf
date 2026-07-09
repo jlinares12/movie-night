@@ -13,12 +13,17 @@ variable "frontend_bucket_name" {
   type        = string
 }
 
-variable "github_repo" {
-  description = "My github org and repo name"
+variable "project_number" {
+  description = "Project number"
   type        = string
 }
 
-variable "project_number" {
-  description = "Project number"
+variable "region" {
+  description = "GCP region for regional resources (e.g. Artifact Registry IAM bindings)"
+  type        = string
+}
+
+variable "artifact_registry_repository_id" {
+  description = "Artifact Registry repository ID to grant Cloud Build write access to"
   type        = string
 }

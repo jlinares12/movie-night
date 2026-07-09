@@ -1,13 +1,14 @@
 # Creates Service Accounts
-resource "google_service_account" "github-actions-sa" {
-  display_name = "${var.project_id}-${var.environment}-github-actions"
-  account_id   = "${var.environment}-github-actions-sa"
-  project      = var.project_id
-}
 
 resource "google_service_account" "cloud-run-sa" {
   display_name = "${var.project_id}-${var.environment}-cloud-run"
   account_id   = "${var.environment}-cloud-run-sa"
+  project      = var.project_id
+}
+
+resource "google_service_account" "cloudbuild-sa" {
+  display_name = "${var.project_id}-${var.environment}-cloudbuild"
+  account_id   = "${var.environment}-cloudbuild-sa"
   project      = var.project_id
 }
 
@@ -32,55 +33,39 @@ resource "google_project_iam_member" "cloud-run-artifact-policy" {
   role    = "roles/artifactregistry.reader"
 }
 
-# Policies for Github Actions
-resource "google_project_iam_member" "github-actions-developer-policy" {
+# Cloudbuild IAM Policies
+
+## Deploy new revisions
+resource "google_project_iam_member" "cloudbuild-run-policy" {
   project = var.project_id
-  member  = "serviceAccount:${google_service_account.github-actions-sa.email}"
-  role    = "roles/run.developer"
+  member  = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+  role    = "roles/run.admin"
 }
 
-resource "google_project_iam_member" "github-actions-artifact-policy" {
-  project = var.project_id
-  member  = "serviceAccount:${google_service_account.github-actions-sa.email}"
-  role    = "roles/artifactregistry.writer"
+## Act as the Cloud Run runtime SA when deploying
+resource "google_service_account_iam_member" "cloudbuild-actas-runtime" {
+  service_account_id = google_service_account.cloud-run-sa.id
+  role = "roles/iam.serviceAccountUser"
+  member = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
 }
 
-resource "google_project_iam_member" "github-actions-serviceAccount-policy" {
-  project = var.project_id
-  member  = "serviceAccount:${google_service_account.github-actions-sa.email}"
-  role    = "roles/iam.serviceAccountTokenCreator"
+resource "google_artifact_registry_repository_iam_member" "cloudbuild-artifact-policy" {
+  project    = var.project_id
+  location   = var.region
+  repository = var.artifact_registry_repository_id
+  member     = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+  role       = "roles/artifactregistry.writer"
 }
 
-# Github needs a storage binding for the frontend
-
-resource "google_storage_bucket_iam_member" "github-actions-storage-policy" {
-  member = "serviceAccount:${google_service_account.github-actions-sa.email}"
+## Cloud Build needs to sync to frontend bucket
+resource "google_storage_bucket_iam_member" "cloudbuild-storage-policy" {
+  member = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
   role   = "roles/storage.objectAdmin"
   bucket = var.frontend_bucket_name
 }
 
-# WIF Resources
-resource "google_iam_workload_identity_pool" "github" {
-  workload_identity_pool_id = "${var.environment}-iam-pool"
-  project                   = var.project_id
-}
-
-resource "google_iam_workload_identity_pool_provider" "github" {
-  workload_identity_pool_provider_id = "${var.environment}-pool-provider"
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github.workload_identity_pool_id
-  attribute_condition                = "assertion.repository == \"${var.github_repo}\""
-
-  oidc {
-    issuer_uri = "https://token.actions.githubusercontent.com"
-  }
-  attribute_mapping = {
-    "google.subject"       = "assertion.sub"
-    "attribute.repository" = "assertion.repository"
-  }
-}
-
-resource "google_service_account_iam_member" "wif-binding" {
-  service_account_id = google_service_account.github-actions-sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "principalSet://iam.googleapis.com/projects/${var.project_number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github.workload_identity_pool_id}/attribute.repository/${var.github_repo}"
+resource "google_project_iam_member" "cloudbuild-logs-policy" {
+  project = var.project_id
+  member  = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+  role    = "roles/logging.logWriter"
 }
