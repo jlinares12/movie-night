@@ -69,3 +69,10 @@ resource "google_project_iam_member" "cloudbuild-logs-policy" {
   member  = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
   role    = "roles/logging.logWriter"
 }
+
+# Storage Policies
+resource "google_storage_bucket_iam_member" "frontend_public_read" {
+  bucket = var.frontend_bucket_name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
