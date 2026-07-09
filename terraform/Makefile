@@ -28,7 +28,7 @@ TARGET_FLAG := $(if $(TARGET),-target=$(TARGET),)
 # shared has no secrets var-file; dev/prod do. Paths are relative to CHDIR,
 # so shared's need an extra `../` to reach the top-level envs/ directory.
 ifeq ($(ENV),shared)
-VAR_FILES := -var-file=../envs/shared.tfvars
+VAR_FILES := -var-file=../envs/shared.tfvars -var-file=../envs/shared.secrets.tfvars
 BACKEND_CONFIG := ../envs/shared.backend.tfvars
 else
 VAR_FILES := -var-file=envs/$(ENV).tfvars -var-file=envs/$(ENV).secrets.tfvars
