@@ -54,7 +54,7 @@ resource "google_cloudbuild_trigger" "backend" {
     }
   }
 
-  included_files = ["api/**", "cloudbuild/backend.yaml"]
+  included_files = ["api/**", "cloudbuild/backend.yaml", "trigger-builds/all/**", "trigger-builds/backend/**"]
 
   substitutions = {
     _ENV            = each.key
@@ -80,7 +80,7 @@ resource "google_cloudbuild_trigger" "frontend" {
     }
   }
 
-  included_files = ["src/**", "package.json", "package-lock.json", "cloudbuild/frontend.yaml"]
+  included_files = ["src/**", "package.json", "package-lock.json", "cloudbuild/frontend.yaml", "trigger-builds/all/**", "trigger-builds/frontend/**"]
 
   substitutions = {
     _ENV    = each.key
