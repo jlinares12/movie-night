@@ -20,7 +20,7 @@ const STATUS_CONFIG: Record<SessionStatus, { badge: string; icon: string; descri
   open:    { badge: 'OPEN FOR NOMINATIONS', icon: 'movie',        description: 'Members can nominate their favorite movies for this session.' },
   voting:  { badge: 'VOTING IN PROGRESS',   icon: 'how_to_vote', description: 'The group is casting votes. May the best film win!' },
   decided: { badge: 'WINNER SELECTED',      icon: 'stars',       description: 'The votes are in! The group has chosen their movie for the night.' },
-  closed:  { badge: 'SESSION CLOSED',       icon: 'event_busy',  description: 'This movie night session has wrapped up.' },
+  closed:  { badge: 'SESSION CLOSED',       icon: 'event_busy',  description: 'This Call Time session has wrapped up.' },
 };
 
 const AVATAR_COLORS = [
@@ -121,8 +121,8 @@ export default function SessionPage() {
       });
       setProposals((prev) => [...prev, res.data]);
       setShowSearch(false);
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not nominate movie.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not nominate movie.');
     } finally {
       setNominatingId(null);
     }
@@ -133,8 +133,8 @@ export default function SessionPage() {
     try {
       await deleteProposal(groupId, sesId, proposalId);
       setProposals((prev) => prev.filter((p) => p.id !== proposalId));
-    } catch (err: any) {
-      alert(err?.response?.data?.error ?? 'Could not remove nomination.');
+    } catch (err) {
+      alert(err instanceof ApiError ? err.message : 'Could not remove nomination.');
     }
   };
 
@@ -197,11 +197,11 @@ export default function SessionPage() {
                 </span>
                 {cfg.badge}
               </span>
-              <span className="text-on-surface-variant text-label-md">• Movie Night</span>
+              <span className="text-on-surface-variant text-label-md">• Call Time</span>
             </div>
 
             <h1 className="font-display text-display-lg text-on-surface mb-xs">
-              Movie Night Session
+              Call Time Session
             </h1>
             <p className="text-body-lg text-on-surface-variant mb-md leading-relaxed">{cfg.description}</p>
 

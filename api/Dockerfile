@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS base
+FROM python:3.12-alpine AS base
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ COPY . .
 ENV FLASK_APP=run.py
 ENV PYTHONUNBUFFERED=1
 
-EXPOSE 5000
+EXPOSE 8080
 
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
+CMD ["sh", "-c", "gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} run:app"]

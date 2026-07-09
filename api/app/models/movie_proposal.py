@@ -14,7 +14,7 @@ class MovieProposal(db.Model):
     )
 
     id              = db.Column(db.Integer, primary_key=True)
-    session_id      = db.Column(db.Integer, db.ForeignKey('movie_night_session.id', ondelete='CASCADE'), nullable=False, index=True)
+    session_id      = db.Column(db.Integer, db.ForeignKey('call_time_session.id', ondelete='CASCADE'), nullable=False, index=True)
     proposed_by_id  = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
     title           = db.Column(db.String(256), nullable=False)
     tmdb_id         = db.Column(db.Integer, nullable=True)
@@ -23,7 +23,7 @@ class MovieProposal(db.Model):
     runtime_minutes = db.Column(db.Integer, nullable=True)
     proposed_at     = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
 
-    session          = db.relationship('MovieNightSession', back_populates='proposals')
+    session          = db.relationship('CallTimeSession', back_populates='proposals')
     proposed_by_user = db.relationship('User', back_populates='proposals')
     votes            = db.relationship('Vote', back_populates='proposal', cascade='all, delete-orphan')
 

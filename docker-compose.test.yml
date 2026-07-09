@@ -4,9 +4,9 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: movie-night-test
+      POSTGRES_DB: call-time-test
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d movie-night-test"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d call-time-test"]
       interval: 5s
       timeout: 5s
       retries: 10

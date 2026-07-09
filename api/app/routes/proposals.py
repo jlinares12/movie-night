@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from app.extensions import db
 from app.models.group import Group
 from app.models.group_member import GroupMember
-from app.models.movie_night_session import MovieNightSession
+from app.models.call_time_session import CallTimeSession
 from app.models.movie_proposal import MovieProposal
 from app.utils.auth import require_auth
 
@@ -31,7 +31,7 @@ def create_proposal(group_id, session_id):
     if not membership:
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
 
@@ -78,7 +78,7 @@ def list_proposals(group_id, session_id):
     if not _get_membership(group_id, g.current_user):
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
 
@@ -100,7 +100,7 @@ def delete_proposal(group_id, session_id, proposal_id):
     if not membership:
         return jsonify({'error': 'forbidden'}), 403
 
-    movie_session = db.session.get(MovieNightSession, session_id)
+    movie_session = db.session.get(CallTimeSession, session_id)
     if not movie_session or movie_session.group_id != group_id:
         return jsonify({'error': 'session not found'}), 404
 

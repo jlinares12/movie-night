@@ -1,11 +1,13 @@
 SERVICE ?=
 MSG     ?= migration
+# override with RUFF=ruff if installed on PATH/venv
+RUFF    ?= pipx run ruff
 
 DEV_COMPOSE  = docker compose --env-file .env -f docker-compose.dev.yml
 PROD_COMPOSE = docker compose --env-file .env.prod -f docker-compose.prod.yml
 
-E2E_COMPOSE  = docker compose -p movie-night-e2e --env-file .env.e2e -f docker-compose.e2e.yml --profile e2e
-E2E_CONTAINER := movie-night-playwright
+E2E_COMPOSE  = docker compose -p call-time-e2e --env-file .env.e2e -f docker-compose.e2e.yml --profile e2e
+E2E_CONTAINER := call-time-playwright
 SPEC_PATH    = e2e/specs/
 FILE         ?=
 
@@ -13,6 +15,7 @@ FILE         ?=
         dev dev-build down logs \
         migrate \
         prod down-prod \
+        lint-backend \
         help
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
@@ -36,7 +39,7 @@ test-e2e-report:
 	npx playwright show-report
 
 down-e2e:
-	docker compose -p movie-night-e2e --env-file .env.e2e -f docker-compose.e2e.yml down -v
+	docker compose -p call-time-e2e --env-file .env.e2e -f docker-compose.e2e.yml down -v
 
 test:
 	$(MAKE) test-backend && $(MAKE) test-frontend && $(MAKE) test-e2e
@@ -59,6 +62,11 @@ logs:
 
 migrate:
 	$(DEV_COMPOSE) exec api flask db migrate -m "$(MSG)"
+
+# ── Lint ──────────────────────────────────────────────────────────────────────
+
+lint-backend:
+	$(RUFF) check api/
 
 # ── Prod ──────────────────────────────────────────────────────────────────────
 
@@ -89,6 +97,9 @@ help:
 	@echo "  dev-build          Rebuild images and start dev stack"
 	@echo "  down               Stop dev stack"
 	@echo "  logs               Follow dev logs"
+	@echo ""
+	@echo "Lint"
+	@echo "  lint-backend       Run ruff on api/ (RUFF= to override the ruff command)"
 	@echo ""
 	@echo "Database  (dev stack must be running)"
 	@echo "  migrate            Generate a migration (MSG= for message, default: 'migration')"
