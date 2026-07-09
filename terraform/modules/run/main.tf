@@ -13,6 +13,10 @@ resource "google_cloud_run_v2_service" "call-time" {
         name       = "cloudsql"
         mount_path = "/cloudsql"
       }
+      env {
+        name = "CLOUD_SQL_CONNECTION_NAME"
+        value = var.db_instance_connection_name
+      }
       dynamic "env" {
         for_each = var.secret_ids
         content {
@@ -62,6 +66,11 @@ resource "google_cloud_run_v2_job" "call-time-migrate" {
         volume_mounts {
           name       = "cloudsql"
           mount_path = "/cloudsql"
+        }
+
+        env {
+          name = "CLOUD_SQL_CONNECTION_NAME"
+          value = var.db_instance_connection_name
         }
 
         dynamic "env" {
