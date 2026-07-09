@@ -29,3 +29,7 @@ variable "deletion_protection" {
     description = "States if we want to enable deletion protection"
     type        = bool
 }
+
+variable "environment" {
+  type = string
+}
