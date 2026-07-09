@@ -14,6 +14,12 @@ provider "google" {
   region  = var.region
 }
 
+# Data source to check/enable API
+data "google_project_service" "cloud-build" {
+  project = var.project_id
+  service = "cloudbuild.googleapis.com"
+}
+
 module "lb" {
   source = "../modules/lb"
 
@@ -24,4 +30,14 @@ module "lb" {
   prod_frontend_bucket_name = var.prod_frontend_bucket_name
   dev_domain                = var.dev_domain
   prod_domain               = var.prod_domain
+}
+
+module "cloudbuild" {
+  source = "../modules/cloudbuild"
+
+  project_id                        = var.project_id
+  region                            = var.region
+  github_app_installation_id        = var.github_app_installation_id
+  github_oauth_token_secret_version = var.github_oauth_token_secret_version
+  github_repo_url                   = var.github_repo_url
 }
