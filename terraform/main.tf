@@ -119,6 +119,7 @@ module "run" {
   source                      = "./modules/run"
 
   environment                 = var.environment
+  project_id                  = var.project_id
   secret_ids                  = module.secrets.secret_ids
   service_account_email       = module.iam.sql-service-account-email
   db_instance_connection_name = module.sql.db_instance_connection_name
@@ -141,15 +142,4 @@ module "dns" {
   lb_ip       = data.terraform_remote_state.shared.outputs.lb_ip
   create_zone = var.environment == "prod"
   depends_on  = [ google_project_service.dns ]
-}
-
-module "cloudbuild" {
-  source                            = "./modules/cloudbuild"
-
-  region                            = var.region
-  github_app_installation_id        = var.github_app_installation_id
-  github_oauth_token_secret_version = var.github_oauth_token_secret_version
-  github_repo_url                   = var.github_repo_url
-  cloudbuild_sa_id                = module.iam.cloud-build-service-account-id
-  depends_on                        = [ module.iam, google_project_service.cloud-build ]
 }
