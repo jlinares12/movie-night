@@ -1,12 +1,13 @@
-resource "random_id" "call_time_db_id" {
-  byte_length = 4
-}
+# No longer need random_id since we're using predictable names
+# resource "random_id" "call_time_db_id" {
+#   byte_length = 4
+# }
 
 resource "google_sql_database_instance" "main_sql_instance" {
-    name             = "main-instance-${random_id.call_time_db_id.hex}"
-    database_version = "POSTGRES_16"
-    region           = var.region
-    project          = var.project_id
+    name                = "calltime-postgres-${var.environment}"
+    database_version    = "POSTGRES_16"
+    region              = var.region
+    project             = var.project_id
     deletion_protection = var.deletion_protection
 
     settings {

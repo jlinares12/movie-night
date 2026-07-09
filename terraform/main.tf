@@ -80,6 +80,7 @@ module "sql" {
 
     project_id          = var.project_id
     region              = var.region
+    environment         = var.environment
     deletion_protection = var.deletion_protection
     db_password         = var.db_password
     db_name             = var.db_name
