@@ -4,6 +4,10 @@ variable "region" {
   default     = "us-central1"
 }
 
+variable "project_id" {
+  type = string
+}
+
 variable "service_account_email" {
   description = "Service account email from IAM module"
   type        = string
