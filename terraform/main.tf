@@ -103,6 +103,7 @@ module "iam" {
   frontend_bucket_name = module.storage.frontend_bucket_name
   project_number       = var.project_number
   artifact_registry_repository_id = module.storage.artifact_registry_repository_id
+  clerk_publishable_key_secret_id = module.secrets.secret_ids["clerk-publishable-key"]
   depends_on           = [ google_project_service.iam ]
 }
 
@@ -111,7 +112,7 @@ module "secrets" {
 
   project_id   = var.project_id
   environment  = var.environment
-  secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key" ]
+  secret_names = [ "database-url", "secret-key", "clerk-secret-key", "clerk-webhook-secret", "clerk-jwks-url", "tmdb-api-key", "clerk-publishable-key" ]
   depends_on   = [ google_project_service.secret-manager ]
 }
 
@@ -120,7 +121,7 @@ module "run" {
 
   environment                 = var.environment
   project_id                  = var.project_id
-  secret_ids                  = module.secrets.secret_ids
+  secret_ids                  = { for k, v in module.secrets.secret_ids : k => v if k != "clerk-publishable-key" }
   service_account_email       = module.iam.sql-service-account-email
   db_instance_connection_name = module.sql.db_instance_connection_name
   region                      = var.region
