@@ -14,11 +14,11 @@ class SessionResult(db.Model):
     )
 
     id                  = db.Column(db.Integer, primary_key=True)
-    session_id          = db.Column(db.Integer, db.ForeignKey('movie_night_session.id', ondelete='CASCADE'), unique=True, nullable=False)
+    session_id          = db.Column(db.Integer, db.ForeignKey('call_time_session.id', ondelete='CASCADE'), unique=True, nullable=False)
     winning_proposal_id = db.Column(db.Integer, nullable=False, index=True)
     finalized_at        = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
 
-    session          = db.relationship('MovieNightSession', back_populates='result')
+    session          = db.relationship('CallTimeSession', back_populates='result')
     winning_proposal = db.relationship('MovieProposal', foreign_keys=[winning_proposal_id])
 
     def to_dict(self):

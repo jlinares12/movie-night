@@ -9,9 +9,15 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
-        "pool_size": 10,
-        "max_overflow": 20,
+        "pool_size": 4,
+        "max_overflow": 8,
     }
+
+    _cloud_sql_conn = os.getenv('CLOUD_SQL_CONNECTION_NAME')
+    if _cloud_sql_conn:
+        SQLALCHEMY_ENGINE_OPTIONS["connect_args"] = {
+            "host": f"/cloudsql/{_cloud_sql_conn}"
+        }
 
     CLERK_SECRET_KEY = os.environ.get('CLERK_SECRET_KEY')
     # Clerk JWKS endpoint, e.g. https://<frontend-api>/.well-known/jwks.json
@@ -25,7 +31,7 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'
     SESSION_COOKIE_SAMESITE = 'Lax'
-    SESSION_COOKIE_NAME = 'movie_night_session'
+    SESSION_COOKIE_NAME = 'call_time_session'
     SESSION_SQLALCHEMY_TABLE = 'flask_sessions'
 
     # CORS — restrict origins list when production domain is known

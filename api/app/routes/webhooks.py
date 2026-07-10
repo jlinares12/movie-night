@@ -22,7 +22,7 @@ def handle_clerk_webhook():
     try:
         wh = Webhook(CLERK_WEBHOOK_SECRET)
         msg = wh.verify(payload, headers)
-    except WebhookVerificationError as e:
+    except WebhookVerificationError:
         return jsonify({'error': 'Invalid signature'}), 401
 
     event_type = msg['type']
