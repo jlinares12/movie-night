@@ -27,3 +27,8 @@ variable "artifact_registry_repository_id" {
   description = "Artifact Registry repository ID to grant Cloud Build write access to"
   type        = string
 }
+
+variable "clerk_publishable_key_secret_id" {
+  type        = string
+  description = "Secret Manager secret ID for the Clerk publishable key, used to grant Cloud Build read access at frontend build time"
+}
