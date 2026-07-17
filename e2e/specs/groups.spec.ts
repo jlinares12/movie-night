@@ -21,7 +21,7 @@ test.afterEach(async ({ ownerRequest: request }) => {
 
 test('create a group via UI → appears in the list', async ({ authedPage: page }) => {
   const name = `UI-Group-${Date.now()}`;
-  await page.goto('/');
+  await page.goto('/', {waitUntil:'networkidle'});
   await page.waitForSelector(LOADING, { state: 'attached' });
   await page.waitForURL(`**/`);
 
