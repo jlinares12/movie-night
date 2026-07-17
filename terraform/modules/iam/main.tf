@@ -70,6 +70,14 @@ resource "google_project_iam_member" "cloudbuild-logs-policy" {
   role    = "roles/logging.logWriter"
 }
 
+## Cloud Build needs to read the Clerk publishable key at frontend build time
+resource "google_secret_manager_secret_iam_member" "cloudbuild-clerk-publishable-key-policy" {
+  project   = var.project_id
+  secret_id = var.clerk_publishable_key_secret_id
+  member    = "serviceAccount:${google_service_account.cloudbuild-sa.email}"
+  role      = "roles/secretmanager.secretAccessor"
+}
+
 # Storage Policies
 resource "google_storage_bucket_iam_member" "frontend_public_read" {
   bucket = var.frontend_bucket_name
