@@ -1,4 +1,13 @@
 extend-exclude = ["migrations"]   # Alembic autogenerates these
 
+[lint]
+# Declared explicitly rather than relying on ruff's built-in defaults, which are
+# not stable across releases: ruff 0.16 widened its default set from 59 rules
+# (E+F) to 413 across 38 families, which turned this previously-green tree into
+# 32 errors without a single line of app code changing. This list reproduces the
+# set the repo has always enforced. Widening it is a deliberate, reviewable edit
+# — see docs/plans/ before adding a family.
+select = ["E4", "E7", "E9", "F"]
+
 [lint.per-file-ignores]
 "app/__init__.py" = ["F401"]      # deliberate model imports — keep them in Alembic's metadata scope
