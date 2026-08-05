@@ -101,9 +101,15 @@ export default {
         modal:         '70',
       },
       keyframes: {
+        /*
+         * Distances are in units of the *swept element's* own width, so the
+         * traverse is only edge-to-edge for an element one third as wide as its
+         * container (`w-1/3`): -100% parks it just off the left edge, 300% just
+         * off the right. A different sliver width needs a different end value.
+         */
         shimmer: {
           '0%':   { transform: 'translateX(-100%)' },
-          '100%': { transform: 'translateX(400%)' },
+          '100%': { transform: 'translateX(300%)' },
         },
       },
       animation: {
