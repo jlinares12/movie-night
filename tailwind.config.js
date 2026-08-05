@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -98,7 +100,33 @@ export default {
         'loading-bar': '60',
         modal:         '70',
       },
+      keyframes: {
+        shimmer: {
+          '0%':   { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(400%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.5s ease-in-out infinite',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    /*
+     * Reduced motion is handled once, here, so every shimmer consumer inherits it.
+     * Any `animation` entry named `shimmer*` is covered automatically — a new
+     * consumer cannot forget to opt in.
+     */
+    plugin(({ addUtilities, theme }) => {
+      const shimmers = Object.keys(theme('animation'))
+        .filter((name) => name.startsWith('shimmer'))
+        .map((name) => `.animate-${name}`)
+
+      addUtilities({
+        '@media (prefers-reduced-motion: reduce)': {
+          [shimmers.join(', ')]: { animation: 'none' },
+        },
+      })
+    }),
+  ],
 }

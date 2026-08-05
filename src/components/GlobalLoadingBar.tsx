@@ -13,7 +13,7 @@ export function GlobalLoadingBar() {
       `}
     >
       {loading && (
-        <div className="h-full bg-primary/60 animate-[shimmer_1.5s_ease-in-out_infinite] w-1/3" />
+        <div className="h-full bg-primary/60 animate-shimmer w-1/3" />
       )}
     </div>
   )
