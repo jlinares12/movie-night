@@ -93,6 +93,11 @@ export default {
         'margin-mobile':  '20px',
         'margin-desktop': '64px',
       },
+      zIndex: {
+        sidebar:       '50',
+        'loading-bar': '60',
+        modal:         '70',
+      },
     },
   },
   plugins: [],

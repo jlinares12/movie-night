@@ -7,7 +7,7 @@ export function GlobalLoadingBar() {
       aria-busy={loading}
       role="progressbar"
       className={`
-        fixed top-0 left-0 right-0 h-1 z-50
+        fixed top-0 left-0 right-0 h-1 z-loading-bar
         bg-primary transition-opacity duration-300
         ${loading ? 'opacity-100' : 'opacity-0'}
       `}
