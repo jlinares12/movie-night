@@ -114,6 +114,11 @@ export default {
       },
       animation: {
         shimmer: 'shimmer 1.5s ease-in-out infinite',
+        /*
+         * Same keyframe, same `w-1/3` sliver — only slower. A wider sliver would
+         * need its own keyframe, since the travel distance lives there, not here.
+         */
+        'shimmer-slow': 'shimmer 2s ease-in-out infinite',
       },
     },
   },
