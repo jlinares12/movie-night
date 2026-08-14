@@ -3,7 +3,18 @@ import { regenerateInvite } from "../services/groups";
 import { ApiError } from "../services/apiError";
 import OutlinedButton from "./buttons/OutlinedButton";
 import IconButton from "./buttons/IconButton";
+import { Skeleton, SkeletonGroup } from "./Skeleton";
 import type { UserRole } from "../types/groups";
+
+/**
+ * Layout only — the real panel and its skeleton must occupy identical space, so these
+ * classes are shared rather than duplicated. `justify-between` matters to both: the panel
+ * is stretched by its taller bento-grid sibling, and the actions must sit at the bottom
+ * of that stretched box in either state.
+ */
+const PANEL =
+  'bg-surface-container-high rounded-xl p-md border border-outline-variant ' +
+  'cinematic-glow flex flex-col justify-between h-full';
 
 interface Props {
   groupId: number;
@@ -44,7 +55,7 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
   };
 
   return (
-    <div className="bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow flex flex-col justify-between h-full">
+    <div className={PANEL}>
       <div>
         <div className="flex items-center justify-between mb-lg">
           <h3 className="type-headline-sm text-on-surface">Invite Code</h3>
@@ -72,5 +83,37 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * Mirrors the panel above, region for region, and is its own `SkeletonGroup` so the sweep
+ * is clipped to the panel's rounded corners.
+ *
+ * The regenerate icon button is deliberately absent: it is gated on `your_role`, which is
+ * exactly what the in-flight request is fetching. A skeleton that guesses a permission is
+ * wrong half the time; one that omits the control only ever settles by *adding* a 30px
+ * affordance next to a flex-1 button, which reads as the page filling in rather than
+ * rearranging.
+ */
+export function InviteCodePanelSkeleton() {
+  return (
+    <SkeletonGroup label="Loading invite code" className={PANEL}>
+      <div>
+        {/* Title + share icon — type-headline-sm (1.25rem × 1.35 ≈ 27px) beside a 24px icon */}
+        <div className="flex items-center justify-between mb-lg">
+          <Skeleton className="h-7 w-40" />
+          <Skeleton variant="circle" className="w-6" />
+        </div>
+
+        {/* Code plaque — py-lg ×2 (96) + display-lg-mobile (38) + mt-2 (8) + label-sm (17) */}
+        <Skeleton variant="rect" className="h-[159px] rounded-lg" />
+      </div>
+
+      {/* Copy button — px-6 py-3 ×2 + type-label-md + border ≈ 44px */}
+      <div className="mt-lg flex gap-sm">
+        <Skeleton variant="rect" className="h-11 flex-1 rounded-xl" />
+      </div>
+    </SkeletonGroup>
   );
 }

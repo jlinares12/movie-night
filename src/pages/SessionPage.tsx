@@ -5,9 +5,23 @@ import { ApiError } from "../services/apiError";
 import { useGroupEvents } from "../hooks/useGroupEvents";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import MovieSearchPanel from "../components/MovieSearchPanel";
-import NominationCard from "../components/NominationCard";
+import NominationCard, { NominationCardSkeleton } from "../components/NominationCard";
+import { Skeleton, SkeletonGroup } from "../components/Skeleton";
 import type { Session, UserRole, SessionStatus, GroupDetail, MovieProposal } from "../types/groups";
 import type { MovieSearchResult } from "../types/movies";
+
+/**
+ * Layout only — shared so the real page and its skeleton place every region identically.
+ * `HERO` omits `relative`, which `SkeletonGroup` supplies itself.
+ */
+const PAGE      = 'flex flex-col gap-xl';
+const HERO      = 'rounded-[32px] overflow-hidden';
+const HERO_BODY = 'p-lg flex flex-col justify-end h-[440px]';
+const GRID      = 'grid grid-cols-12 gap-lg';
+const MAIN_COL  = 'col-span-12 lg:col-span-8 space-y-md';
+const SIDE_COL  = 'col-span-12 lg:col-span-4';
+const META_CARD = 'bg-surface-container border border-outline-variant/20 rounded-[24px] p-md';
+const POTLUCK   = 'bg-surface-container-high rounded-[32px] p-lg border border-outline-variant/20';
 
 const NEXT_STATUS: Record<SessionStatus, SessionStatus | null> = {
   open: 'voting',
@@ -144,11 +158,8 @@ export default function SessionPage() {
     setPotluckInput('');
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <span className="text-label-md text-primary animate-pulse">Loading session…</span>
-    </div>
-  );
+  // Swapped out on load, never hidden — see the note in `SessionPageSkeleton`.
+  if (loading) return <SessionPageSkeleton />;
   if (error || !session) return (
     <div className="flex items-center justify-center min-h-[400px]">
       <span className="text-label-md text-error">{error || 'Unknown error.'}</span>
@@ -164,7 +175,7 @@ export default function SessionPage() {
   const formattedTime = scheduledDate?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
   return (
-    <div className="flex flex-col gap-xl">
+    <div className={PAGE}>
       {/* Back */}
       <button
         onClick={() => navigate(`/group/${groupId}`)}
@@ -175,7 +186,7 @@ export default function SessionPage() {
       </button>
 
       {/* ── Hero ── */}
-      <section className="relative rounded-[32px] overflow-hidden">
+      <section className={`relative ${HERO}`}>
         <div className="absolute inset-0 z-0">
           <div className="w-full h-[440px] bg-gradient-to-br from-surface-container-high via-surface-container to-surface-dim" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
@@ -183,7 +194,7 @@ export default function SessionPage() {
           <div className="absolute -top-16 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
         </div>
 
-        <div className="relative z-10 p-lg flex flex-col justify-end h-[440px]">
+        <div className={`relative z-10 ${HERO_BODY}`}>
           <div className="max-w-2xl">
             <div className="flex items-center gap-sm mb-sm">
               <span
@@ -241,10 +252,10 @@ export default function SessionPage() {
       </section>
 
       {/* ── Main grid ── */}
-      <div className="grid grid-cols-12 gap-lg">
+      <div className={GRID}>
 
         {/* Left column: nominations */}
-        <div className="col-span-12 lg:col-span-8 space-y-md">
+        <div className={MAIN_COL}>
           <div className="flex justify-between items-end">
             <h3 className="text-headline-md text-on-surface">
               {session.status === 'decided' || session.status === 'closed'
@@ -313,7 +324,7 @@ export default function SessionPage() {
           )}
 
           {/* Session meta */}
-          <div className="bg-surface-container border border-outline-variant/20 rounded-[24px] p-md">
+          <div className={META_CARD}>
             <div className="grid grid-cols-2 gap-md">
               <div>
                 <p className="text-label-sm text-on-surface-variant mb-xs">Created</p>
@@ -349,8 +360,8 @@ export default function SessionPage() {
         </div>
 
         {/* Right column: potluck */}
-        <div className="col-span-12 lg:col-span-4">
-          <div className="bg-surface-container-high rounded-[32px] p-lg border border-outline-variant/20 sticky top-6">
+        <div className={SIDE_COL}>
+          <div className={`${POTLUCK} sticky top-6`}>
             <div className="flex items-center gap-sm mb-md">
               <span className="material-symbols-outlined text-primary" style={{ fontSize: '30px' }}>restaurant</span>
               <h3 className="text-headline-md text-on-surface">Who's Bringing What?</h3>
@@ -402,6 +413,108 @@ export default function SessionPage() {
               </div>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * First paint of the route, behind the single `loading` flag that covers all three
+ * fetches. Each card-shaped region owns its own group and sweep — the rule
+ * `GroupLinkSkeleton` established — so this is a layout wrapper, not a group. The back
+ * link is a bare `Skeleton`, which sweeps itself.
+ *
+ * Swapped out on load, never hidden: a `SkeletonGroup`'s `role="status"` lives for as
+ * long as it is mounted, and four of them asserting "Loading…" over settled content is
+ * worse than no announcement at all. Those four sibling regions announcing at once is the
+ * accepted cost of self-contained skeletons — see `GroupPageSkeleton`.
+ *
+ * Everything gated on `session.status` or `yourRole` is omitted: the advance button, the
+ * "Add Nomination" button, the danger zone, and the status-specific placeholders. All of
+ * them depend on exactly what the in-flight requests are fetching.
+ */
+export function SessionPageSkeleton() {
+  return (
+    <div className={PAGE}>
+      {/* Back link — text-label-md (20px); `self-start` mirrors the real button so the
+          flex column cannot stretch it edge to edge */}
+      <Skeleton className="self-start h-5 w-32" />
+
+      {/* Hero — a flat tint stands in for the real gradient stack */}
+      <SkeletonGroup label="Loading session" className={`${HERO} bg-surface-container-low`}>
+        <div className={HERO_BODY}>
+          <div className="max-w-2xl">
+            {/* Status badge — px-sm py-xs ×2 + text-label-sm + border ≈ 27px */}
+            <div className="flex items-center gap-sm mb-sm">
+              <Skeleton variant="rect" className="h-7 w-56 rounded-full" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+
+            {/* "Call Time Session" — text-display-lg (3rem × 1.15 ≈ 55px) */}
+            <Skeleton className="h-14 w-[26rem] max-w-full mb-xs" />
+
+            {/* Description — one line of text-body-lg at leading-relaxed ≈ 29px */}
+            <Skeleton className="h-7 w-full max-w-lg mb-md" />
+
+            {/* Date and group name — 24px icon + text-headline-sm (27px) */}
+            <div className="flex flex-wrap items-center gap-md">
+              {[0, 1].map((i) => (
+                <div key={i} className="flex items-center gap-sm">
+                  <Skeleton variant="circle" className="w-6" />
+                  <Skeleton className="h-7 w-48" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </SkeletonGroup>
+
+      <div className={GRID}>
+        <div className={MAIN_COL}>
+          {/* Section heading + member count — not a card, so no group of its own */}
+          <div className="flex justify-between items-end">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="w-24" />
+          </div>
+
+          {/* One card: ~228px, which is also about the height of the empty-state box,
+              so the region settles at roughly this size whether or not proposals exist. */}
+          <NominationCardSkeleton />
+
+          <SkeletonGroup label="Loading session details" className={META_CARD}>
+            <div className="grid grid-cols-2 gap-md">
+              {[0, 1].map((i) => (
+                <div key={i} className="flex flex-col gap-xs">
+                  {/* Label (17px) over value — type-label-md (20px) */}
+                  <Skeleton className="w-20" />
+                  <Skeleton className="h-5 w-28" />
+                </div>
+              ))}
+            </div>
+          </SkeletonGroup>
+        </div>
+
+        <div className={SIDE_COL}>
+          <SkeletonGroup label="Loading potluck list" className={POTLUCK}>
+            {/* Title — 30px icon + text-headline-md (1.5rem × 1.3 ≈ 31px) */}
+            <div className="flex items-center gap-sm mb-md">
+              <Skeleton variant="circle" className="w-[30px]" />
+              <Skeleton className="h-8 w-56" />
+            </div>
+
+            {/* Contribution list — py-md ×2 + one line of text-body-md ≈ 74px */}
+            <Skeleton variant="rect" className="h-[74px] rounded-xl mb-lg" />
+
+            <div className="mt-md pt-md border-t border-outline-variant/30">
+              <Skeleton className="w-40 mb-xs" />
+              {/* Input + add button — px-md py-sm ×2 + text-body-md + border ≈ 52px */}
+              <div className="flex gap-xs">
+                <Skeleton variant="rect" className="h-[52px] flex-1 rounded-xl" />
+                <Skeleton variant="rect" className="h-[52px] w-12 rounded-xl" />
+              </div>
+            </div>
+          </SkeletonGroup>
         </div>
       </div>
     </div>

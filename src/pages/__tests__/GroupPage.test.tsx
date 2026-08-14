@@ -14,12 +14,15 @@ jest.mock('../../hooks/useGroupEvents', () => ({ useGroupEvents: jest.fn() }));
 jest.mock('../../hooks/useCurrentUser');
 jest.mock('../../components/InviteCodePanel', () => ({
   default: () => <div data-testid="invite-panel" />,
+  InviteCodePanelSkeleton: () => <div data-testid="invite-panel-skeleton" />,
 }));
 jest.mock('../../components/MemberList', () => ({
   default: () => <div data-testid="member-list" />,
+  MemberListSkeleton: () => <div data-testid="member-list-skeleton" />,
 }));
 jest.mock('../../components/SessionList', () => ({
   default: () => <div data-testid="session-list" />,
+  SessionListSkeleton: () => <div data-testid="session-list-skeleton" />,
 }));
 
 const mockNavigate = jest.fn();
@@ -59,7 +62,7 @@ describe('GroupPage', () => {
     expect(screen.getByText(/select a group/i)).toBeInTheDocument();
   });
 
-  test('shows a loading indicator while fetching', () => {
+  test('shows a skeleton of the page layout while fetching', () => {
     // Arrange
     (useParams as jest.Mock).mockReturnValue({ id: '1' });
     mockGetGroup.mockReturnValue(new Promise(() => {}));
@@ -67,8 +70,26 @@ describe('GroupPage', () => {
     // Act
     render(<GroupPage />);
 
-    // Assert
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    // Assert — every region of the loaded page has a stand-in
+    expect(screen.getByRole('status')).toHaveTextContent('Loading group');
+    expect(screen.getByTestId('invite-panel-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('member-list-skeleton')).toBeInTheDocument();
+    expect(screen.getByTestId('session-list-skeleton')).toBeInTheDocument();
+  });
+
+  test('swaps the skeleton out entirely once the fetch settles', async () => {
+    // Arrange
+    (useParams as jest.Mock).mockReturnValue({ id: '1' });
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail() } as unknown as Awaited<ReturnType<typeof getGroup>>);
+
+    // Act
+    render(<GroupPage />);
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert — a `role="status"` left mounted would keep asserting "Loading…" over
+    // settled content, so the skeleton must be unmounted rather than hidden
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('member-list-skeleton')).not.toBeInTheDocument();
   });
 
   test('renders the group name after a successful fetch', async () => {
