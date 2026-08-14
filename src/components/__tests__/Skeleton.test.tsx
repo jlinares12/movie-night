@@ -1,5 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import { Skeleton, SkeletonGroup } from '../Skeleton';
+import { LoadingProvider } from '../../context/LoadingContext';
+
+jest.mock('../../components/GlobalLoadingBar', () => ({
+  GlobalLoadingBar: () => <div data-testid="mock-loading-bar" />,
+}));
 
 describe('Skeleton', () => {
   describe('shape', () => {
@@ -257,6 +262,50 @@ describe('SkeletonGroup', () => {
 
       // Assert
       expect(screen.getByText('Loading…')).toHaveClass('sr-only');
+    });
+  });
+
+  describe('division of labor', () => {
+    test('suppresses the loading bar for as long as it is mounted', () => {
+      // Arrange
+      render(
+        <LoadingProvider>
+          <SkeletonGroup><Skeleton /></SkeletonGroup>
+        </LoadingProvider>,
+      );
+
+      // Act
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
+
+      // Assert — a region that represents its own wait must not also run the bar
+      expect(screen.getByTestId('global-loading')).toHaveAttribute('data-bar', 'false');
+      expect(screen.getByTestId('global-loading')).toHaveAttribute('data-loading', 'true');
+    });
+
+    test('hands the bar back when it unmounts', () => {
+      // Arrange
+      const { rerender } = render(
+        <LoadingProvider>
+          <SkeletonGroup><Skeleton /></SkeletonGroup>
+        </LoadingProvider>,
+      );
+      act(() => { window.dispatchEvent(new CustomEvent('loading:start')); });
+
+      // Act — the post-load refetch case: no skeleton re-renders, so the bar is the
+      // only thing left to represent the request
+      rerender(<LoadingProvider>settled</LoadingProvider>);
+
+      // Assert
+      expect(screen.getByTestId('global-loading')).toHaveAttribute('data-bar', 'true');
+    });
+
+    test('renders outside a LoadingProvider without blowing up', () => {
+      // Arrange + Act — every other test in this file relies on this, and so does any
+      // consumer that renders a skeleton above the provider
+      render(<SkeletonGroup><Skeleton /></SkeletonGroup>);
+
+      // Assert
+      expect(screen.getByTestId('skeleton-group')).toBeInTheDocument();
     });
   });
 });
