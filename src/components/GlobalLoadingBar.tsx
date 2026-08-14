@@ -6,14 +6,22 @@ export function GlobalLoadingBar() {
     <div
       aria-busy={loading}
       role="progressbar"
+      data-testid="loading-bar-track"
       className={`
-        fixed top-0 left-0 right-0 h-1 z-50
-        bg-primary transition-opacity duration-300
+        fixed top-0 left-0 right-0 h-1 z-loading-bar
+        overflow-hidden transition-opacity duration-300
         ${loading ? 'opacity-100' : 'opacity-0'}
       `}
     >
       {loading && (
-        <div className="h-full bg-primary/60 animate-[shimmer_1.5s_ease-in-out_infinite] w-1/3" />
+        <div
+          data-testid="loading-bar-sweep"
+          className="
+            h-full w-1/3 animate-shimmer
+            bg-gradient-to-r from-transparent via-primary to-transparent
+            motion-reduce:w-full motion-reduce:bg-none motion-reduce:bg-primary
+          "
+        />
       )}
     </div>
   )

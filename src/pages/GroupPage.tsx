@@ -4,11 +4,16 @@ import { getGroup, deleteGroup } from "../services/groups";
 import { ApiError } from "../services/apiError";
 import { useGroupEvents } from "../hooks/useGroupEvents";
 import { useCurrentUser } from "../hooks/useCurrentUser";
-import InviteCodePanel from "../components/InviteCodePanel";
-import MemberList from "../components/MemberList";
-import SessionList from "../components/SessionList";
+import InviteCodePanel, { InviteCodePanelSkeleton } from "../components/InviteCodePanel";
+import MemberList, { MemberListSkeleton } from "../components/MemberList";
+import SessionList, { SessionListSkeleton } from "../components/SessionList";
 import DangerButton from "../components/buttons/DangerButton";
+import { Skeleton, SkeletonGroup } from "../components/Skeleton";
 import type { GroupDetail, GroupMember, Session, SessionStatus, UserRole } from "../types/groups";
+
+/** Layout only — shared so the real bento grid and its skeleton place panels identically. */
+const HEADER = 'pb-lg';
+const GRID = 'grid grid-cols-1 lg:grid-cols-12 gap-gutter';
 
 export default function GroupPage() {
   const { id } = useParams<{ id: string }>();
@@ -95,14 +100,10 @@ export default function GroupPage() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center gap-3 text-on-surface-variant type-body-md">
-        <span className="material-symbols-outlined animate-spin">progress_activity</span>
-        Loading…
-      </div>
-    );
-  }
+  // Swapped out on load, never hidden — a `SkeletonGroup`'s `role="status"` lives for as
+  // long as it is mounted, and a live region asserting "Loading…" over settled content is
+  // worse than no announcement at all.
+  if (loading) return <GroupPageSkeleton />;
 
   if (error || !group) {
     return <div className="type-body-md text-error">{error || 'Unknown error.'}</div>;
@@ -123,7 +124,7 @@ export default function GroupPage() {
   return (
     <div>
       {/* Header */}
-      <header className="pb-lg flex flex-col md:flex-row justify-between items-start md:items-end gap-md">
+      <header className={`${HEADER} flex flex-col md:flex-row justify-between items-start md:items-end gap-md`}>
         <div>
           <h2 className="type-display-lg text-primary leading-none mb-sm">{group.name}</h2>
           {group.description && (
@@ -142,7 +143,7 @@ export default function GroupPage() {
       </header>
 
       {/* Bento grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+      <div className={GRID}>
         <div className="lg:col-span-4">
           <InviteCodePanel
             groupId={group.id}
@@ -174,6 +175,48 @@ export default function GroupPage() {
             }
           />
         </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * First paint of the route. The three panels each mimic a component and therefore own
+ * their own group and sweep — the same rule `GroupLinkSkeleton` follows — so this is a
+ * plain layout wrapper, not a group. Only the header, which has no component of its own,
+ * is grouped here.
+ *
+ * Consequence worth knowing: four sibling `role="status"` regions announce at once on
+ * this route. That is the accepted cost of self-contained skeletons; the alternative is
+ * one group around the whole page, which would make a bare `<MemberListSkeleton />`
+ * silently sweep-less.
+ *
+ * Role-gated controls (Delete Group, the regenerate icon, New Session) are omitted
+ * throughout — `your_role` is precisely what the in-flight request is fetching, and a
+ * skeleton that guesses a permission is wrong half the time.
+ */
+export function GroupPageSkeleton() {
+  return (
+    <div>
+      <SkeletonGroup label="Loading group" className={HEADER}>
+        {/* Group name — type-display-lg with leading-none = exactly 48px */}
+        <Skeleton className="h-12 w-72 max-w-full mb-sm" />
+
+        {/* Description — optional on the real header, but included: most groups have one,
+            and under-sizing every group that does is the worse of the two errors. */}
+        <Skeleton className="h-7 w-[28rem] max-w-full" />
+
+        <div className="mt-4 flex items-center gap-2">
+          {/* Role pill — px-3 py-1 ×2 + type-label-sm ≈ 25px */}
+          <Skeleton variant="rect" className="h-6 w-24 rounded-full" />
+          <Skeleton className="w-28" />
+        </div>
+      </SkeletonGroup>
+
+      <div className={GRID}>
+        <div className="lg:col-span-4"><InviteCodePanelSkeleton /></div>
+        <div className="lg:col-span-8"><MemberListSkeleton /></div>
+        <div className="lg:col-span-12"><SessionListSkeleton /></div>
       </div>
     </div>
   );

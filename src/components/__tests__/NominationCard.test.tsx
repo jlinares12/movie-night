@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import NominationCard from '../NominationCard';
+import NominationCard, { NominationCardSkeleton } from '../NominationCard';
 import type { MovieProposal } from '../../types/groups';
 
 const makeProposal = (overrides: Partial<MovieProposal> = {}): MovieProposal => ({
@@ -77,5 +77,64 @@ describe('NominationCard', () => {
 
     // Assert
     expect(onDelete).toHaveBeenCalledWith(7);
+  });
+
+  describe('NominationCardSkeleton', () => {
+    test('renders no interactive elements', () => {
+      // Arrange / Act
+      render(<NominationCardSkeleton />);
+
+      // Assert
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    });
+
+    test('owns a single sweep for the whole card', () => {
+      // Arrange / Act
+      render(<NominationCardSkeleton />);
+
+      // Assert
+      expect(screen.getAllByTestId('skeleton-sweep')).toHaveLength(1);
+    });
+
+    test('announces the region once', () => {
+      // Arrange / Act
+      render(<NominationCardSkeleton />);
+
+      // Assert
+      expect(screen.getAllByRole('status')).toHaveLength(1);
+      expect(screen.getByRole('status')).toHaveTextContent('Loading nomination');
+    });
+
+    test('occupies the same box as the real card', () => {
+      // Arrange / Act
+      const { container: skeleton } = render(<NominationCardSkeleton />);
+      const { container: card } = render(
+        <NominationCard proposal={makeProposal()} canDelete={false} onDelete={jest.fn()} />
+      );
+
+      // Assert — the anti-jump guarantee
+      const box = ['flex', 'gap-md', 'p-md', 'rounded-[20px]'];
+      expect(skeleton.firstChild).toHaveClass(...box);
+      expect(card.firstChild).toHaveClass(...box);
+    });
+
+    test('poster block matches the real poster footprint', () => {
+      // Arrange / Act
+      const { container } = render(<NominationCardSkeleton />);
+
+      // Assert — the poster is the first block, and it is what makes the card 228px tall
+      expect(container.querySelector('[data-testid="skeleton"]')).toHaveClass(
+        'w-[120px]',
+        'h-[180px]',
+      );
+    });
+
+    test('overview stands in at the real card\'s three-line clamp', () => {
+      // Arrange / Act
+      render(<NominationCardSkeleton />);
+
+      // Assert — the real overview is line-clamp-3, so three lines is its ceiling
+      expect(screen.getAllByTestId('skeleton-line')).toHaveLength(3);
+    });
   });
 });

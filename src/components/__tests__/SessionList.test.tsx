@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
-import SessionList from '../SessionList';
+import SessionList, { SessionListSkeleton } from '../SessionList';
 import { createSession } from '../../services/groups';
 import type { Session } from '../../types/groups';
 
@@ -152,5 +152,56 @@ describe('SessionList', () => {
 
     // Assert
     expect(screen.queryByRole('button', { name: 'Create' })).not.toBeInTheDocument();
+  });
+
+  describe('SessionListSkeleton', () => {
+    test('renders no interactive elements', () => {
+      // Arrange / Act
+      render(<SessionListSkeleton />);
+
+      // Assert
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    });
+
+    test('owns a single sweep for the whole panel', () => {
+      // Arrange / Act
+      render(<SessionListSkeleton />);
+
+      // Assert
+      expect(screen.getAllByTestId('skeleton-sweep')).toHaveLength(1);
+    });
+
+    test('announces the region once', () => {
+      // Arrange / Act
+      render(<SessionListSkeleton />);
+
+      // Assert
+      expect(screen.getAllByRole('status')).toHaveLength(1);
+      expect(screen.getByRole('status')).toHaveTextContent('Loading sessions');
+    });
+
+    test('occupies the same box as the real panel', () => {
+      // Arrange / Act
+      const { container: skeleton } = render(<SessionListSkeleton />);
+      const { container: panel } = render(
+        <SessionList groupId={5} sessions={[]} your_role="owner" onSessionCreated={jest.fn()} />
+      );
+
+      // Assert — the anti-jump guarantee
+      const box = ['p-md', 'rounded-xl', 'bg-surface-container-high'];
+      expect(skeleton.firstChild).toHaveClass(...box);
+      expect(panel.firstChild).toHaveClass(...box);
+    });
+
+    test('gives every session row the thumbnail that sets its height', () => {
+      // Arrange / Act
+      render(<SessionListSkeleton />);
+
+      // Assert — the 80px thumbnail is what makes a row 128px tall
+      const thumbs = screen
+        .getAllByTestId('skeleton')
+        .filter((el) => el.classList.contains('h-20'));
+      expect(thumbs).toHaveLength(2);
+    });
   });
 });

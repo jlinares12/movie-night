@@ -4,10 +4,13 @@ import { listGroups } from '../../services/groups';
 import type { GroupSummary } from '../../types/groups';
 
 jest.mock('../../services/groups');
+// Each skeleton is self-contained (it is its own `SkeletonGroup`), so MovieGroups' only
+// job in the loading state is putting two of them in the grid — that is all we assert.
 jest.mock('../GroupLink', () => ({
   default: ({ group }: { group: GroupSummary }) => (
     <li data-testid="group-link">{group.name}</li>
   ),
+  GroupLinkSkeleton: () => <li data-testid="group-link-skeleton" />,
 }));
 
 const mockListGroups = listGroups as jest.MockedFunction<typeof listGroups>;
@@ -34,9 +37,8 @@ describe('MovieGroups', () => {
     // Act
     render(<MovieGroups />);
 
-    // Assert — skeletons render animated disabled "Open" buttons
-    const openButtons = screen.getAllByRole('button', { name: 'Open' });
-    expect(openButtons[0]).toBeDisabled();
+    // Assert
+    expect(screen.getAllByTestId('group-link-skeleton')).toHaveLength(2);
   });
 
   test('renders a group card for each group returned by the API', async () => {
@@ -75,9 +77,8 @@ describe('MovieGroups', () => {
     render(<MovieGroups />);
     await act(async () => { await Promise.resolve(); });
 
-    // Assert — skeletons still present
-    const openButtons = screen.getAllByRole('button', { name: 'Open' });
-    expect(openButtons[0]).toBeDisabled();
+    // Assert — skeletons still present; `loading` is never cleared on error
+    expect(screen.getAllByTestId('group-link-skeleton')).toHaveLength(2);
   });
 
   test('exposes a refresh function via refreshRef', async () => {
