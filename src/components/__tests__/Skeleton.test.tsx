@@ -11,12 +11,16 @@ describe('Skeleton', () => {
       expect(screen.getByTestId('skeleton')).toHaveClass('h-4', 'rounded');
     });
 
-    test('renders a square-cornered block for the rect variant', () => {
+    test('leaves the rect variant unshaped so the caller owns its radius', () => {
+      // A baked-in radius cannot be overridden: `className` is appended, not merged, and
+      // Tailwind emits `rounded-lg` *before* `rounded-md`, so a default of `rounded-md`
+      // would silently beat a caller asking for `rounded-lg`.
       // Arrange + Act
-      render(<Skeleton variant="rect" />);
+      const { container } = render(<Skeleton variant="rect" className="rounded-lg" />);
 
       // Assert
-      expect(screen.getByTestId('skeleton')).toHaveClass('rounded-md');
+      expect(container.firstChild).not.toHaveClass('rounded-md');
+      expect(container.firstChild).toHaveClass('rounded-lg');
     });
 
     test('leaves the rect variant unsized so the caller owns its dimensions', () => {
