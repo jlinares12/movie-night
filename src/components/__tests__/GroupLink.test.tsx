@@ -1,7 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useNavigate } from 'react-router-dom';
-import GroupLink from '../GroupLink';
+import GroupLink, { GroupLinkSkeleton } from '../GroupLink';
 import { removeMember } from '../../services/groups';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { ApiError } from '../../services/apiError';
@@ -135,5 +135,51 @@ describe('GroupLink', () => {
 
     // Assert
     expect(screen.getByRole('button', { name: 'Nominate Movie' })).toBeDisabled();
+  });
+
+  describe('GroupLinkSkeleton', () => {
+    test('renders no interactive elements', () => {
+      // Arrange / Act
+      render(<GroupLinkSkeleton />);
+
+      // Assert — the skeleton this replaced shipped three live disabled buttons
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    });
+
+    test('owns a single sweep for the whole card', () => {
+      // Arrange / Act
+      render(<GroupLinkSkeleton />);
+
+      // Assert — the card catches one pass of light, not one per block
+      expect(screen.getAllByTestId('skeleton-sweep')).toHaveLength(1);
+    });
+
+    test('announces once per card', () => {
+      // Arrange / Act
+      render(<GroupLinkSkeleton />);
+
+      // Assert
+      expect(screen.getAllByRole('status')).toHaveLength(1);
+      expect(screen.getByRole('status')).toHaveTextContent('Loading group');
+    });
+
+    test('occupies the same grid cell as the real card', () => {
+      // Arrange / Act
+      const { container: skeleton } = render(<GroupLinkSkeleton />);
+      const { container: card } = render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
+
+      // Assert — the anti-jump guarantee: both roots span identically at every breakpoint
+      const spans = ['col-span-12', 'md:col-span-6', 'lg:col-span-4'];
+      expect(skeleton.firstChild).toHaveClass(...spans);
+      expect(card.firstChild).toHaveClass(...spans);
+    });
+
+    test('hero block matches the real hero height', () => {
+      // Arrange / Act
+      const { container } = render(<GroupLinkSkeleton />);
+
+      // Assert — the hero is the first block, and h-48 is what dominates the card's height
+      expect(container.querySelector('[data-testid="skeleton"]')).toHaveClass('h-48');
+    });
   });
 });

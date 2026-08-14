@@ -30,6 +30,7 @@ jest.mock('../../components/NominationCard', () => ({
       {canDelete && <button onClick={() => onDelete(proposal.id)}>Remove nomination</button>}
     </div>
   ),
+  NominationCardSkeleton: () => <div data-testid="nomination-card-skeleton" />,
 }));
 
 const mockNavigate = jest.fn();
@@ -92,13 +93,25 @@ describe('SessionPage', () => {
 
   // ── Loading / error states ────────────────────────────────────────────────
 
-  test('shows a loading indicator while fetching', () => {
+  test('shows a skeleton of the page layout while fetching', () => {
     mockGetSession.mockReturnValue(new Promise(() => {}));
     mockGetGroup.mockReturnValue(new Promise(() => {}));
 
     render(<SessionPage />);
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    // Every region of the loaded page has a stand-in: hero, nominations, meta, potluck
+    expect(screen.getByText('Loading session')).toBeInTheDocument();
+    expect(screen.getByTestId('nomination-card-skeleton')).toBeInTheDocument();
+    expect(screen.getByText('Loading potluck list')).toBeInTheDocument();
+  });
+
+  test('swaps the skeleton out entirely once the fetches settle', async () => {
+    await setup(makeSession(), makeGroupDetail());
+
+    // A `role="status"` left mounted would keep asserting "Loading…" over settled
+    // content, so the skeleton must be unmounted rather than hidden
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('nomination-card-skeleton')).not.toBeInTheDocument();
   });
 
   test('shows "Access denied" on a 403 response', async () => {
