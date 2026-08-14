@@ -1,4 +1,5 @@
 import { createContext, useContext, type ReactNode } from "react";
+import { useSkeletonRegion } from "../context/LoadingContext";
 
 /**
  * True while a `SkeletonGroup` ancestor owns the sweep. Blocks read this to
@@ -104,6 +105,10 @@ export function SkeletonGroup({
   className = '',
   children,
 }: SkeletonGroupProps) {
+  // This region owns its wait, so the bar must not also run for it. Registering here
+  // rather than in each consumer is what makes the rule impossible to forget.
+  useSkeletonRegion();
+
   return (
     <div
       role="status"
