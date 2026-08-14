@@ -2,7 +2,20 @@ import { useState } from "react";
 import { removeMember, updateMemberRole } from "../services/groups";
 import { ApiError } from "../services/apiError";
 import IconButton from "./buttons/IconButton";
+import { Skeleton, SkeletonGroup } from "./Skeleton";
 import type { GroupMember, UserRole } from "../types/groups";
+
+/**
+ * Layout only — shared so the real panel and its skeleton occupy identical space.
+ * Hover affordances stay on the real rows; nothing about a skeleton is interactive.
+ */
+const PANEL =
+  'bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow h-full';
+const ROW =
+  'flex items-center gap-md p-sm bg-surface-container rounded-lg border border-transparent';
+
+/** Enough rows to read as a populated grid without over-committing to a member count. */
+const SKELETON_ROWS = 4;
 
 const ROLE_BADGE: Record<UserRole, { label: string; color: string; border: string }> = {
   owner:  { label: 'Owner',  color: 'text-primary',            border: 'border-2 border-primary' },
@@ -55,7 +68,7 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
   const initial = (m: GroupMember) => (m.username ?? '?')[0].toUpperCase();
 
   return (
-    <div className="bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow h-full">
+    <div className={PANEL}>
       <div className="flex items-center justify-between mb-lg">
         <h3 className="type-headline-sm text-on-surface">Active Members</h3>
         <span className="type-label-sm text-on-surface-variant">{members.length} total</span>
@@ -70,7 +83,7 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
           return (
             <div
               key={m.id}
-              className="flex items-center gap-md p-sm bg-surface-container rounded-lg border border-transparent neon-border-hover transition-all"
+              className={`${ROW} neon-border-hover transition-all`}
             >
               {/* Avatar */}
               <div className={`w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 ${badge.border}`}>
@@ -111,5 +124,40 @@ export default function MemberList({ groupId, members, your_role, currentUserId,
         })}
       </div>
     </div>
+  );
+}
+
+/**
+ * Mirrors the panel above and owns its own sweep, clipped to the panel's corners.
+ *
+ * Per-row action buttons are absent: which ones render depends on `your_role` and on
+ * whether a row is you — both unknown until the fetch lands. The 48px avatar is what
+ * sets row height, so their absence costs no vertical space.
+ */
+export function MemberListSkeleton() {
+  return (
+    <SkeletonGroup label="Loading members" className={PANEL}>
+      {/* Title + "N total" — type-headline-sm (27px) beside type-label-sm (17px) */}
+      <div className="flex items-center justify-between mb-lg">
+        <Skeleton className="h-7 w-44" />
+        <Skeleton className="w-16" />
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+        {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+          <div key={i} className={ROW}>
+            {/* Avatar — w-12 h-12, the block that dictates the 72px row height */}
+            <Skeleton variant="circle" className="w-12 flex-shrink-0" />
+            <div className="flex-1 min-w-0 flex flex-col gap-1">
+              {/* Username — type-label-md (0.875rem × 1.4 ≈ 20px) */}
+              <Skeleton className="h-5 w-2/3" />
+              {/* Role caption — text-[10px] uppercase. Below the text variant's h-4
+                  default, so it uses `rect`, which owns no height to be beaten by. */}
+              <Skeleton variant="rect" className="h-3.5 w-16 rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </SkeletonGroup>
   );
 }
