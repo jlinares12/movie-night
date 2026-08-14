@@ -1,36 +1,58 @@
 import { test, expect } from '../fixtures/auth';
 import { apiDeleteGroup } from '../helpers/api';
 
+/*
+ * `data-loading` is the raw in-flight request count; `data-bar` is what the bar actually
+ * renders. They diverge exactly when a skeleton region is representing the wait — which
+ * is the invariant the first test below exists to pin down.
+ */
 const LOADING_SETTLED = '[data-testid="global-loading"][data-loading="false"]';
 const LOADING_ACTIVE  = '[data-testid="global-loading"][data-loading="true"]';
+const sentinel = (page: import('@playwright/test').Page) =>
+  page.locator('[data-testid="global-loading"]');
 
-test('route navigation: loading bar activates then settles', async ({ authedPage: page }) => {
+test('route navigation: the skeleton owns the wait and the bar stays out of it', async ({ authedPage: page }) => {
   await page.goto('/profile');
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 
-  // Hold the groups fetch so React has a guaranteed window to flush
-  // data-loading="true". Without this, React 18 batches setLoading(true) +
-  // setLoading(false) into one render and the "true" state is never painted.
+  // Hold the groups fetch so React has a guaranteed window to flush the in-flight
+  // state. Without this, React 18 batches setLoading(true) + setLoading(false) into
+  // one render and the intermediate state is never painted.
+  //
+  // Every GET is held, not just the first. `main.tsx:53` wraps the app in StrictMode and
+  // the e2e stack serves the Vite dev build, so `MovieGroups`' mount effect fires *twice*
+  // — a `{ times: 1 }` route holds only the first copy while the second resolves normally
+  // and unmounts the skeleton, leaving `data-loading="true"` with nothing on screen.
+  // Writes pass straight through, keeping the hold narrowed to the fetch under test.
   let release!: () => void;
-  // { times: 1 } — auto-deregisters after the first match so subsequent
-  // requests to /api/groups pass through and don't get stuck holding "true".
+  const gate = new Promise<void>((r) => { release = r; });
   await page.route('**/api/groups', async (route) => {
-    await new Promise<void>((r) => { release = r; });
+    if (route.request().method() !== 'GET') return route.continue();
+    await gate;
     await route.continue();
-  }, { times: 1 });
+  });
 
   // SPA navigation — triggers the paused groups fetch
   await page.getByRole('link', { name: /My Groups/i }).click();
 
-  // With the fetch held open, the loading bar must become active
-  await expect(page.locator('[data-testid="global-loading"]'))
-    .toHaveAttribute('data-loading', 'true', { timeout: 5_000 });
+  // The request really is in flight...
+  await expect(sentinel(page)).toHaveAttribute('data-loading', 'true', { timeout: 5_000 });
 
-  // Release the fetch — route auto-deregisters, all further requests pass through
+  // ...and `MovieGroups` is representing it, so the bar must not also run. This is the
+  // whole of step 6: before it, both indicators fired for this one fetch.
+  await expect(page.getByRole('status').first()).toBeAttached();
+  await expect(sentinel(page)).toHaveAttribute('data-bar', 'false');
+
+  // Release both held copies. Deliberately no `unroute`: `release()` only resolves the
+  // gate, so the two paused handlers resume on a later microtask — unrouting here takes
+  // ownership of those still-pending routes and continues them itself, and the handlers
+  // then hit "Route is already handled". The route can simply stay registered; once the
+  // gate is resolved every later request falls through it untouched.
   release();
 
-  await expect(page.locator('[data-testid="global-loading"]'))
-    .toHaveAttribute('data-loading', 'false');
+  await expect(sentinel(page)).toHaveAttribute('data-loading', 'false');
+  await expect(sentinel(page)).toHaveAttribute('data-bar', 'false');
+  await expect(page.getByRole('status')).toHaveCount(0);
 });
 
 test('API action (create group) activates loading bar, then settles', async ({ authedPage: page }) => {
@@ -56,6 +78,12 @@ test('API action (create group) activates loading bar, then settles', async ({ a
   await page.getByRole('button', { name: /Create Group/ }).click();
 
   await activatedPromise;
+
+  // The other half of the division of labor: a mutation has no skeleton representing
+  // it, so the bar is what reports it. Suppression is scoped to skeleton regions only —
+  // the button's own "Creating…" label co-occurring with the bar is intended.
+  await expect(sentinel(page)).toHaveAttribute('data-bar', 'true');
+
   await page.waitForSelector(LOADING_SETTLED, { state: 'attached' });
 
   await page.unroute('**/api/groups');
