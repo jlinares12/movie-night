@@ -20,6 +20,7 @@ import {
  */
 
 const LOADING_SETTLED = '[data-testid="global-loading"][data-loading="false"]';
+const sentinel = (page: Page) => page.locator('[data-testid="global-loading"]');
 
 /**
  * Pause every matching response until the returned function is called.
@@ -89,6 +90,11 @@ test('group page holds a layout-matched skeleton while its fetch is in flight', 
   for (const label of ['Loading group', 'Loading invite code', 'Loading members', 'Loading sessions']) {
     await expect(page.getByText(label, { exact: true })).toBeAttached();
   }
+
+  // Step 6: these regions represent the wait, so the bar must not also run for it
+  await expect(sentinel(page)).toHaveAttribute('data-loading', 'true');
+  await expect(sentinel(page)).toHaveAttribute('data-bar', 'false');
+
   await shoot(page, 'group-page', testInfo);
 
   release();
@@ -119,6 +125,11 @@ test('session page holds a layout-matched skeleton across all three fetches', as
   for (const label of ['Loading session', 'Loading nomination', 'Loading session details', 'Loading potluck list']) {
     await expect(page.getByText(label, { exact: true })).toBeAttached();
   }
+
+  // Step 6, across all three held fetches at once
+  await expect(sentinel(page)).toHaveAttribute('data-loading', 'true');
+  await expect(sentinel(page)).toHaveAttribute('data-bar', 'false');
+
   await shoot(page, 'session-page', testInfo);
 
   release();
