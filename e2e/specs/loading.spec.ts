@@ -18,13 +18,19 @@ test('route navigation: the skeleton owns the wait and the bar stays out of it',
   // Hold the groups fetch so React has a guaranteed window to flush the in-flight
   // state. Without this, React 18 batches setLoading(true) + setLoading(false) into
   // one render and the intermediate state is never painted.
+  //
+  // Every GET is held, not just the first. `main.tsx:53` wraps the app in StrictMode and
+  // the e2e stack serves the Vite dev build, so `MovieGroups`' mount effect fires *twice*
+  // — a `{ times: 1 }` route holds only the first copy while the second resolves normally
+  // and unmounts the skeleton, leaving `data-loading="true"` with nothing on screen.
+  // Writes pass straight through, keeping the hold narrowed to the fetch under test.
   let release!: () => void;
-  // { times: 1 } — auto-deregisters after the first match so subsequent
-  // requests to /api/groups pass through and don't get stuck held open.
+  const gate = new Promise<void>((r) => { release = r; });
   await page.route('**/api/groups', async (route) => {
-    await new Promise<void>((r) => { release = r; });
+    if (route.request().method() !== 'GET') return route.continue();
+    await gate;
     await route.continue();
-  }, { times: 1 });
+  });
 
   // SPA navigation — triggers the paused groups fetch
   await page.getByRole('link', { name: /My Groups/i }).click();
@@ -37,7 +43,11 @@ test('route navigation: the skeleton owns the wait and the bar stays out of it',
   await expect(page.getByRole('status').first()).toBeAttached();
   await expect(sentinel(page)).toHaveAttribute('data-bar', 'false');
 
-  // Release the fetch — route auto-deregisters, all further requests pass through
+  // Release both held copies. Deliberately no `unroute`: `release()` only resolves the
+  // gate, so the two paused handlers resume on a later microtask — unrouting here takes
+  // ownership of those still-pending routes and continues them itself, and the handlers
+  // then hit "Route is already handled". The route can simply stay registered; once the
+  // gate is resolved every later request falls through it untouched.
   release();
 
   await expect(sentinel(page)).toHaveAttribute('data-loading', 'false');
