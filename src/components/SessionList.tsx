@@ -4,7 +4,21 @@ import { createSession } from "../services/groups";
 import { ApiError } from "../services/apiError";
 import FilledButton from "./buttons/FilledButton";
 import OutlinedButton from "./buttons/OutlinedButton";
+import { Skeleton, SkeletonGroup } from "./Skeleton";
 import type { Session, SessionStatus, UserRole } from "../types/groups";
+
+/**
+ * Layout only — shared so the real panel and its skeleton occupy identical space.
+ * Hover and cursor affordances stay on the real rows.
+ */
+const PANEL =
+  'bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow';
+const ROW =
+  'flex flex-col md:flex-row items-center gap-md p-md bg-surface-container rounded-xl ' +
+  'border border-transparent';
+
+/** Two rows read as a list; one reads as a single result, which is rarely what loads. */
+const SKELETON_ROWS = 2;
 
 const STATUS_BADGE: Record<SessionStatus, { label: string; className: string }> = {
   open:    { label: 'Open',               className: 'bg-primary/10 text-primary border border-primary/20' },
@@ -52,7 +66,7 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
   };
 
   return (
-    <div className="bg-surface-container-high rounded-xl p-md border border-outline-variant cinematic-glow">
+    <div className={PANEL}>
       <div className="flex items-center justify-between mb-lg">
         <h3 className="type-headline-sm text-on-surface">Sessions</h3>
         {canManage && !showForm && (
@@ -98,7 +112,7 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
             <div
               key={s.id}
               onClick={() => navigate(`/group/${groupId}/session/${s.id}`)}
-              className={`group flex flex-col md:flex-row items-center gap-md p-md bg-surface-container rounded-xl border border-transparent hover:border-primary/30 transition-all cursor-pointer ${isArchived ? 'opacity-60 hover:opacity-100' : ''}`}
+              className={`group ${ROW} hover:border-primary/30 transition-all cursor-pointer ${isArchived ? 'opacity-60 hover:opacity-100' : ''}`}
             >
               {/* Thumbnail */}
               <div className={`relative w-full md:w-32 h-20 bg-surface-container-low rounded-lg overflow-hidden shrink-0 border border-outline-variant flex items-center justify-center ${isArchived ? 'grayscale group-hover:grayscale-0 transition-all' : ''}`}>
@@ -127,5 +141,46 @@ export default function SessionList({ groupId, sessions, your_role, onSessionCre
         })}
       </div>
     </div>
+  );
+}
+
+/**
+ * Mirrors the panel above and owns its own sweep, clipped to the panel's corners.
+ *
+ * The "New Session" button is absent: it is gated on `your_role`, which the in-flight
+ * request has not returned yet. It sits on the header row beside a taller title block,
+ * so leaving it out costs no height.
+ */
+export function SessionListSkeleton() {
+  return (
+    <SkeletonGroup label="Loading sessions" className={PANEL}>
+      {/* Title — type-headline-sm (27px) */}
+      <div className="flex items-center justify-between mb-lg">
+        <Skeleton className="h-7 w-32" />
+      </div>
+
+      <div className="space-y-sm">
+        {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+          <div key={i} className={ROW}>
+            {/* Thumbnail — the block that dictates the 128px row height */}
+            <Skeleton variant="rect" className="w-full md:w-32 h-20 rounded-lg shrink-0" />
+
+            <div className="flex-1 w-full flex flex-col gap-1 items-center md:items-start">
+              {/* "Session #N" — type-headline-sm (27px) */}
+              <Skeleton className="h-7 w-40" />
+              {/* Date line — type-label-md (20px) */}
+              <Skeleton className="h-5 w-56" />
+            </div>
+
+            <div className="flex items-center gap-lg w-full md:w-auto justify-center md:justify-end">
+              {/* Status pill — px-3 py-1 ×2 + type-label-sm ≈ 25px */}
+              <Skeleton variant="rect" className="h-6 w-24 rounded-full" />
+              {/* Arrow — 24px icon */}
+              <Skeleton variant="circle" className="w-6" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </SkeletonGroup>
   );
 }
