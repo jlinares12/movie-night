@@ -11,9 +11,17 @@ type SkeletonVariant = 'text' | 'rect' | 'circle';
 
 const BLOCK = 'bg-surface-container-high';
 
+/*
+ * `className` is appended to these, never merged with them, so a variant default and a
+ * caller override are two classes of equal specificity — which one wins is decided by
+ * their order in the generated stylesheet, and Tailwind emits utilities in lexicographic
+ * key order. `rounded-lg` sorts *before* `rounded-md`, so a baked-in `rounded-md` on the
+ * rect variant would silently beat a caller asking for `rounded-lg`. Hence: rect owns
+ * neither its size nor its shape. Both belong to the caller, e.g. "h-48 rounded-xl".
+ */
 const VARIANT_CLASSES: Record<SkeletonVariant, string> = {
   text:   'h-4 rounded',
-  rect:   'rounded-md',                 // sized entirely by className, e.g. "h-48"
+  rect:   '',
   circle: 'aspect-square rounded-full', // sized by width, e.g. "w-12"
 };
 
