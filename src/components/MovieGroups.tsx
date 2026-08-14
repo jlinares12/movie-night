@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, type RefObject } from "react";
-import GroupLinkSkeleton from "./skeletons/GroupLinkSkeleton";
-import GroupLink from "./GroupLink";
+import GroupLink, { GroupLinkSkeleton } from "./GroupLink";
 import { listGroups } from "../services/groups";
 import type { GroupSummary } from "../types/groups";
 
@@ -27,11 +26,14 @@ export default function MovieGroups({ refreshRef }: Props) {
     if (refreshRef) refreshRef.current = fetch;
   }, [fetch, refreshRef]);
 
+  // Each skeleton owns its own sweep, so they drop straight into the same grid the real
+  // cards use. Swapped out on load, never hidden — a `SkeletonGroup`'s `role="status"`
+  // lives for as long as it is mounted.
   if (loading) {
     return (
       <div className="grid grid-cols-12 gap-gutter mb-xl">
-        <div className="col-span-12 md:col-span-6 lg:col-span-4"><GroupLinkSkeleton /></div>
-        <div className="col-span-12 md:col-span-6 lg:col-span-4"><GroupLinkSkeleton /></div>
+        <GroupLinkSkeleton />
+        <GroupLinkSkeleton />
       </div>
     );
   }
