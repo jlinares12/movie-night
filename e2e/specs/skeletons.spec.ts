@@ -19,6 +19,11 @@ import {
  * to see each skeleton next to the layout it stands in for.
  */
 
+// Every test here deliberately stalls the network, and each one also waits out the Clerk
+// handshake before anything mounts. The 30s default leaves no headroom for that on a cold
+// stack — this file is legitimately slower than the rest of the suite, not hanging.
+test.describe.configure({ timeout: 60_000 });
+
 const LOADING_SETTLED = '[data-testid="global-loading"][data-loading="false"]';
 const sentinel = (page: Page) => page.locator('[data-testid="global-loading"]');
 
@@ -39,6 +44,20 @@ async function holdResponses(page: Page, pattern: string): Promise<() => void> {
   });
 
   return release;
+}
+
+/**
+ * Wait for a route's skeleton regions, then pin the exact count.
+ *
+ * The generous first timeout is not about the skeleton: `MainLayout.tsx:11` gates
+ * `<Outlet/>` behind `sessionReady`, so nothing mounts until the Clerk handshake lands,
+ * and that has been observed taking well past the default 5s budget on a cold stack.
+ * Once the first region is up the rest are in the same render, so the count needs no
+ * extra grace.
+ */
+async function expectSkeletonRegions(page: Page, count: number) {
+  await expect(page.getByRole('status').first()).toBeAttached({ timeout: 20_000 });
+  await expect(page.getByRole('status')).toHaveCount(count);
 }
 
 async function shoot(page: Page, name: string, testInfo: TestInfo) {
@@ -68,7 +87,7 @@ test('home holds group-card skeletons while /api/groups is in flight', async ({ 
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
   // One announcing region per card — the accepted cost of a self-contained skeleton
-  await expect(page.getByRole('status')).toHaveCount(2);
+  await expectSkeletonRegions(page, 2);
   await expect(page.getByText('Loading group', { exact: true }).first()).toBeAttached();
   await shoot(page, 'home-group-cards', testInfo);
 
@@ -86,7 +105,7 @@ test('group page holds a layout-matched skeleton while its fetch is in flight', 
   await page.goto(`/group/${groupId}`, { waitUntil: 'domcontentloaded' });
 
   // Header, invite panel, member list, session list
-  await expect(page.getByRole('status')).toHaveCount(4);
+  await expectSkeletonRegions(page, 4);
   for (const label of ['Loading group', 'Loading invite code', 'Loading members', 'Loading sessions']) {
     await expect(page.getByText(label, { exact: true })).toBeAttached();
   }
@@ -121,7 +140,7 @@ test('session page holds a layout-matched skeleton across all three fetches', as
   // Hero, nomination card, session meta, potluck.
   // `exact` matters: "Loading session" is a prefix of "Loading session details", and
   // getByText is a substring match by default.
-  await expect(page.getByRole('status')).toHaveCount(4);
+  await expectSkeletonRegions(page, 4);
   for (const label of ['Loading session', 'Loading nomination', 'Loading session details', 'Loading potluck list']) {
     await expect(page.getByText(label, { exact: true })).toBeAttached();
   }
@@ -145,7 +164,7 @@ test('skeletons degrade to a flat tint under prefers-reduced-motion', async ({ a
   const release = await holdResponses(page, '**/api/groups/*');
 
   await page.goto(`/group/${groupId}`, { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('status')).toHaveCount(4);
+  await expectSkeletonRegions(page, 4);
 
   // The Tailwind plugin only sets `animation: none`, which would park the gradient over
   // the block; `motion-reduce:hidden` is what leaves the intended flat tint behind.
