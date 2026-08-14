@@ -1,3 +1,5 @@
+import plugin from 'tailwindcss/plugin'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -93,7 +95,49 @@ export default {
         'margin-mobile':  '20px',
         'margin-desktop': '64px',
       },
+      zIndex: {
+        sidebar:       '50',
+        'loading-bar': '60',
+        modal:         '70',
+      },
+      keyframes: {
+        /*
+         * Distances are in units of the *swept element's* own width, so the
+         * traverse is only edge-to-edge for an element one third as wide as its
+         * container (`w-1/3`): -100% parks it just off the left edge, 300% just
+         * off the right. A different sliver width needs a different end value.
+         */
+        shimmer: {
+          '0%':   { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(300%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.5s ease-in-out infinite',
+        /*
+         * Same keyframe, same `w-1/3` sliver — only slower. A wider sliver would
+         * need its own keyframe, since the travel distance lives there, not here.
+         */
+        'shimmer-slow': 'shimmer 2s ease-in-out infinite',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    /*
+     * Reduced motion is handled once, here, so every shimmer consumer inherits it.
+     * Any `animation` entry named `shimmer*` is covered automatically — a new
+     * consumer cannot forget to opt in.
+     */
+    plugin(({ addUtilities, theme }) => {
+      const shimmers = Object.keys(theme('animation'))
+        .filter((name) => name.startsWith('shimmer'))
+        .map((name) => `.animate-${name}`)
+
+      addUtilities({
+        '@media (prefers-reduced-motion: reduce)': {
+          [shimmers.join(', ')]: { animation: 'none' },
+        },
+      })
+    }),
+  ],
 }

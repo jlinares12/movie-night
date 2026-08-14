@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import MemberList from '../MemberList';
+import MemberList, { MemberListSkeleton } from '../MemberList';
 import { removeMember, updateMemberRole } from '../../services/groups';
 import type { GroupMember } from '../../types/groups';
 
@@ -189,5 +189,56 @@ describe('MemberList', () => {
     // Assert
     expect(mockRemove).toHaveBeenCalledWith(1, MEMBER.user_id);
     expect(onMembersChanged).toHaveBeenCalled();
+  });
+
+  describe('MemberListSkeleton', () => {
+    test('renders no interactive elements', () => {
+      // Arrange / Act
+      render(<MemberListSkeleton />);
+
+      // Assert
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    });
+
+    test('owns a single sweep for the whole panel', () => {
+      // Arrange / Act
+      render(<MemberListSkeleton />);
+
+      // Assert
+      expect(screen.getAllByTestId('skeleton-sweep')).toHaveLength(1);
+    });
+
+    test('announces the region once', () => {
+      // Arrange / Act
+      render(<MemberListSkeleton />);
+
+      // Assert
+      expect(screen.getAllByRole('status')).toHaveLength(1);
+      expect(screen.getByRole('status')).toHaveTextContent('Loading members');
+    });
+
+    test('occupies the same box as the real panel', () => {
+      // Arrange / Act
+      const { container: skeleton } = render(<MemberListSkeleton />);
+      const { container: panel } = render(
+        <MemberList groupId={1} members={[OWNER]} your_role="owner" currentUserId={1} onMembersChanged={jest.fn()} />
+      );
+
+      // Assert — the anti-jump guarantee
+      const box = ['p-md', 'rounded-xl', 'h-full'];
+      expect(skeleton.firstChild).toHaveClass(...box);
+      expect(panel.firstChild).toHaveClass(...box);
+    });
+
+    test('gives every member row the avatar that sets its height', () => {
+      // Arrange / Act
+      render(<MemberListSkeleton />);
+
+      // Assert — the 48px avatar, not the two text blocks, is what makes a row 72px
+      const avatars = screen
+        .getAllByTestId('skeleton')
+        .filter((el) => el.classList.contains('rounded-full') && el.classList.contains('w-12'));
+      expect(avatars).toHaveLength(4);
+    });
   });
 });
