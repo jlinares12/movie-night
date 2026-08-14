@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import InviteCodePanel from '../InviteCodePanel';
+import InviteCodePanel, { InviteCodePanelSkeleton } from '../InviteCodePanel';
 import { regenerateInvite } from '../../services/groups';
 
 jest.mock('../../services/groups');
@@ -117,5 +117,46 @@ describe('InviteCodePanel', () => {
 
     // Assert
     expect(mockRegenerate).not.toHaveBeenCalled();
+  });
+
+  describe('InviteCodePanelSkeleton', () => {
+    test('renders no interactive elements', () => {
+      // Arrange / Act
+      render(<InviteCodePanelSkeleton />);
+
+      // Assert
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+    });
+
+    test('owns a single sweep for the whole panel', () => {
+      // Arrange / Act
+      render(<InviteCodePanelSkeleton />);
+
+      // Assert — the panel catches one pass of light, not one per block
+      expect(screen.getAllByTestId('skeleton-sweep')).toHaveLength(1);
+    });
+
+    test('announces the region once', () => {
+      // Arrange / Act
+      render(<InviteCodePanelSkeleton />);
+
+      // Assert
+      expect(screen.getAllByRole('status')).toHaveLength(1);
+      expect(screen.getByRole('status')).toHaveTextContent('Loading invite code');
+    });
+
+    test('occupies the same box as the real panel', () => {
+      // Arrange / Act
+      const { container: skeleton } = render(<InviteCodePanelSkeleton />);
+      const { container: panel } = render(
+        <InviteCodePanel groupId={1} invite_code="aB3xYz" your_role="owner" onCodeChanged={jest.fn()} />
+      );
+
+      // Assert — the anti-jump guarantee: same padding, radius, and stretch behaviour.
+      // `justify-between` matters because the bento sibling stretches this panel.
+      const box = ['p-md', 'rounded-xl', 'h-full', 'flex-col', 'justify-between'];
+      expect(skeleton.firstChild).toHaveClass(...box);
+      expect(panel.firstChild).toHaveClass(...box);
+    });
   });
 });
