@@ -12,9 +12,11 @@ import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
+import SettingsPage from "./pages/Settings";
 import GroupPage from "./pages/GroupPage";
 import SessionPage from "./pages/SessionPage";
 import { LoadingProvider } from "./context/LoadingContext";
+import { clerkAppearance } from "./utils/clerkAppearance";
 
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -38,6 +40,7 @@ const ROUTER = createBrowserRouter([
         children: [
           {path:"/", element: <Home/>},
           {path:"/profile", element:<ProfilePage/>},
+          {path:"/settings", element:<SettingsPage/>},
           {path:"/group/:id", element:<GroupPage/>},
           {path:"/group/:id/session/:sessionId", element:<SessionPage/>},
         ]
@@ -55,30 +58,7 @@ ReactDOM.createRoot(ROOT).render(
       <ClerkProvider
       publishableKey={PUBLISHABLE_KEY}
       afterSignOutUrl='/'
-      appearance={{
-        variables: {
-          colorBackground: '#0C1A0D',       // Dark green background
-          colorText: 'white',               // White text
-          colorPrimary: '#40D952',          // Bright green primary color
-          colorInputBackground: '#1A2E1B',  // Slightly lighter input background
-          colorInputText: 'white',          // Input text color           // Rounded corners
-          fontFamily: 'Inter, sans-serif',  // Modern font
-          fontSize: '16px',
-        },
-        elements: {
-          socialButtonsBlockButton__google: {
-          color: 'white',
-          borderColor: '#40D952'
-          },
-          rootBox: {
-            border: '1px solid #40D952',
-            borderRadius: '10px'
-          },
-          navbarButtonText: {
-            color: 'white'
-          }
-        }
-      }}
+      appearance={clerkAppearance}
       >
         <LoadingProvider>
           <RouterProvider router={ROUTER}/>

@@ -12,6 +12,7 @@ export default function Sidebar() {
   const location = useLocation();
   const { signOut } = useClerk();
   const { user } = useUser();
+  const settingsActive = location.pathname === '/settings';
 
   const handleLogout = async () => {
     await api.delete('/api/auth/session');
@@ -51,8 +52,21 @@ export default function Sidebar() {
       </nav>
 
       <div className="mt-auto pt-8 border-t border-outline-variant/30 space-y-2">
-        <Link to="#" className="flex items-center gap-4 text-on-surface-variant p-3 hover:bg-surface-variant hover:text-primary transition-all">
-          <span className="material-symbols-outlined">settings</span>
+        {/* Same active treatment as the nav links above, minus their rounded corners. */}
+        <Link
+          to="/settings"
+          className={`flex items-center gap-4 p-3 transition-all ${
+            settingsActive
+              ? 'bg-secondary-container text-primary border-l-4 border-primary'
+              : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'
+          }`}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={settingsActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
+          >
+            settings
+          </span>
           <span className="type-label-md">Settings</span>
         </Link>
         <Link to="#" className="flex items-center gap-4 text-on-surface-variant p-3 hover:bg-surface-variant hover:text-primary transition-all">
