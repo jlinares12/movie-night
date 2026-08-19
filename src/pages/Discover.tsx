@@ -5,7 +5,7 @@ export default function DiscoverPage() {
     <ComingSoon
       icon="explore"
       title="Find Your Next Feature"
-      description="A browsable catalog of trending films, deep genre cuts, and picks tuned to what your groups already watch — so you can nominate without ever leaving Call Time."
+      description="A browsable catalog of trending films, deep genre cuts, and picks we think you might like."
       progressLabel="Scouting titles"
       progress={45}
     />
