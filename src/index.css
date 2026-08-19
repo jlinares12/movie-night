@@ -207,4 +207,114 @@ body {
     border-color: rgb(var(--color-primary-container));
     box-shadow: 0 0 15px rgb(var(--color-primary) / 0.15);
   }
+
+  /*
+   * "Coming soon" placeholder pages (src/components/ComingSoon.tsx).
+   * `.neon-glow` above is already claimed by a box-shadow, so the text-shadow
+   * variant the mock uses gets its own name here.
+   */
+  .text-neon-glow {
+    text-shadow: 0 0 10px rgb(var(--color-primary) / 0.5), 0 0 20px rgb(var(--color-primary) / 0.3);
+  }
+
+  .coming-soon-backdrop {
+    background-image: radial-gradient(circle at 50% 50%, rgb(var(--color-primary) / 0.05) 0%, transparent 60%);
+  }
+
+  /*
+   * Construction grid — a CSS stand-in for the WebGL shader in the design mock.
+   * Two grids at different scales drift in opposite directions so the motion
+   * reads as parallax rather than one sliding texture; each cycle translates by
+   * exactly one tile of its own size, which is what keeps the loop seamless.
+   * The radial mask is the shader's vignette.
+   */
+  .coming-soon-grid {
+    background-image:
+      linear-gradient(rgb(var(--color-primary) / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--color-primary) / 0.06) 1px, transparent 1px),
+      linear-gradient(rgb(var(--color-primary) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--color-primary) / 0.03) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 40px 40px, 40px 40px;
+    -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 10%, transparent 75%);
+    mask-image: radial-gradient(circle at 50% 50%, #000 10%, transparent 75%);
+    animation: grid-drift 24s linear infinite;
+  }
+
+  /* Sweeping scanline. Sized `h-1/4` by its consumer, hence the 400% travel. */
+  .coming-soon-scanline {
+    background-image: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(var(--color-primary) / 0.1) 50%,
+      transparent 100%
+    );
+    animation: scan-sweep 7s linear infinite;
+  }
+
+  .coming-soon-ring {
+    animation: ring-pulse 4s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  .animate-pulse-border-glow {
+    animation: pulse-border-glow 2.5s ease-in-out infinite;
+  }
+}
+
+/*
+ * Kept outside `@layer components` so the at-rules survive Tailwind's layer
+ * handling; the classes above are what actually gets scanned for.
+ */
+@keyframes grid-drift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 120px 120px, 120px 120px, -40px -40px, -40px -40px; }
+}
+
+@keyframes scan-sweep {
+  0%        { transform: translateY(-100%); opacity: 0; }
+  10%, 85%  { opacity: 1; }
+  100%      { transform: translateY(400%); opacity: 0; }
+}
+
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.1; transform: scale(0.97); }
+  50%      { opacity: 0.3; transform: scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgb(var(--color-primary-container) / 0.5), 0 0 20px rgb(var(--color-primary-container) / 0.3);
+  }
+  50% {
+    text-shadow: 0 0 20px rgb(var(--color-primary-container) / 0.9), 0 0 40px rgb(var(--color-primary-container) / 0.6);
+  }
+}
+
+@keyframes pulse-border-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgb(var(--color-primary-container) / 0.3);
+    border-color: rgb(var(--color-primary-container) / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgb(var(--color-primary-container) / 0.7);
+    border-color: rgb(var(--color-primary-container) / 0.8);
+  }
+}
+
+/*
+ * The shimmer utilities handle this in the Tailwind plugin; these live in CSS,
+ * so they opt out here. Scoped to the coming-soon classes on purpose — the
+ * built-in `animate-pulse` used elsewhere is deliberately left alone.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .coming-soon-grid,
+  .coming-soon-scanline,
+  .coming-soon-ring,
+  .animate-pulse-glow,
+  .animate-pulse-border-glow {
+    animation: none;
+  }
 }
