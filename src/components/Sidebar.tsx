@@ -3,9 +3,9 @@ import { useClerk, useUser } from "@clerk/clerk-react";
 import api from "../utils/api";
 
 const navLinks = [
-  { icon: 'group', label: 'My Groups', to: '/', activePath: '/' },
-  { icon: 'explore', label: 'Discover', to: '#', activePath: null },
-  { icon: 'person', label: 'Profile', to: '/profile', activePath: '/profile' },
+  { icon: 'group', label: 'My Groups', to: '/' },
+  { icon: 'explore', label: 'Discover', to: '/discover' },
+  { icon: 'person', label: 'Profile', to: '/profile' },
 ];
 
 export default function Sidebar() {
@@ -13,6 +13,7 @@ export default function Sidebar() {
   const { signOut } = useClerk();
   const { user } = useUser();
   const settingsActive = location.pathname === '/settings';
+  const helpActive = location.pathname === '/help';
 
   const handleLogout = async () => {
     await api.delete('/api/auth/session');
@@ -27,8 +28,8 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-grow space-y-2">
-        {navLinks.map(({ icon, label, to, activePath }) => {
-          const isActive = activePath !== null && location.pathname === activePath;
+        {navLinks.map(({ icon, label, to }) => {
+          const isActive = location.pathname === to;
           return (
             <Link
               key={label}
@@ -69,8 +70,20 @@ export default function Sidebar() {
           </span>
           <span className="type-label-md">Settings</span>
         </Link>
-        <Link to="#" className="flex items-center gap-4 text-on-surface-variant p-3 hover:bg-surface-variant hover:text-primary transition-all">
-          <span className="material-symbols-outlined">help</span>
+        <Link
+          to="/help"
+          className={`flex items-center gap-4 p-3 transition-all ${
+            helpActive
+              ? 'bg-secondary-container text-primary border-l-4 border-primary'
+              : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'
+          }`}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={helpActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
+          >
+            help
+          </span>
           <span className="type-label-md">Help</span>
         </Link>
         <button
