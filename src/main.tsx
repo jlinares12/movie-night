@@ -12,6 +12,8 @@ import "./index.css"
 import MainLayout from "./pages/layouts/MainLayout";
 import ProtectedRoutes from "./utils/ProtectedRoutes";
 import ProfilePage from "./pages/Profile";
+import DiscoverPage from "./pages/Discover";
+import HelpPage from "./pages/Help";
 import SettingsPage from "./pages/Settings";
 import GroupPage from "./pages/GroupPage";
 import SessionPage from "./pages/SessionPage";
@@ -39,7 +41,9 @@ const ROUTER = createBrowserRouter([
         element: <MainLayout/>,
         children: [
           {path:"/", element: <Home/>},
+          {path:"/discover", element:<DiscoverPage/>},
           {path:"/profile", element:<ProfilePage/>},
+          {path:"/help", element:<HelpPage/>},
           {path:"/settings", element:<SettingsPage/>},
           {path:"/group/:id", element:<GroupPage/>},
           {path:"/group/:id/session/:sessionId", element:<SessionPage/>},
