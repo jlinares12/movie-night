@@ -4,10 +4,10 @@ import { expect, type Locator, type Page } from '@playwright/test';
 const TOLERANCE = 1;
 
 /** Minimum touch target, per WCAG 2.2 SC 2.5.8 / the ticket's 44px rule. */
-export const MIN_TOUCH_TARGET = 44;
+const MIN_TOUCH_TARGET = 44;
 
 interface Offender {
-  /** Which box actually scrolls — `html`, `body`, or a scroll container's selector. */
+  /** Which box actually scrolls — `html`, or a scroll container's selector. */
   container: string;
   scrollWidth: number;
   clientWidth: number;
@@ -33,82 +33,84 @@ export async function expectNoHorizontalOverflow(
   label: string,
   { soft = false }: { soft?: boolean } = {},
 ): Promise<void> {
-  /*
-   * Measure only once webfonts are settled. Before Material Symbols loads, every
-   * `<span class="material-symbols-outlined">menu</span>` paints its literal text
-   * instead of the glyph — far wider — which would make this assertion flake on a cold
-   * cache rather than report a real layout bug.
-   */
-  await page.evaluate(() => document.fonts.ready.then(() => undefined));
+  const offenders = await page.evaluate(async (tolerance): Promise<Offender[]> => {
+    /*
+     * Measure only once webfonts are settled. Before Material Symbols loads, every
+     * `<span class="material-symbols-outlined">menu</span>` paints its literal text
+     * instead of the glyph — far wider — which would make this assertion flake on a cold
+     * cache rather than report a real layout bug.
+     */
+    await document.fonts.ready;
 
-  const offenders = await page.evaluate(
-    ({ tolerance }) => {
-      const describe = (el: Element): string => {
-        const cls = el.getAttribute('class');
-        return cls ? `${el.tagName.toLowerCase()}.${cls.trim().split(/\s+/).join('.')}` : el.tagName.toLowerCase();
-      };
+    const describe = (el: Element): string => {
+      const cls = el.getAttribute('class');
+      return cls ? `${el.tagName.toLowerCase()}.${cls.trim().split(/\s+/).join('.')}` : el.tagName.toLowerCase();
+    };
 
-      /*
-       * A child can hang past its container and still be harmless if an ancestor clips
-       * it — `ComingSoon`'s 800px rings live inside an `overflow-hidden` wrapper exactly
-       * so they stay circles on a narrow screen. Fixed elements never contribute to
-       * scrollable overflow at all.
-       */
-      const isClipped = (el: Element, stopAt: Element): boolean => {
-        for (let node = el.parentElement; node && node !== stopAt.parentElement; node = node.parentElement) {
-          const { overflowX } = getComputedStyle(node);
-          if (overflowX === 'hidden' || overflowX === 'clip') return true;
-        }
-        return false;
-      };
-
-      const findCulprits = (container: Element): string[] => {
-        const limit = container.getBoundingClientRect().right + container.scrollLeft;
-        return Array.from(container.querySelectorAll<HTMLElement>('*'))
-          .filter((el) => {
-            if (getComputedStyle(el).position === 'fixed') return false;
-            if (isClipped(el, container)) return false;
-            return el.getBoundingClientRect().right + container.scrollLeft > limit + tolerance;
-          })
-          .map((el) => ({ el, overhang: el.getBoundingClientRect().right - limit }))
-          .sort((a, b) => b.overhang - a.overhang)
-          .slice(0, 5)
-          .map(({ el, overhang }) => `${describe(el)} (+${Math.round(overhang)}px)`);
-      };
-
-      // The document, plus anything that has become a horizontal scroll container.
-      const containers = new Set<Element>([document.documentElement, document.body]);
-      for (const el of Array.from(document.querySelectorAll<HTMLElement>('*'))) {
-        const { overflowX } = getComputedStyle(el);
-        if (overflowX === 'auto' || overflowX === 'scroll') containers.add(el);
+    /*
+     * A child can hang past its container and still be harmless if an ancestor clips it —
+     * `ComingSoon`'s 800px rings live inside an `overflow-hidden` wrapper exactly so they
+     * stay circles on a narrow screen. Fixed elements never contribute to scrollable
+     * overflow at all.
+     */
+    const isClipped = (el: Element, stopAt: Element): boolean => {
+      for (let node = el.parentElement; node && node !== stopAt; node = node.parentElement) {
+        // `MobileMenu` scroll-locks by putting `overflow: hidden` on <body> while the
+        // sheet is open. That is a scroll lock, not a layout clip — honouring it would
+        // blank out every culprit list on a page measured with the sheet open.
+        if (node === document.body) continue;
+        const { overflowX } = getComputedStyle(node);
+        if (overflowX === 'hidden' || overflowX === 'clip') return true;
       }
+      return false;
+    };
 
-      const found: {
-        container: string;
-        scrollWidth: number;
-        clientWidth: number;
-        culprits: string[];
-      }[] = [];
+    const findCulprits = (container: Element): string[] => {
+      const limit = container.getBoundingClientRect().right;
+      return Array.from(container.querySelectorAll<HTMLElement>('*'))
+        // Measure first: `getBoundingClientRect` costs one layout flush for the whole
+        // sweep, where `getComputedStyle` is per-element — so only pay it for the few
+        // elements that actually hang over.
+        .map((el) => ({ el, overhang: el.getBoundingClientRect().right - limit }))
+        .filter(
+          ({ el, overhang }) =>
+            overhang > tolerance && getComputedStyle(el).position !== 'fixed' && !isClipped(el, container),
+        )
+        .sort((a, b) => b.overhang - a.overhang)
+        .slice(0, 5)
+        .map(({ el, overhang }) => `${describe(el)} (+${Math.round(overhang)}px)`);
+    };
 
-      for (const el of containers) {
-        // `documentElement.clientWidth` excludes any classic scrollbar, which is what we
-        // want to compare against; `innerWidth` would not.
-        if (el.scrollWidth > el.clientWidth + tolerance) {
-          found.push({
-            container: describe(el),
-            scrollWidth: el.scrollWidth,
-            clientWidth: el.clientWidth,
-            culprits: findCulprits(el),
-          });
-        }
+    /*
+     * The document, plus anything that has become a horizontal scroll container. <body>
+     * is deliberately absent: overflow inside it already surfaces on documentElement, so
+     * including it just reports the same bug twice — and if body ever becomes a scroll
+     * container in its own right, the sweep below adds it back.
+     */
+    const containers = new Set<Element>([document.documentElement]);
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('*'))) {
+      const { overflowX } = getComputedStyle(el);
+      if (overflowX === 'auto' || overflowX === 'scroll') containers.add(el);
+    }
+
+    const found: Offender[] = [];
+    for (const el of containers) {
+      // `documentElement.clientWidth` excludes any classic scrollbar, which is what we
+      // want to compare against; `innerWidth` would not.
+      if (el.scrollWidth > el.clientWidth + tolerance) {
+        found.push({
+          container: describe(el),
+          scrollWidth: el.scrollWidth,
+          clientWidth: el.clientWidth,
+          culprits: findCulprits(el),
+        });
       }
-      return found;
-    },
-    { tolerance: TOLERANCE },
-  );
+    }
+    return found;
+  }, TOLERANCE);
 
   const assert = soft ? expect.soft : expect;
-  assert(offenders as Offender[], `horizontal overflow at ${label}`).toEqual([]);
+  assert(offenders, `horizontal overflow at ${label}`).toEqual([]);
 }
 
 /**
@@ -121,28 +123,33 @@ export async function expectNoHorizontalOverflow(
  */
 export async function expectTappable(locator: Locator, label: string): Promise<void> {
   await locator.scrollIntoViewIfNeeded();
-  const reachable = await locator.evaluate((el) => {
+  const blocker = await locator.evaluate((el) => {
     const rect = el.getBoundingClientRect();
     const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
-    // True when the hit node is the element itself or a descendant — tapping a button
-    // lands on the icon `<span>` inside it, which still counts.
-    return !!hit && el.contains(hit);
+    // The hit node being a descendant still counts — tapping a button lands on the icon
+    // `<span>` inside it.
+    if (hit && el.contains(hit)) return null;
+    // `elementFromPoint` is viewport-relative and returns null off-screen, which is a
+    // different failure from being covered. Say which one it was.
+    if (!hit) return 'nothing — its centre point is outside the viewport';
+    const cls = hit.getAttribute('class');
+    return cls ? `${hit.tagName.toLowerCase()}.${cls.trim().split(/\s+/).join('.')}` : hit.tagName.toLowerCase();
   });
-  expect(reachable, `${label} is covered by another element`).toBe(true);
+  expect(blocker, `${label} is not tappable — its centre point hits ${blocker}`).toBeNull();
 }
 
 /**
  * Assert a control clears the 44x44 minimum touch target.
  *
- * Reports both dimensions on failure rather than short-circuiting on width, so a 28x28
- * button tells you it is wrong on both axes in one run.
+ * Compares the smaller axis, so either dimension fails it, and carries both in the
+ * message — a 28x28 button reports as `28x28`, not just `expected >= 44`.
  */
 export async function expectMinTouchTarget(locator: Locator, label: string): Promise<void> {
   const box = await locator.boundingBox();
   expect(box, `${label} has no layout box`).not.toBeNull();
   const { width, height } = box!;
   expect(
-    { tooNarrow: width < MIN_TOUCH_TARGET, tooShort: height < MIN_TOUCH_TARGET },
+    Math.min(width, height),
     `${label} is ${Math.round(width)}x${Math.round(height)}, below the ${MIN_TOUCH_TARGET}px minimum touch target`,
-  ).toEqual({ tooNarrow: false, tooShort: false });
+  ).toBeGreaterThanOrEqual(MIN_TOUCH_TARGET);
 }
