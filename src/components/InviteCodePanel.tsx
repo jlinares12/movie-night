@@ -63,7 +63,13 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
         </div>
 
         <div className="flex flex-col items-center justify-center py-lg bg-background rounded-lg border border-dashed border-outline-variant">
-          <span className="type-display-lg-mobile text-primary tracking-widest font-mono select-all">
+          {/*
+           * `overflow-wrap: anywhere`, not `break-words`: the code is one unbreakable
+           * run, and only `anywhere` affects intrinsic sizing — which is what sets this
+           * column's width. Today's code is 8 chars (`secrets.token_urlsafe(6)`) and
+           * fits 375px; this is what keeps a longer one from overflowing the document.
+           */}
+          <span className="type-display-lg-mobile text-primary tracking-widest font-mono select-all [overflow-wrap:anywhere]">
             {invite_code}
           </span>
           <p className="type-label-sm text-on-surface-variant mt-2 uppercase tracking-tighter">
