@@ -122,15 +122,27 @@ test.fixme('the session route does not scroll horizontally at 375px', async ({
 });
 
 /*
- * TODO(step-3): AuthenticationLayout rewrite. `AuthenticationLayout.tsx:7` is a
- * non-wrapping `flex items-center justify-center gap-[10em]` holding a `w-[300px]` logo
- * beside the Clerk card — roughly 860px of siblings on a 375px viewport. It is untouched
- * by step 1 and is step 3's rewrite, so this cannot pass yet. Drop the `.fixme` when
- * step 3 lands; the body is already correct.
+ * The auth routes are the only ones outside `MainLayout`, and the only ones whose content
+ * is drawn by a third-party script. Both anchors are Clerk's own headings, deliberately
+ * not the app's `<h1>Call Time</h1>`: that renders immediately either way, so anchoring on
+ * it would measure a page holding nothing but the wordmark and footer — which fits 375px
+ * exactly, and reports a flawless layout for a route that is broken. Any future route whose
+ * content arrives from a third-party script needs the same treatment.
+ *
+ * Uses the plain `page` fixture — these routes are unauthenticated, and a live session
+ * makes `<SignIn>` render its already-signed-in state instead of the card. (`beforeEach`
+ * still pulls `ownerRequest`, so a sign-in is paid regardless.)
  */
-test.fixme('/login does not scroll horizontally at 375px', async ({ page }) => {
-  await page.goto('/login');
-  await expectNoHorizontalOverflow(page, '/login');
+test('the auth routes do not scroll horizontally at 375px', async ({ page }) => {
+  const routes: Array<[route: string, anchor: string]> = [
+    ['/login', 'Sign in to Call Time'],
+    ['/register', 'Create your account'],
+  ];
+
+  for (const [route, anchor] of routes) {
+    await gotoRendered(page, route, anchor);
+    await expectNoHorizontalOverflow(page, route, { soft: true });
+  }
 });
 
 test('the mobile shell replaces the desktop sidebar', async ({ authedPage: page }) => {
