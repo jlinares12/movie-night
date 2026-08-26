@@ -18,12 +18,14 @@ interface Offender {
 /**
  * Assert nothing scrolls horizontally.
  *
- * Checking `documentElement.scrollWidth` alone is not enough on authenticated routes.
- * `MainLayout`'s `<main>` carries `overflow-y-auto`, and per the CSS overflow spec a
- * `visible` axis computes to `auto` when the other axis is not `visible` — so `<main>`
- * is already a horizontal scroll container. An overflowing child scrolls *it*, and the
- * document's own `scrollWidth` stays exactly `innerWidth`: the naive check passes green
- * on a visibly broken page. So every scroll container is measured, not just the document.
+ * Checking `documentElement.scrollWidth` alone is not enough. Any element that becomes a
+ * horizontal scroll container swallows its children's overflow: the child scrolls *it*,
+ * and the document's own `scrollWidth` stays exactly `innerWidth`, so the naive check
+ * passes green on a visibly broken page. That is not hypothetical — `MainLayout`'s
+ * `<main>` used to carry `overflow-y-auto`, and per the CSS overflow spec a `visible`
+ * axis computes to `auto` when the other axis is not `visible`, which made it one by
+ * accident. Step 5 removed that class, but the trap is one utility away from returning
+ * anywhere in the tree, so every scroll container is measured, not just the document.
  *
  * On failure the offending descendants are named, because `520 > 375` on its own sends
  * you hunting through a 500-line page for the one fixed width that did it.

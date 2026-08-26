@@ -26,6 +26,14 @@ const LOADING = '[data-testid="global-loading"][data-loading="false"]';
 
 const HAMBURGER = { role: 'button', name: 'Menu' } as const;
 
+/**
+ * What `gotoRendered` waits on. A bare string is the common case — a unique heading name.
+ * The callback form is for the two routes where that is not available: `NotFound` renders
+ * *two* `<h1>4</h1>`s, so `getByRole('heading', { name: '4' })` is a strict-mode violation,
+ * and `/settings` has to anchor on something Clerk draws rather than a heading of the app's.
+ */
+type Anchor = string | ((page: import('@playwright/test').Page) => import('@playwright/test').Locator);
+
 let groupId = 0;
 let groupName = '';
 let sessionId = 0;
@@ -47,10 +55,11 @@ let sessionId = 0;
 async function gotoRendered(
   page: import('@playwright/test').Page,
   route: string,
-  anchor: string,
+  anchor: Anchor,
 ): Promise<void> {
   await page.goto(route);
-  await page.getByRole('heading', { name: anchor }).waitFor({ state: 'attached' });
+  const target = typeof anchor === 'string' ? page.getByRole('heading', { name: anchor }) : anchor(page);
+  await target.waitFor({ state: 'attached' });
   await page.waitForSelector(LOADING, { state: 'attached' });
 }
 
@@ -92,13 +101,44 @@ test('no route scrolls horizontally at 375px', async ({ authedPage: page }) => {
   // than the file — at file scope `test.slow()` would slow every test here.
   test.slow();
 
-  const routes: Array<[route: string, anchor: string]> = [
+  const routes: Array<[route: string, anchor: Anchor]> = [
     ['/', 'Your Movie Groups'],
     [`/group/${groupId}`, groupName],
     // Both are ComingSoon, whose negative insets cancel MainLayout's gutter and were
     // changed in lockstep with it in step 1. Nothing else guards that pairing.
     ['/discover', 'Find Your Next Feature'],
     ['/profile', 'Your Cinematic Legacy'],
+    /*
+     * Anchored on something Clerk itself draws rather than the app's own `<h2>Settings</h2>`.
+     *
+     * NOT for the reason `/login` is — that was checked and it does not apply here. `/login`
+     * needs its Clerk anchor because `AuthenticationLayout` paints its wordmark and footer
+     * outside any Clerk gate, so the app's own heading is on screen long before the card is.
+     * `/settings` sits behind `ProtectedRoutes`, which is `<SignedIn>/<SignedOut>` and renders
+     * neither branch until Clerk has loaded — so by the time `<h2>Settings</h2>` exists,
+     * `<UserProfile>` mounts in the same commit and there is no gap to slip through. Measured:
+     * against a Settings layout deliberately broken *inside* Clerk's card, a probe anchored on
+     * the app heading failed exactly like this one, reporting the same html 620/375 and the
+     * same `div.cl-cardBox (+245px)`. It did not silently pass.
+     *
+     * The Clerk anchor stays because it is the stricter of two working options and costs
+     * nothing: it waits on the actual measured content instead of depending on
+     * `ProtectedRoutes` continuing to gate this route. If that gate is ever loosened, this
+     * anchor keeps working and the heading one would start measuring too early.
+     *
+     * This route is also what turns "the decorative blur orbs don't extend the scrollable
+     * area" from arithmetic into an assertion: `Settings.tsx:8-9,13` duplicates Home's three
+     * blur divs verbatim, and until now only Home's copies were ever measured.
+     */
+    ['/settings', (page) => page.locator('.cl-profileSection').first()],
+    /*
+     * The catch-all route, and the last one in the app the gate had never visited. It renders
+     * outside `MainLayout`, so it inherits none of step 1's shell fixes — before step 5 it
+     * put ~1150px of fixed-width glyphs in a non-wrapping row on a page with no gutter and no
+     * clipping ancestor, the single worst overflow in the repo. It anchors on its link
+     * because both of its headings are the string "4".
+     */
+    ['/no-such-page', (page) => page.getByRole('link', { name: 'Return Home' })],
   ];
 
   for (const [route, anchor] of routes) {
