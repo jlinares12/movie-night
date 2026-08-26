@@ -16,9 +16,13 @@ interface Props {
  * Layout only — the real card and its skeleton must occupy identical space, so these
  * classes are shared rather than duplicated. Hover and cursor affordances stay on the
  * real card; nothing about a skeleton is interactive.
+ *
+ * No `col-span-12` base: `MovieGroups`'s grid is single-column below `md`, and a
+ * `col-span-12` inside a one-column grid conjures eleven implicit tracks — the same trap
+ * `SessionPage`'s `MAIN_COL` documents.
  */
 const CARD =
-  'col-span-12 md:col-span-6 lg:col-span-4 bg-surface-container-low rounded-[24px] p-md ' +
+  'md:col-span-6 lg:col-span-4 bg-surface-container-low rounded-[24px] p-md ' +
   'border border-outline-variant/20';
 
 const roleBadge: Record<UserRole, { label: string; className: string }> = {

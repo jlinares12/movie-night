@@ -19,8 +19,7 @@ import {
  * Deliberately few, fat tests: each one pays a real Clerk sign-in through the
  * `authedPage` fixture, so test count — not assertion count — is what costs CI time.
  *
- * Steps 4 and 5 of `docs/plans/mobile-friendly.md` extend this file rather than adding
- * new ones.
+ * Step 5 of `docs/plans/mobile-friendly.md` extends this file rather than adding new ones.
  */
 
 const LOADING = '[data-testid="global-loading"][data-loading="false"]';
@@ -56,19 +55,21 @@ async function gotoRendered(
 }
 
 test.beforeEach(async ({ ownerRequest }) => {
-  // Spaces on purpose. `Date.now()` alone is a 13-digit unbreakable run, and this name
-  // is rendered at `type-display-lg` (48px/800) by `GroupPage.tsx:129` — it would blow
-  // the gutter on its own and mask whatever else the route is doing. See the long-name
-  // note in step 4 of `docs/plans/mobile-friendly.md`.
-  groupName = `PW Mobile ${Date.now() % 100000}`;
+  // Unbroken on purpose, which inverts this name's original rationale. It used to carry
+  // spaces so a 13-digit `Date.now()` could not blow the gutter and mask the rest of the
+  // route — but now that `GroupPage.tsx`'s heading is `[overflow-wrap:anywhere]`, a spaced
+  // name proves nothing: it wraps at its spaces either way. The unbroken run is what
+  // actually exercises the fix.
+  groupName = `PWMobile${Date.now()}`;
   const group = await apiCreateGroup(ownerRequest, groupName);
   groupId = group.id;
   const session = await apiCreateSession(ownerRequest, groupId);
   sessionId = session.id;
-  // A nomination so the session route renders NominationCard's 120px poster row rather
-  // than the empty state — that row is the likeliest thing to overflow at 375px. Only
-  // the currently-deferred session test reads it; kept here so dropping that `.fixme`
-  // in step 4 needs no setup change.
+  // A nomination so the session route renders NominationCard's poster row rather than the
+  // empty state — that row is the likeliest thing to overflow at 375px, and an empty
+  // nominations column cannot overflow at all. Note this spends the owner's single
+  // allowed proposal (`api/app/routes/proposals.py:46-51`), which is why the nominating
+  // test below has to remove before it can add.
   await apiCreateProposal(ownerRequest, groupId, sessionId, {
     title: 'The Grand Budapest Hotel',
     overview: 'A concierge and his protege become entangled in the theft of a painting.',
@@ -86,6 +87,11 @@ test.afterEach(async ({ ownerRequest }) => {
 });
 
 test('no route scrolls horizontally at 375px', async ({ authedPage: page }) => {
+  // Four authenticated page loads plus four whole-DOM measurements lands near the 30s
+  // default and has blown it once on a cold Vite container. Scoped to this test rather
+  // than the file — at file scope `test.slow()` would slow every test here.
+  test.slow();
+
   const routes: Array<[route: string, anchor: string]> = [
     ['/', 'Your Movie Groups'],
     [`/group/${groupId}`, groupName],
@@ -103,22 +109,85 @@ test('no route scrolls horizontally at 375px', async ({ authedPage: page }) => {
 });
 
 /*
- * TODO(step-4): `SessionPage.tsx:20` is `GRID = 'grid grid-cols-12 gap-lg'` — twelve
- * tracks at every breakpoint, not just `lg`. At 375px that is 11 gaps x 48px = 528px of
- * gutter inside a 335px content box, so the grid overflows by ~173px before any column
- * gets width. (The plan describes this line as `lg:grid-cols-12`; only the spans on
- * `:21-22` carry the `lg:` prefix.) The fix belongs with step 4's session-loop work:
- * an explicit single-column base, which means dropping the `col-span-12` base off
- * MAIN_COL/SIDE_COL too — `col-span-12` inside a one-column grid conjures eleven
- * implicit tracks and reintroduces the same overflow.
- *
- * Drop the `.fixme` when step 4 lands; the body is already correct.
+ * The route step 4 exists for. `SessionPage`'s grid used to be twelve tracks at every
+ * breakpoint — 11 gaps x 48px = 528px of gutter inside a 335px content box — so it
+ * overflowed before either column got any width. `beforeEach` puts a real nomination on
+ * screen, so the poster row is measured too rather than an empty column.
  */
-test.fixme('the session route does not scroll horizontally at 375px', async ({
+test('the session route does not scroll horizontally at 375px', async ({
   authedPage: page,
 }) => {
   await gotoRendered(page, `/group/${groupId}/session/${sessionId}`, 'Call Time Session');
   await expectNoHorizontalOverflow(page, 'session');
+});
+
+/*
+ * The core loop, end to end at 375px: remove -> search -> nominate -> advance.
+ *
+ * Fat on purpose — each test here pays a real Clerk sign-in, so assertions are cheap and
+ * test count is not. It removes before it adds because `beforeEach` already spent this
+ * user's one allowed proposal (`api/app/routes/proposals.py:46-51`).
+ *
+ * The overflow re-measure at the end is the point of the whole test: it happens with a
+ * poster-bearing card on screen, because an empty nominations column cannot overflow and
+ * measuring before one exists would be the same silent pass `gotoRendered` guards against.
+ */
+test('nominating works at 375px', async ({ authedPage: page }) => {
+  // An inline pixel, not a TMDB CDN URL. What is measured is the poster's *box* — a
+  // remote image only adds flake.
+  const POSTER =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+  await page.route('**/api/movies/search**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{
+        tmdb_id: 27205,
+        title: 'Inception',
+        poster_url: POSTER,
+        overview: 'A thief who steals corporate secrets through dream-sharing technology.',
+        release_date: '2010-07-16',
+        vote_average: 8.4,
+        runtime_minutes: 148,
+      }]),
+    }),
+  );
+
+  await gotoRendered(page, `/group/${groupId}/session/${sessionId}`, 'Call Time Session');
+
+  // ── Remove: 28x28 before step 4, and the only way to free this user's proposal slot ──
+  const remove = page.getByRole('button', { name: 'Remove nomination' });
+  await expectMinTouchTarget(remove, 'Remove nomination');
+  await remove.click();
+  await expect(page.getByText('The Grand Budapest Hotel')).toBeHidden();
+
+  // ── Search and nominate ──
+  await page.getByRole('button', { name: 'Add Nomination' }).click();
+  await page.getByPlaceholder('Search for a movie…').fill('Inception');
+
+  const nominate = page.getByRole('button', { name: 'Nominate' });
+  await expect(nominate).toBeVisible();
+  // ~25px tall before step 4, and the single most important target in the loop.
+  await expectMinTouchTarget(nominate, 'Nominate');
+  await expectTappable(nominate, 'Nominate button');
+  await nominate.click();
+
+  await expect(page.getByPlaceholder('Search for a movie…')).toBeHidden();
+  await expect(page.getByRole('img', { name: 'Inception' })).toBeVisible();
+
+  // ── The measurement this test exists for — taken with a poster on screen ──
+  await expectNoHorizontalOverflow(page, 'session with a nomination');
+
+  // ── Advance to voting ──
+  // This is the ceiling: there is no ballot UI. `api/app/models/vote.py` exists, but
+  // `api/app/routes/` has no `votes.py`, and `SessionPage.tsx` renders a static panel for
+  // the `voting` status. Measuring that panel is the honest end of this ticket's loop.
+  await page.getByRole('button', { name: /Advance to voting/i }).click();
+  // The panel's own body copy, not its "Voting in Progress" heading — the hero badge
+  // reads VOTING IN PROGRESS too, and would make that locator ambiguous.
+  await expect(page.getByText('Members are casting their votes.')).toBeVisible();
+  await expectNoHorizontalOverflow(page, 'session in voting');
 });
 
 /*
