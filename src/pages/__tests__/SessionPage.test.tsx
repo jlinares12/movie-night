@@ -650,7 +650,7 @@ describe('SessionPage', () => {
 
       // Assert
       expect(screen.getByRole('heading', { name: 'Call Time Session' }))
-        .toHaveClass('text-display-lg-mobile', 'lg:text-display-lg');
+        .toHaveClass('type-display-lg-mobile', 'lg:type-display-lg');
     });
 
     test('the potluck input can shrink and its add button cannot', async () => {
