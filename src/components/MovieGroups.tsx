@@ -3,6 +3,15 @@ import GroupLink, { GroupLinkSkeleton } from "./GroupLink";
 import { listGroups } from "../services/groups";
 import type { GroupSummary } from "../types/groups";
 
+/**
+ * Layout only — shared so the skeleton row and the real row use the same grid.
+ *
+ * Twelve tracks at every breakpoint used to fit at 375px only by coincidence: `gap-gutter`
+ * is 16px, so 11 gaps = 176px of a 335px box, and `GroupLink`'s `col-span-12` spanned all
+ * twelve tracks back to exactly 335px. Two files agreeing by accident is not a layout.
+ */
+const GRID = 'grid grid-cols-1 md:grid-cols-12 gap-gutter mb-xl';
+
 interface Props {
   refreshRef?: RefObject<(() => void) | null>;
 }
@@ -31,7 +40,7 @@ export default function MovieGroups({ refreshRef }: Props) {
   // lives for as long as it is mounted.
   if (loading) {
     return (
-      <div className="grid grid-cols-12 gap-gutter mb-xl">
+      <div className={GRID}>
         <GroupLinkSkeleton />
         <GroupLinkSkeleton />
       </div>
@@ -49,7 +58,7 @@ export default function MovieGroups({ refreshRef }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-12 gap-gutter mb-xl">
+    <div className={GRID}>
       {groups.map((g) => (
         <GroupLink key={g.id} group={g} onLeave={fetch} />
       ))}

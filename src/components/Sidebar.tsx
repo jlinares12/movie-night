@@ -1,39 +1,33 @@
 import { Link, useLocation } from "react-router-dom";
-import { useClerk, useUser } from "@clerk/clerk-react";
-import api from "../utils/api";
+import { useUser } from "@clerk/clerk-react";
+import { primaryNavItems, secondaryNavItems, ACTIVE_ICON_STYLE } from "./navItems";
+import { useLogout } from "../hooks/useLogout";
 
-const navLinks = [
-  { icon: 'group', label: 'My Groups', to: '/' },
-  { icon: 'explore', label: 'Discover', to: '/discover' },
-  { icon: 'person', label: 'Profile', to: '/profile' },
-];
-
+/**
+ * Desktop nav. Hidden below `lg`, where `MobileTopBar` / `MobileMenu` /
+ * `MobileNavBar` carry the same destinations from the same lists in
+ * `./navItems`.
+ */
 export default function Sidebar() {
   const location = useLocation();
-  const { signOut } = useClerk();
   const { user } = useUser();
-  const settingsActive = location.pathname === '/settings';
-  const helpActive = location.pathname === '/help';
-
-  const handleLogout = async () => {
-    await api.delete('/api/auth/session');
-    signOut({ redirectUrl: '/login' });
-  };
+  const logout = useLogout();
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container shadow-xl flex flex-col py-lg px-4 z-sidebar">
+    <aside className="hidden lg:flex h-screen w-64 fixed left-0 top-0 bg-surface-container shadow-xl flex-col py-lg px-4 z-sidebar">
       <div className="mb-10 px-2">
         <h1 className="type-display-lg-mobile text-primary tracking-tighter">Call Time</h1>
         <p className="type-label-sm opacity-70">Cinematic Coordination</p>
       </div>
 
       <nav className="flex-grow space-y-2">
-        {navLinks.map(({ icon, label, to }) => {
+        {primaryNavItems.map(({ icon, label, to }) => {
           const isActive = location.pathname === to;
           return (
             <Link
               key={label}
               to={to}
+              aria-current={isActive ? "page" : undefined}
               className={`flex items-center gap-4 p-3 transition-all active:translate-x-1 ${
                 isActive
                   ? 'bg-secondary-container text-primary rounded-xl border-l-4 border-primary'
@@ -41,8 +35,9 @@ export default function Sidebar() {
               }`}
             >
               <span
+                aria-hidden="true"
                 className="material-symbols-outlined"
-                style={isActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
+                style={isActive ? ACTIVE_ICON_STYLE : undefined}
               >
                 {icon}
               </span>
@@ -54,43 +49,35 @@ export default function Sidebar() {
 
       <div className="mt-auto pt-8 border-t border-outline-variant/30 space-y-2">
         {/* Same active treatment as the nav links above, minus their rounded corners. */}
-        <Link
-          to="/settings"
-          className={`flex items-center gap-4 p-3 transition-all ${
-            settingsActive
-              ? 'bg-secondary-container text-primary border-l-4 border-primary'
-              : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'
-          }`}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={settingsActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
-          >
-            settings
-          </span>
-          <span className="type-label-md">Settings</span>
-        </Link>
-        <Link
-          to="/help"
-          className={`flex items-center gap-4 p-3 transition-all ${
-            helpActive
-              ? 'bg-secondary-container text-primary border-l-4 border-primary'
-              : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'
-          }`}
-        >
-          <span
-            className="material-symbols-outlined"
-            style={helpActive ? { fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" } : undefined}
-          >
-            help
-          </span>
-          <span className="type-label-md">Help</span>
-        </Link>
+        {secondaryNavItems.map(({ icon, label, to }) => {
+          const isActive = location.pathname === to;
+          return (
+            <Link
+              key={label}
+              to={to}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex items-center gap-4 p-3 transition-all ${
+                isActive
+                  ? 'bg-secondary-container text-primary border-l-4 border-primary'
+                  : 'text-on-surface-variant hover:bg-surface-variant hover:text-primary'
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className="material-symbols-outlined"
+                style={isActive ? ACTIVE_ICON_STYLE : undefined}
+              >
+                {icon}
+              </span>
+              <span className="type-label-md">{label}</span>
+            </Link>
+          );
+        })}
         <button
-          onClick={handleLogout}
+          onClick={logout}
           className="flex items-center gap-4 text-on-surface-variant p-3 hover:bg-surface-variant hover:text-primary transition-all w-full text-left"
         >
-          <span className="material-symbols-outlined">logout</span>
+          <span aria-hidden="true" className="material-symbols-outlined">logout</span>
           <span className="type-label-md">Logout</span>
         </button>
         {user?.username && (

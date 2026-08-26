@@ -122,10 +122,13 @@ describe('NominationCard', () => {
       // Arrange / Act
       const { container } = render(<NominationCardSkeleton />);
 
-      // Assert — the poster is the first block, and it is what makes the card 228px tall
+      // Assert — the poster is the first block, and it is what dictates the card's height.
+      // Both steps matter: 120px leaves ~99px for the title and overview at 375px.
       expect(container.querySelector('[data-testid="skeleton"]')).toHaveClass(
-        'w-[120px]',
-        'h-[180px]',
+        'w-[80px]',
+        'h-[120px]',
+        'sm:w-[120px]',
+        'sm:h-[180px]',
       );
     });
 
@@ -135,6 +138,28 @@ describe('NominationCard', () => {
 
       // Assert — the real overview is line-clamp-3, so three lines is its ceiling
       expect(screen.getAllByTestId('skeleton-line')).toHaveLength(3);
+    });
+  });
+
+  describe('responsive layout', () => {
+    test('the poster steps down below sm', () => {
+      // Arrange / Act
+      render(<NominationCard proposal={makeProposal({ poster_url: 'https://img/p.jpg' })} canDelete={false} onDelete={jest.fn()} />);
+
+      // Assert — 120px left roughly 99px for the title and overview at 375px
+      expect(screen.getByRole('img')).toHaveClass(
+        'w-[80px]', 'h-[120px]', 'sm:w-[120px]', 'sm:h-[180px]',
+      );
+    });
+
+    test('the remove button clears the 44px minimum touch target', () => {
+      // Arrange / Act
+      render(<NominationCard proposal={makeProposal()} canDelete onDelete={jest.fn()} />);
+
+      // Assert — this button is hand-rolled rather than an `IconButton`, so the
+      // primitive's own 44px floor does not reach it
+      expect(screen.getByRole('button', { name: 'Remove nomination' }))
+        .toHaveClass('inline-flex', 'items-center', 'justify-center', 'min-h-11', 'min-w-11');
     });
   });
 });
