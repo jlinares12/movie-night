@@ -13,6 +13,7 @@ import { USERS_FILE, type WorkerUsers } from '../users';
 type AuthFixtures = {
   authedPage: Page;
   memberPage: Page;
+  disposableAuthedPage: Page;
   ownerRequest: APIRequestContext;
   memberRequest: APIRequestContext;
 };
@@ -131,6 +132,26 @@ export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
 
   authedPage: async ({ ownerContext }, run) => {
     await newPageFrom(ownerContext, run);
+  },
+
+  // Test-scoped, single-use, and thrown away afterwards — for tests that DESTROY
+  // their own auth state. clerk.signOut() ends the Clerk session for the whole
+  // context it runs in, so calling it on the shared ownerContext would leave
+  // every later test in that worker signed out: an order-dependent failure that
+  // only shows up once the file ordering shifts. Signing out here ends only this
+  // throwaway context's Clerk session; the worker's session is a separate one for
+  // the same user and survives.
+  //
+  // This is the one fixture that still pays a Clerk sign-in per test, so reach for
+  // it only where the test genuinely burns the session.
+  disposableAuthedPage: async ({ browser }, run, testInfo) => {
+    const { ownerEmail } = readTestUsers(testInfo.parallelIndex);
+    const context = await signedInContext(browser, ownerEmail);
+    try {
+      await newPageFrom(context, run);
+    } finally {
+      await context.close();
+    }
   },
 
   memberPage: async ({ memberContext }, run) => {
