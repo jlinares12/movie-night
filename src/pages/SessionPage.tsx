@@ -13,15 +13,20 @@ import type { MovieSearchResult } from "../types/movies";
 /**
  * Layout only — shared so the real page and its skeleton place every region identically.
  * `HERO` omits `relative`, which `SkeletonGroup` supplies itself.
+ *
+ * `GRID` is single-column below `lg` on purpose, and `MAIN_COL`/`SIDE_COL` carry no
+ * `col-span-12` base to match: a `col-span-12` inside a one-column grid conjures eleven
+ * implicit tracks and brings back the exact overflow the breakpoint removes. `gap-lg`
+ * stays on both — above `lg` it is the desktop gutter, below it only applies vertically.
  */
-const PAGE      = 'flex flex-col gap-xl';
+const PAGE      = 'flex flex-col gap-lg lg:gap-xl';
 const HERO      = 'rounded-[32px] overflow-hidden';
-const HERO_BODY = 'p-lg flex flex-col justify-end h-[440px]';
-const GRID      = 'grid grid-cols-12 gap-lg';
-const MAIN_COL  = 'col-span-12 lg:col-span-8 space-y-md';
-const SIDE_COL  = 'col-span-12 lg:col-span-4';
+const HERO_BODY = 'p-md lg:p-lg flex flex-col justify-end min-h-[280px] lg:h-[440px]';
+const GRID      = 'grid grid-cols-1 lg:grid-cols-12 gap-lg';
+const MAIN_COL  = 'lg:col-span-8 space-y-md';
+const SIDE_COL  = 'lg:col-span-4';
 const META_CARD = 'bg-surface-container border border-outline-variant/20 rounded-[24px] p-md';
-const POTLUCK   = 'bg-surface-container-high rounded-[32px] p-lg border border-outline-variant/20';
+const POTLUCK   = 'bg-surface-container-high rounded-[32px] p-md lg:p-lg border border-outline-variant/20';
 
 const NEXT_STATUS: Record<SessionStatus, SessionStatus | null> = {
   open: 'voting',
@@ -188,7 +193,7 @@ export default function SessionPage() {
       {/* ── Hero ── */}
       <section className={`relative ${HERO}`}>
         <div className="absolute inset-0 z-0">
-          <div className="w-full h-[440px] bg-gradient-to-br from-surface-container-high via-surface-container to-surface-dim" />
+          <div className="w-full h-full bg-gradient-to-br from-surface-container-high via-surface-container to-surface-dim" />
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-transparent" />
           <div className="absolute -top-16 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
@@ -211,7 +216,7 @@ export default function SessionPage() {
               <span className="text-on-surface-variant text-label-md">• Call Time</span>
             </div>
 
-            <h1 className="font-display text-display-lg text-on-surface mb-xs">
+            <h1 className="font-display text-display-lg-mobile lg:text-display-lg text-on-surface mb-xs">
               Call Time Session
             </h1>
             <p className="text-body-lg text-on-surface-variant mb-md leading-relaxed">{cfg.description}</p>
@@ -401,12 +406,12 @@ export default function SessionPage() {
                   value={potluckInput}
                   onChange={(e) => setPotluckInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addPotluckItem()}
-                  className="flex-1 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface text-body-md"
+                  className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface text-body-md"
                   placeholder="I'll bring something..."
                 />
                 <button
                   onClick={addPotluckItem}
-                  className="bg-primary-container p-sm rounded-xl text-on-primary-container flex items-center justify-center hover:scale-110 active:scale-90 transition-transform shadow-lg"
+                  className="bg-primary-container shrink-0 p-sm rounded-xl text-on-primary-container flex items-center justify-center hover:scale-110 active:scale-90 transition-transform shadow-lg"
                 >
                   <span className="material-symbols-outlined">add</span>
                 </button>
@@ -451,8 +456,9 @@ export function SessionPageSkeleton() {
               <Skeleton className="h-5 w-24" />
             </div>
 
-            {/* "Call Time Session" — text-display-lg (3rem × 1.15 ≈ 55px) */}
-            <Skeleton className="h-14 w-[26rem] max-w-full mb-xs" />
+            {/* "Call Time Session" — text-display-lg (3rem × 1.15 ≈ 55px), stepping down to
+                text-display-lg-mobile (2rem × 1.2 ≈ 38px) below lg */}
+            <Skeleton className="h-10 lg:h-14 w-[26rem] max-w-full mb-xs" />
 
             {/* Description — one line of text-body-lg at leading-relaxed ≈ 29px */}
             <Skeleton className="h-7 w-full max-w-lg mb-md" />

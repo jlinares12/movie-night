@@ -126,7 +126,13 @@ export default function GroupPage() {
       {/* Header */}
       <header className={`${HEADER} flex flex-col md:flex-row justify-between items-start md:items-end gap-md`}>
         <div>
-          <h2 className="type-display-lg text-primary leading-none mb-sm">{group.name}</h2>
+          {/*
+           * `overflow-wrap: anywhere`, not `break-words`: only `anywhere` affects intrinsic
+           * sizing, and this <h2> is a shrink-to-fit flex item whose min-content width is
+           * what sets this column. A single unbroken group name would otherwise blow the
+           * gutter at 375px on its own. Same idiom as `InviteCodePanel`'s code span.
+           */}
+          <h2 className="type-display-lg-mobile lg:type-display-lg text-primary leading-none mb-sm [overflow-wrap:anywhere]">{group.name}</h2>
           {group.description && (
             <p className="type-body-lg text-on-surface-variant max-w-2xl">{group.description}</p>
           )}
@@ -199,8 +205,9 @@ export function GroupPageSkeleton() {
   return (
     <div>
       <SkeletonGroup label="Loading group" className={HEADER}>
-        {/* Group name — type-display-lg with leading-none = exactly 48px */}
-        <Skeleton className="h-12 w-72 max-w-full mb-sm" />
+        {/* Group name — `leading-none` makes the line box exactly the font size, so this
+            is 48px at lg and 32px below it, not 38px. */}
+        <Skeleton className="h-8 lg:h-12 w-72 max-w-full mb-sm" />
 
         {/* Description — optional on the real header, but included: most groups have one,
             and under-sizing every group that does is the worse of the two errors. */}
