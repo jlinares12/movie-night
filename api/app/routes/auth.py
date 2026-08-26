@@ -2,6 +2,7 @@ import jwt
 import httpx
 from jwt import PyJWKClient, PyJWKClientError, DecodeError, ExpiredSignatureError
 from flask import Blueprint, request, session, g, current_app, jsonify
+from sqlalchemy.exc import IntegrityError
 from app.models import User
 from app.extensions import db
 from app.utils.auth import require_auth
@@ -49,10 +50,20 @@ def _fetch_and_create_user(user_id: str) -> 'User | None':
         resp.raise_for_status()
         data = resp.json()
         username = data.get('username') or user_id
-        user = User(user_id=user_id, username=username)
-        db.session.add(user)
+    except Exception:
+        return None
+
+    user = User(user_id=user_id, username=username)
+    db.session.add(user)
+    try:
         db.session.commit()
         return user
+    except IntegrityError:
+        # Another request created this user between our lookup miss and this
+        # insert. That is a lost race, not a failure — the row we wanted now
+        # exists, so re-read it rather than reporting the user as missing.
+        db.session.rollback()
+        return User.query.filter_by(user_id=user_id).first()
     except Exception:
         db.session.rollback()
         return None
