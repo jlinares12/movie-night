@@ -25,8 +25,15 @@ test('user B cannot GET user A private group — API returns 403', async ({ memb
 });
 
 test('non-member group page shows "not a member" error', async ({ memberPage }) => {
+  // Wait on the 403 itself, not on LOADING. The sentinel mounts already reading
+  // `data-loading="false"` and only flips to true once a request is in flight, so
+  // waitForSelector on it resolves against an empty DOM — leaving the assertion below
+  // to race the fetch inside its own 5s budget, which it loses under parallel load.
+  const forbidden = memberPage.waitForResponse(
+    (res) => res.url().includes(`/api/groups/${groupId}`) && res.status() === 403,
+  );
   await memberPage.goto(`/group/${groupId}`);
-  await memberPage.waitForSelector(LOADING, { state: 'attached' });
+  await forbidden;
   await expect(memberPage.getByText(/not a member/i)).toBeVisible();
 });
 

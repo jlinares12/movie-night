@@ -22,6 +22,37 @@ def _patch_verify_fail():
     return patch('app.routes.auth._verify_clerk_token', side_effect=ValueError('invalid token'))
 
 
+class _FakeClerkResponse:
+    def __init__(self, username):
+        self._username = username
+
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return {'username': self._username}
+
+
+def _patch_clerk_user_fetch(username, on_fetch=None):
+    """Patch the Clerk Backend API lookup in _fetch_and_create_user.
+
+    on_fetch runs while the request is notionally out at the network, which is
+    where a competing request can land its own insert.
+    """
+
+    def _get(*_args, **_kwargs):
+        if on_fetch is not None:
+            on_fetch()
+        return _FakeClerkResponse(username)
+
+    return patch('app.routes.auth.httpx.get', side_effect=_get)
+
+
+def _with_clerk_secret(app):
+    """Temporarily set CLERK_SECRET_KEY; the app fixture is session-scoped."""
+    return patch.dict(app.config, {'CLERK_SECRET_KEY': 'sk_test_fake'})
+
+
 class TestCreateSession:
     def test_valid_token(self, client, test_user):
         with _patch_verify('user_test123'):
@@ -46,6 +77,43 @@ class TestCreateSession:
 
     def test_user_not_in_db(self, client):
         with _patch_verify('user_unknown'):
+            resp = client.post('/api/auth/session', json={'token': 'fake_token'})
+        assert resp.status_code == 404
+
+    def test_creates_user_missing_from_db(self, app, client):
+        with _with_clerk_secret(app), _patch_verify('user_new'), _patch_clerk_user_fetch(
+            'newuser'
+        ):
+            resp = client.post('/api/auth/session', json={'token': 'fake_token'})
+        assert resp.status_code == 200
+        assert resp.get_json()['user']['username'] == 'newuser'
+
+    def test_concurrent_creation_of_same_user(self, app, client):
+        """Losing the insert race must still authenticate, not 404.
+
+        Two requests for a user with no row yet both miss the lookup and both
+        try to insert. One wins; the other hits the unique constraint on
+        user.user_id. That is a lost race, not a missing user.
+        """
+
+        def competing_insert():
+            _db.session.add(User(user_id='user_raced', username='racedwinner'))
+            _db.session.commit()
+
+        with _with_clerk_secret(app), _patch_verify('user_raced'), _patch_clerk_user_fetch(
+            'racedloser', on_fetch=competing_insert
+        ):
+            resp = client.post('/api/auth/session', json={'token': 'fake_token'})
+
+        assert resp.status_code == 200
+        # The winner's row is the one that survives, and it is what we sign in as.
+        assert resp.get_json()['user']['username'] == 'racedwinner'
+        assert User.query.filter_by(user_id='user_raced').count() == 1
+
+    def test_clerk_fetch_failure_is_404(self, app, client):
+        with _with_clerk_secret(app), _patch_verify('user_new'), patch(
+            'app.routes.auth.httpx.get', side_effect=RuntimeError('clerk down')
+        ):
             resp = client.post('/api/auth/session', json={'token': 'fake_token'})
         assert resp.status_code == 404
 

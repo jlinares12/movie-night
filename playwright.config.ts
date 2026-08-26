@@ -8,8 +8,18 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const MOBILE_SPECS = /mobile\..*\.spec\.ts$/;
 
+/*
+ * Pinned rather than left to Playwright's default of (cores / 2). Each worker
+ * signs in to Clerk once per role, so the parallelism directly sets how big a
+ * burst of Clerk sign-ins the suite opens with — on a 16-core box the default
+ * of 8 was enough to trip Clerk's rate limits and fail the run. Override with
+ * PW_WORKERS when experimenting.
+ */
+const WORKERS = Number(process.env.PW_WORKERS ?? 4);
+
 export default defineConfig({
   testDir: './e2e/specs',
+  workers: WORKERS,
   globalSetup: './e2e/global-setup',
   globalTeardown: './e2e/global-teardown',
   reporter: [['list'], ['html', { open: 'never' }]],
