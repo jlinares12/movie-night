@@ -1,14 +1,13 @@
 import { clerkSetup } from '@clerk/testing/playwright';
 import { createClerkClient } from '@clerk/backend';
+import type { FullConfig } from '@playwright/test';
 import fs from 'node:fs';
-import path from 'node:path';
+import { AUTH_DIR, USERS_FILE, type WorkerUsers } from './users';
 
-const AUTH_DIR = path.join('e2e', '.auth');
-
-export default async function globalSetup() {
+export default async function globalSetup(config: FullConfig) {
   // clerkSetup sets CLERK_FAPI (the Frontend API URL) which setupClerkTestingToken
   // requires to inject the bypass token into pages. It also mints CLERK_TESTING_TOKEN,
-  // but the auth fixture calls refreshTestingToken() per-test to get a fresh token.
+  // but the auth fixture calls refreshTestingToken() per-worker to get a fresh token.
   await clerkSetup();
 
   const secretKey = process.env.CLERK_SECRET_KEY;
@@ -18,30 +17,40 @@ export default async function globalSetup() {
 
   fs.mkdirSync(AUTH_DIR, { recursive: true });
 
+  // One owner/member pair per worker. A single shared pair meant every worker
+  // authenticated as the same two Clerk users, and therefore shared the same
+  // two Flask User rows: one worker's beforeEach group showed up in another
+  // worker's GET /api/groups assertions, and its afterEach delete could pull a
+  // group out from under a test still using it. Per-worker users give each
+  // worker its own data island, which worker-scoped sessions alone do not fix.
   const stamp = Date.now();
-  const ownerEmail = `e2e-owner-${stamp}@clerk-test.com`;
-  const memberEmail = `e2e-member-${stamp}@clerk-test.com`;
+  const pairs = await Promise.all(
+    Array.from({ length: config.workers }, async (_, worker) => {
+      const ownerEmail = `e2e-owner-${stamp}-w${worker}@clerk-test.com`;
+      const memberEmail = `e2e-member-${stamp}-w${worker}@clerk-test.com`;
 
-  const [ownerUser, memberUser] = await Promise.all([
-    clerkClient.users.createUser({
-      emailAddress: [ownerEmail],
-      password: 'E2eTestPass1!',
-      username: `e2e-owner-${stamp}`,
-    }),
-    clerkClient.users.createUser({
-      emailAddress: [memberEmail],
-      password: 'E2eTestPass1!',
-      username: `e2e-member-${stamp}`,
-    }),
-  ]);
+      const [ownerUser, memberUser] = await Promise.all([
+        clerkClient.users.createUser({
+          emailAddress: [ownerEmail],
+          password: 'E2eTestPass1!',
+          username: `e2e-owner-${stamp}-w${worker}`,
+        }),
+        clerkClient.users.createUser({
+          emailAddress: [memberEmail],
+          password: 'E2eTestPass1!',
+          username: `e2e-member-${stamp}-w${worker}`,
+        }),
+      ]);
 
-  fs.writeFileSync(
-    path.join(AUTH_DIR, 'users.json'),
-    JSON.stringify({
-      ownerId: ownerUser.id,
-      ownerEmail,
-      memberId: memberUser.id,
-      memberEmail,
+      return {
+        ownerId: ownerUser.id,
+        ownerEmail,
+        memberId: memberUser.id,
+        memberEmail,
+      } satisfies WorkerUsers;
     }),
   );
+
+  // Indexed by workerIndex; the fixture reads its own entry.
+  fs.writeFileSync(USERS_FILE, JSON.stringify(pairs));
 }

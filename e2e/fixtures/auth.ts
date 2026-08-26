@@ -5,10 +5,10 @@ import {
   type BrowserContext,
   type APIRequestContext,
 } from '@playwright/test';
-import path from 'node:path';
 import fs from 'node:fs';
 import { setupClerkTestingToken, clerk } from '@clerk/testing/playwright';
 import { createClerkClient } from '@clerk/backend';
+import { USERS_FILE, type WorkerUsers } from '../users';
 
 type AuthFixtures = {
   authedPage: Page;
@@ -76,10 +76,21 @@ async function signedInContext(
   return context;
 }
 
-function readTestUsers(): { ownerEmail: string; memberEmail: string } {
-  return JSON.parse(
-    fs.readFileSync(path.join('e2e', '.auth', 'users.json'), 'utf-8'),
-  );
+// Keyed on parallelIndex rather than workerIndex: parallelIndex is the one
+// Playwright guarantees to stay within [0, workers-1]: workerIndex keeps
+// climbing when a crashed worker is restarted, which would run off the end of
+// the array. A restarted worker reusing its predecessor's users is fine — it
+// inherits the same data island.
+function readTestUsers(parallelIndex: number): WorkerUsers {
+  const pairs = JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8')) as WorkerUsers[];
+  const users = pairs[parallelIndex];
+  if (!users) {
+    throw new Error(
+      `No E2E users provisioned for parallelIndex ${parallelIndex} (have ${pairs.length}). ` +
+        'Re-run global setup so it provisions a pair per worker.',
+    );
+  }
+  return users;
 }
 
 // A fresh page per test, from the worker's already-signed-in context. Fresh
@@ -99,8 +110,9 @@ async function newPageFrom(context: BrowserContext, run: (page: Page) => Promise
 
 export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
   ownerContext: [
-    async ({ browser }, run) => {
-      const context = await signedInContext(browser, readTestUsers().ownerEmail);
+    async ({ browser }, run, workerInfo) => {
+      const { ownerEmail } = readTestUsers(workerInfo.parallelIndex);
+      const context = await signedInContext(browser, ownerEmail);
       await run(context);
       await context.close();
     },
@@ -108,8 +120,9 @@ export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
   ],
 
   memberContext: [
-    async ({ browser }, run) => {
-      const context = await signedInContext(browser, readTestUsers().memberEmail);
+    async ({ browser }, run, workerInfo) => {
+      const { memberEmail } = readTestUsers(workerInfo.parallelIndex);
+      const context = await signedInContext(browser, memberEmail);
       await run(context);
       await context.close();
     },
