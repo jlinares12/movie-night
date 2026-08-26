@@ -67,16 +67,17 @@ export default {
         display: ['Montserrat', 'sans-serif'],
         body:    ['Inter', 'sans-serif'],
       },
-      fontSize: {
-        'display-lg':        ['3rem',     { lineHeight: '1.15', fontWeight: '800', letterSpacing: '-0.02em' }],
-        'display-lg-mobile': ['2rem',     { lineHeight: '1.2',  fontWeight: '800', letterSpacing: '-0.01em' }],
-        'headline-md':       ['1.5rem',   { lineHeight: '1.3',  fontWeight: '700' }],
-        'headline-sm':       ['1.25rem',  { lineHeight: '1.35', fontWeight: '600' }],
-        'body-lg':           ['1.125rem', { lineHeight: '1.6',  fontWeight: '400' }],
-        'body-md':           ['1rem',     { lineHeight: '1.6',  fontWeight: '400' }],
-        'label-md':          ['0.875rem', { lineHeight: '1.4',  fontWeight: '600', letterSpacing: '0.05em' }],
-        'label-sm':          ['0.75rem',  { lineHeight: '1.4',  fontWeight: '500' }],
-      },
+      /*
+       * Deliberately no `fontSize` here. The type scale lives once, as the `.type-*`
+       * classes in `src/index.css` — see the Styling conventions section of CLAUDE.md.
+       * A duplicate set of `text-*` tokens used to sit at this spot with byte-identical
+       * values, but it set neither font-family nor colour, so `text-headline-sm` on a
+       * <p> silently rendered in Inter instead of Montserrat. `src/__tests__/typography
+       * .test.ts` fails the build if any of those retired names comes back.
+       *
+       * Tailwind's own default sizes (`text-xs`, `text-sm`, …) are untouched: `extend`
+       * only ever added to them.
+       */
       borderRadius: {
         sm:      '0.25rem',
         DEFAULT: '0.5rem',

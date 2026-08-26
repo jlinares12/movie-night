@@ -16,7 +16,9 @@ interface Props {
 /**
  * Placeholder for a navigation destination that doesn't exist yet, so the
  * sidebar has somewhere real to point. Drops into `MainLayout`'s content area,
- * whose `py-lg` padding is what the `6rem` below subtracts.
+ * whose vertical padding is what the `min-h` calc below subtracts: `py-lg` on
+ * both sides at `lg` and up (`6rem`), and on mobile the taller `py-lg pb-32`
+ * plus the sticky `MobileTopBar` (`15rem`).
  */
 export default function ComingSoon({
   icon,
@@ -29,22 +31,25 @@ export default function ComingSoon({
   const pct = Math.min(100, Math.max(0, Math.round(progress)));
 
   return (
-    <section className="relative flex min-h-[calc(100vh-6rem)] items-center justify-center">
+    <section className="relative flex min-h-[calc(100vh-15rem)] lg:min-h-[calc(100vh-6rem)] items-center justify-center">
       {/*
        * Ambient layers: drifting grid, scanline sweep, concentric rings.
        *
-       * The negative insets cancel `MainLayout`'s `px-margin-desktop py-lg` so
-       * the backdrop bleeds to the edge of the content area instead of stopping
-       * at the page gutter — they must stay in step with that padding. Bleeding
-       * by exactly the padding lands flush with main's padding box, so it adds
-       * no scrollable overflow; overstating it would.
+       * The negative insets cancel `MainLayout`'s horizontal gutter and `py-lg`
+       * so the backdrop bleeds to the edge of the content area instead of
+       * stopping at the page gutter — they must stay in step with that padding,
+       * including its breakpoint (`margin-mobile` below `lg`, `margin-desktop`
+       * above). Bleeding by exactly the padding lands flush with main's padding
+       * box, so it adds no scrollable overflow; overstating it would. The `-y`
+       * inset deliberately understates mobile's `pb-32`, which is safe —
+       * under-bleeding just stops short, it cannot introduce scroll.
        *
        * The clipping `overflow-hidden` lives here rather than on the section,
        * which would otherwise crop this element back to the gutter.
        */}
       <div
         aria-hidden="true"
-        className="coming-soon-backdrop pointer-events-none absolute -inset-x-margin-desktop -inset-y-lg overflow-hidden"
+        className="coming-soon-backdrop pointer-events-none absolute -inset-x-margin-mobile lg:-inset-x-margin-desktop -inset-y-lg overflow-hidden"
       >
         <div className="coming-soon-grid absolute inset-0" />
         <div className="coming-soon-scanline absolute inset-x-0 top-0 h-1/4" />
