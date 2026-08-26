@@ -16,7 +16,7 @@ export default function MovieSearchPanel({ onNominate, nominatingId }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search for a movie…"
-        className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-body-md"
+        className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-body-md"
       />
 
       {loading && (
@@ -29,7 +29,8 @@ export default function MovieSearchPanel({ onNominate, nominatingId }: Props) {
         <p className="text-label-sm text-on-surface-variant px-sm py-md text-center">No movies found.</p>
       )}
 
-      <ul className="flex flex-col gap-xs max-h-[360px] overflow-y-auto">
+      {/* 360px is more than half a 667px screen, so the list is capped by viewport below sm */}
+      <ul className="flex flex-col gap-xs max-h-[50vh] sm:max-h-[360px] overflow-y-auto">
         {results.map((movie) => {
           const isNominating = nominatingId === movie.tmdb_id;
           return (
@@ -57,7 +58,7 @@ export default function MovieSearchPanel({ onNominate, nominatingId }: Props) {
               <button
                 onClick={() => onNominate(movie)}
                 disabled={isNominating}
-                className="bg-primary text-on-primary text-label-sm font-bold px-sm py-xs rounded-lg disabled:opacity-50 flex-shrink-0"
+                className="bg-primary text-on-primary text-label-sm font-bold px-sm py-xs rounded-lg disabled:opacity-50 flex-shrink-0 min-h-11"
               >
                 Nominate
               </button>
