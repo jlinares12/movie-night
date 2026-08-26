@@ -68,7 +68,7 @@ async function signedInContext(
       res.url().includes('/api/auth/session') &&
       res.request().method() === 'POST' &&
       res.status() === 200,
-    { timeout: 15_000 },
+    { timeout: 150_000 },
   );
   await page.goto('/');
   await backendSessionReady;
@@ -109,6 +109,19 @@ async function newPageFrom(context: BrowserContext, run: (page: Page) => Promise
   }
 }
 
+/*
+ * Every fixture that pays a Clerk sign-in needs its own timeout.
+ *
+ * Fixture setup otherwise inherits `playwright.config.ts`'s `timeout: 30_000`, which
+ * silently caps `signedInContext` well below its own intent: the wait for
+ * `POST /api/auth/session` above is budgeted at 150s, and that 150s could never be spent
+ * — the fixture was killed at 30s first, reported as
+ * `Fixture "memberContext" timeout of 30000ms exceeded during setup` against whichever
+ * test happened to request it first. Four workers signing in two roles each opens an
+ * eight-sign-in burst, and Clerk is intermittently slower than 30s under it.
+ */
+const SIGN_IN_TIMEOUT = 180_000;
+
 export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
   ownerContext: [
     async ({ browser }, run, workerInfo) => {
@@ -117,7 +130,7 @@ export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
       await run(context);
       await context.close();
     },
-    { scope: 'worker' },
+    { scope: 'worker', timeout: SIGN_IN_TIMEOUT },
   ],
 
   memberContext: [
@@ -127,7 +140,7 @@ export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
       await run(context);
       await context.close();
     },
-    { scope: 'worker' },
+    { scope: 'worker', timeout: SIGN_IN_TIMEOUT },
   ],
 
   authedPage: async ({ ownerContext }, run) => {
@@ -143,16 +156,21 @@ export const test = base.extend<AuthFixtures, AuthWorkerFixtures>({
   // the same user and survives.
   //
   // This is the one fixture that still pays a Clerk sign-in per test, so reach for
-  // it only where the test genuinely burns the session.
-  disposableAuthedPage: async ({ browser }, run, testInfo) => {
-    const { ownerEmail } = readTestUsers(testInfo.parallelIndex);
-    const context = await signedInContext(browser, ownerEmail);
-    try {
-      await newPageFrom(context, run);
-    } finally {
-      await context.close();
-    }
-  },
+  // it only where the test genuinely burns the session — and so it needs the same
+  // timeout as the worker contexts. A fixture timeout covers setup and teardown
+  // separately from the test body, so this does not lengthen the test itself.
+  disposableAuthedPage: [
+    async ({ browser }, run, testInfo) => {
+      const { ownerEmail } = readTestUsers(testInfo.parallelIndex);
+      const context = await signedInContext(browser, ownerEmail);
+      try {
+        await newPageFrom(context, run);
+      } finally {
+        await context.close();
+      }
+    },
+    { scope: 'test', timeout: SIGN_IN_TIMEOUT },
+  ],
 
   memberPage: async ({ memberContext }, run) => {
     await newPageFrom(memberContext, run);

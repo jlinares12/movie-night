@@ -65,6 +65,11 @@ test.describe('authenticated', () => {
         { name: 'session', value: 'invalid_tampered_value', domain: 'localhost', path: '/' },
       ]);
       await page.goto('/');
+      // Same reason as the two `unauthenticated` tests above: this context is signed out
+      // too, so until clerk-js loads, `ProtectedRoutes` renders neither <SignedIn> nor
+      // <SignedOut> and no redirect is ever issued. Without this the assertion polls a
+      // page holding nothing but the loading bar until it times out.
+      await clerk.loaded({ page });
       await expect(page).toHaveURL(/\/login/);
     } finally {
       await context.close();

@@ -78,8 +78,9 @@ const setup = async (session: Session, group: GroupDetail, proposals: MoviePropo
   mockGetSession.mockResolvedValue({ data: session } as unknown as Awaited<ReturnType<typeof getSession>>);
   mockGetGroup.mockResolvedValue({ data: group } as unknown as Awaited<ReturnType<typeof getGroup>>);
   mockListProposals.mockResolvedValue({ data: proposals } as unknown as Awaited<ReturnType<typeof listProposals>>);
-  render(<SessionPage />);
+  const view = render(<SessionPage />);
   await act(async () => { await Promise.resolve(); });
+  return view;
 };
 
 describe('SessionPage', () => {
@@ -609,5 +610,59 @@ describe('SessionPage', () => {
 
     // Assert
     expect(screen.getByRole('button', { name: /remove nomination/i })).toBeInTheDocument();
+  });
+
+  // ── Responsive layout ─────────────────────────────────────────────────────
+  //
+  // jsdom has no layout engine and `identity-obj-proxy` stubs the CSS, so these pin the
+  // breakpoint classes. The pixels themselves are proved by `expectNoHorizontalOverflow`
+  // in `e2e/specs/mobile.layout.spec.ts`, in a real browser at 375px.
+
+  describe('responsive layout', () => {
+    test('the main grid is single-column below lg', async () => {
+      // Arrange / Act
+      const { container } = await setup(makeSession(), makeGroupDetail());
+
+      // Assert — twelve tracks at every breakpoint meant 11 gaps x 48px = 528px of gutter
+      // inside a 335px content box, so the route overflowed before either column got width
+      const grid = container.querySelector('.grid.gap-lg')!;
+      expect(grid).toHaveClass('grid-cols-1', 'lg:grid-cols-12');
+      expect(grid).not.toHaveClass('grid-cols-12');
+    });
+
+    test('neither column carries a col-span-12 base', async () => {
+      // Arrange / Act
+      const { container } = await setup(makeSession(), makeGroupDetail());
+
+      // Assert — a `col-span-12` inside a one-column grid conjures eleven implicit tracks
+      // and reintroduces the identical overflow, so fixing the grid alone is not enough
+      const grid = container.querySelector('.grid.gap-lg')!;
+      const columns = Array.from(grid.children);
+      expect(columns).toHaveLength(2);
+      for (const col of columns) expect(col).not.toHaveClass('col-span-12');
+      expect(columns[0]).toHaveClass('lg:col-span-8');
+      expect(columns[1]).toHaveClass('lg:col-span-4');
+    });
+
+    test('the hero title steps down below lg instead of staying at 48px', async () => {
+      // Arrange / Act
+      await setup(makeSession(), makeGroupDetail());
+
+      // Assert
+      expect(screen.getByRole('heading', { name: 'Call Time Session' }))
+        .toHaveClass('text-display-lg-mobile', 'lg:text-display-lg');
+    });
+
+    test('the potluck input can shrink and its add button cannot', async () => {
+      // Arrange / Act
+      const { container } = await setup(makeSession(), makeGroupDetail());
+
+      // Assert — a flex item's `min-width` defaults to `auto`, which for a text input
+      // floors at its intrinsic ~20-char width; `flex-1` alone could never shrink it, and
+      // without `shrink-0` the fix just moves the squeeze onto the button.
+      const input = screen.getByPlaceholderText("I'll bring something...");
+      expect(input).toHaveClass('flex-1', 'min-w-0');
+      expect(container.querySelector('.bg-primary-container')).toHaveClass('shrink-0');
+    });
   });
 });
