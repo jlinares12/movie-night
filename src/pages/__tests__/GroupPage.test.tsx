@@ -191,4 +191,22 @@ describe('GroupPage', () => {
     expect(mockDeleteGroup).toHaveBeenCalledWith(1);
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
+
+  // ── Responsive layout ─────────────────────────────────────────────────────
+
+  test('the group name steps down below lg and can break mid-word', async () => {
+    // Arrange
+    (useParams as jest.Mock).mockReturnValue({ id: '1' });
+    mockGetGroup.mockResolvedValue({ data: makeGroupDetail({ name: 'PWMobile1756089600000' }) } as unknown as Awaited<ReturnType<typeof getGroup>>);
+
+    // Act
+    render(<GroupPage />);
+    await act(async () => { await Promise.resolve(); });
+
+    // Assert — `break-words` would not work here: it does not affect intrinsic sizing, and
+    // this <h2> is a shrink-to-fit flex item whose min-content width sets the column.
+    const heading = screen.getByRole('heading', { name: 'PWMobile1756089600000' });
+    expect(heading).toHaveClass('type-display-lg-mobile', 'lg:type-display-lg');
+    expect(heading).toHaveClass('[overflow-wrap:anywhere]');
+  });
 });

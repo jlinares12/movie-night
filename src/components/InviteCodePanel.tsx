@@ -63,7 +63,13 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
         </div>
 
         <div className="flex flex-col items-center justify-center py-lg bg-background rounded-lg border border-dashed border-outline-variant">
-          <span className="type-display-lg-mobile text-primary tracking-widest font-mono select-all">
+          {/*
+           * `overflow-wrap: anywhere`, not `break-words`: the code is one unbreakable
+           * run, and only `anywhere` affects intrinsic sizing — which is what sets this
+           * column's width. Today's code is 8 chars (`secrets.token_urlsafe(6)`) and
+           * fits 375px; this is what keeps a longer one from overflowing the document.
+           */}
+          <span className="type-display-lg-mobile text-primary tracking-widest font-mono select-all [overflow-wrap:anywhere]">
             {invite_code}
           </span>
           <p className="type-label-sm text-on-surface-variant mt-2 uppercase tracking-tighter">
@@ -92,9 +98,10 @@ export default function InviteCodePanel({ groupId, invite_code, your_role, onCod
  *
  * The regenerate icon button is deliberately absent: it is gated on `your_role`, which is
  * exactly what the in-flight request is fetching. A skeleton that guesses a permission is
- * wrong half the time; one that omits the control only ever settles by *adding* a 30px
+ * wrong half the time; one that omits the control only ever settles by *adding* a 44px
  * affordance next to a flex-1 button, which reads as the page filling in rather than
- * rearranging.
+ * rearranging. 44px is `IconButton`'s `min-w-11` floor, level with the `h-11` copy button
+ * beside it, so the row's height is unchanged either way.
  */
 export function InviteCodePanelSkeleton() {
   return (

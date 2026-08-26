@@ -168,8 +168,10 @@ describe('GroupLink', () => {
       const { container: skeleton } = render(<GroupLinkSkeleton />);
       const { container: card } = render(<GroupLink group={defaultGroup} onLeave={jest.fn()} />);
 
-      // Assert — the anti-jump guarantee: both roots span identically at every breakpoint
-      const spans = ['col-span-12', 'md:col-span-6', 'lg:col-span-4'];
+      // Assert — the anti-jump guarantee: both roots span identically at every breakpoint.
+      // No `col-span-12` base: the grid is single-column below `md`, where a 12-span would
+      // conjure eleven implicit tracks and overflow 375px.
+      const spans = ['md:col-span-6', 'lg:col-span-4'];
       expect(skeleton.firstChild).toHaveClass(...spans);
       expect(card.firstChild).toHaveClass(...spans);
     });
