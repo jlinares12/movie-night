@@ -167,7 +167,7 @@ export default function SessionPage() {
   if (loading) return <SessionPageSkeleton />;
   if (error || !session) return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <span className="text-label-md text-error">{error || 'Unknown error.'}</span>
+      <span className="type-label-md text-error">{error || 'Unknown error.'}</span>
     </div>
   );
 
@@ -184,7 +184,7 @@ export default function SessionPage() {
       {/* Back */}
       <button
         onClick={() => navigate(`/group/${groupId}`)}
-        className="self-start flex items-center gap-xs text-label-md text-on-surface-variant hover:text-primary transition-colors"
+        className="self-start flex items-center gap-xs type-label-md text-on-surface-variant hover:text-primary transition-colors"
       >
         <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>arrow_back</span>
         Back to group
@@ -203,7 +203,7 @@ export default function SessionPage() {
           <div className="max-w-2xl">
             <div className="flex items-center gap-sm mb-sm">
               <span
-                className="inline-flex items-center gap-xs bg-primary/20 text-primary px-sm py-xs rounded-full text-label-sm border border-primary/30 neon-glow"
+                className="inline-flex items-center gap-xs bg-primary/20 text-primary px-sm py-xs rounded-full type-label-sm border border-primary/30 neon-glow"
               >
                 <span
                   className="material-symbols-outlined"
@@ -213,31 +213,31 @@ export default function SessionPage() {
                 </span>
                 {cfg.badge}
               </span>
-              <span className="text-on-surface-variant text-label-md">• Call Time</span>
+              <span className="text-on-surface-variant type-label-md">• Call Time</span>
             </div>
 
-            <h1 className="font-display text-display-lg-mobile lg:text-display-lg text-on-surface mb-xs">
+            <h1 className="type-display-lg-mobile lg:type-display-lg text-on-surface mb-xs">
               Call Time Session
             </h1>
-            <p className="text-body-lg text-on-surface-variant mb-md leading-relaxed">{cfg.description}</p>
+            <p className="type-body-lg text-on-surface-variant mb-md leading-relaxed">{cfg.description}</p>
 
             <div className="flex flex-wrap items-center gap-md">
               {scheduledDate ? (
                 <div className="flex items-center gap-sm">
                   <span className="material-symbols-outlined text-primary">schedule</span>
-                  <span className="text-headline-sm">{formattedDate} • {formattedTime}</span>
+                  <span className="type-headline-sm">{formattedDate} • {formattedTime}</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-sm">
                   <span className="material-symbols-outlined text-on-surface-variant">schedule</span>
-                  <span className="text-headline-sm text-on-surface-variant">No date scheduled</span>
+                  <span className="type-headline-sm text-on-surface-variant">No date scheduled</span>
                 </div>
               )}
 
               {group && (
                 <div className="flex items-center gap-sm">
                   <span className="material-symbols-outlined text-primary">group</span>
-                  <span className="text-headline-sm">{group.name}</span>
+                  <span className="type-headline-sm">{group.name}</span>
                 </div>
               )}
 
@@ -262,12 +262,12 @@ export default function SessionPage() {
         {/* Left column: nominations */}
         <div className={MAIN_COL}>
           <div className="flex justify-between items-end">
-            <h3 className="text-headline-md text-on-surface">
+            <h3 className="type-headline-md text-on-surface">
               {session.status === 'decided' || session.status === 'closed'
                 ? 'Final Ballot Results'
                 : 'Nominations'}
             </h3>
-            <p className="text-label-sm text-on-surface-variant">
+            <p className="type-label-sm text-on-surface-variant">
               {group?.members?.length ?? 0} Members
             </p>
           </div>
@@ -276,7 +276,7 @@ export default function SessionPage() {
           {session.status === 'open' && !showSearch && (
             <button
               onClick={() => setShowSearch(true)}
-              className="flex items-center gap-xs bg-primary text-on-primary font-bold px-md py-sm rounded-xl text-label-md hover:brightness-110 active:scale-95 transition-all neon-glow"
+              className="flex items-center gap-xs bg-primary text-on-primary font-bold px-md py-sm rounded-xl type-label-md hover:brightness-110 active:scale-95 transition-all neon-glow"
             >
               <span className="material-symbols-outlined" aria-hidden="true" style={{ fontSize: '18px' }}>add</span>
               Add Nomination
@@ -302,16 +302,16 @@ export default function SessionPage() {
           {session.status === 'open' && proposals.length === 0 && !showSearch && (
             <div className="border-2 border-dashed border-outline-variant/40 rounded-[24px] p-lg flex flex-col items-center justify-center gap-sm text-center min-h-[200px]">
               <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '48px' }}>movie_filter</span>
-              <p className="text-headline-sm text-on-surface-variant">No nominations yet</p>
-              <p className="text-body-md text-on-surface-variant/70">Members can start adding their movie picks.</p>
+              <p className="type-headline-sm text-on-surface-variant">No nominations yet</p>
+              <p className="type-body-md text-on-surface-variant/70">Members can start adding their movie picks.</p>
             </div>
           )}
 
           {session.status === 'voting' && (
             <div className="border-2 border-dashed border-primary/30 rounded-[24px] p-lg flex flex-col items-center justify-center gap-sm text-center min-h-[200px] neon-glow">
               <span className="material-symbols-outlined text-primary" style={{ fontSize: '48px' }}>how_to_vote</span>
-              <p className="text-headline-sm text-primary">Voting in Progress</p>
-              <p className="text-body-md text-on-surface-variant">Members are casting their votes.</p>
+              <p className="type-headline-sm text-primary">Voting in Progress</p>
+              <p className="type-body-md text-on-surface-variant">Members are casting their votes.</p>
             </div>
           )}
 
@@ -323,8 +323,8 @@ export default function SessionPage() {
               >
                 check_circle
               </span>
-              <p className="text-headline-sm text-on-surface-variant capitalize">Session {session.status}</p>
-              <p className="text-body-md text-on-surface-variant/70">Results will appear here once nominations are added.</p>
+              <p className="type-headline-sm text-on-surface-variant capitalize">Session {session.status}</p>
+              <p className="type-body-md text-on-surface-variant/70">Results will appear here once nominations are added.</p>
             </div>
           )}
 
@@ -332,16 +332,16 @@ export default function SessionPage() {
           <div className={META_CARD}>
             <div className="grid grid-cols-2 gap-md">
               <div>
-                <p className="text-label-sm text-on-surface-variant mb-xs">Created</p>
-                <p className="text-label-md text-on-surface">
+                <p className="type-label-sm text-on-surface-variant mb-xs">Created</p>
+                <p className="type-label-md text-on-surface">
                   {new Date(session.created_at).toLocaleDateString('en-US', {
                     year: 'numeric', month: 'short', day: 'numeric',
                   })}
                 </p>
               </div>
               <div>
-                <p className="text-label-sm text-on-surface-variant mb-xs">Status</p>
-                <p className="text-label-md text-primary capitalize">{session.status}</p>
+                <p className="type-label-sm text-on-surface-variant mb-xs">Status</p>
+                <p className="type-label-md text-primary capitalize">{session.status}</p>
               </div>
             </div>
           </div>
@@ -350,12 +350,12 @@ export default function SessionPage() {
           {canManage && (
             <div className="bg-surface-container border border-error-container/30 rounded-[24px] p-md flex items-center gap-md flex-wrap">
               <div>
-                <p className="text-label-md text-on-surface">Danger Zone</p>
-                <p className="text-label-sm text-on-surface-variant">Permanently remove this session and all its data.</p>
+                <p className="type-label-md text-on-surface">Danger Zone</p>
+                <p className="type-label-sm text-on-surface-variant">Permanently remove this session and all its data.</p>
               </div>
               <button
                 onClick={handleDelete}
-                className="ml-auto bg-error-container text-on-error-container font-bold px-md py-sm rounded-xl text-label-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-xs"
+                className="ml-auto bg-error-container text-on-error-container font-bold px-md py-sm rounded-xl type-label-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-xs"
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>delete</span>
                 Delete Session
@@ -369,12 +369,12 @@ export default function SessionPage() {
           <div className={`${POTLUCK} sticky top-6`}>
             <div className="flex items-center gap-sm mb-md">
               <span className="material-symbols-outlined text-primary" style={{ fontSize: '30px' }}>restaurant</span>
-              <h3 className="text-headline-md text-on-surface">Who's Bringing What?</h3>
+              <h3 className="type-headline-md text-on-surface">Who's Bringing What?</h3>
             </div>
 
             <ul className="space-y-sm mb-lg">
               {potluckItems.length === 0 ? (
-                <li className="text-center py-md text-body-md text-on-surface-variant">
+                <li className="text-center py-md type-body-md text-on-surface-variant">
                   No contributions yet. Add yours!
                 </li>
               ) : (
@@ -389,16 +389,16 @@ export default function SessionPage() {
                       >
                         {p.name.charAt(0).toUpperCase()}
                       </div>
-                      <span className="text-label-md text-on-surface">{p.name}</span>
+                      <span className="type-label-md text-on-surface">{p.name}</span>
                     </div>
-                    <span className="text-body-md text-on-surface-variant">{p.item}</span>
+                    <span className="type-body-md text-on-surface-variant">{p.item}</span>
                   </li>
                 ))
               )}
             </ul>
 
             <div className="mt-md pt-md border-t border-outline-variant/30">
-              <label className="block text-label-sm text-on-surface-variant mb-xs">
+              <label className="block type-label-sm text-on-surface-variant mb-xs">
                 Add your contribution
               </label>
               <div className="flex gap-xs">
@@ -406,7 +406,7 @@ export default function SessionPage() {
                   value={potluckInput}
                   onChange={(e) => setPotluckInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && addPotluckItem()}
-                  className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface text-body-md"
+                  className="flex-1 min-w-0 bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-on-surface type-body-md"
                   placeholder="I'll bring something..."
                 />
                 <button
@@ -442,7 +442,7 @@ export default function SessionPage() {
 export function SessionPageSkeleton() {
   return (
     <div className={PAGE}>
-      {/* Back link — text-label-md (20px); `self-start` mirrors the real button so the
+      {/* Back link — type-label-md (20px); `self-start` mirrors the real button so the
           flex column cannot stretch it edge to edge */}
       <Skeleton className="self-start h-5 w-32" />
 
@@ -450,20 +450,20 @@ export function SessionPageSkeleton() {
       <SkeletonGroup label="Loading session" className={`${HERO} bg-surface-container-low`}>
         <div className={HERO_BODY}>
           <div className="max-w-2xl">
-            {/* Status badge — px-sm py-xs ×2 + text-label-sm + border ≈ 27px */}
+            {/* Status badge — px-sm py-xs ×2 + type-label-sm + border ≈ 27px */}
             <div className="flex items-center gap-sm mb-sm">
               <Skeleton variant="rect" className="h-7 w-56 rounded-full" />
               <Skeleton className="h-5 w-24" />
             </div>
 
-            {/* "Call Time Session" — text-display-lg (3rem × 1.15 ≈ 55px), stepping down to
-                text-display-lg-mobile (2rem × 1.2 ≈ 38px) below lg */}
+            {/* "Call Time Session" — type-display-lg (3rem × 1.15 ≈ 55px), stepping down to
+                type-display-lg-mobile (2rem × 1.2 ≈ 38px) below lg */}
             <Skeleton className="h-10 lg:h-14 w-[26rem] max-w-full mb-xs" />
 
-            {/* Description — one line of text-body-lg at leading-relaxed ≈ 29px */}
+            {/* Description — one line of type-body-lg at leading-relaxed ≈ 29px */}
             <Skeleton className="h-7 w-full max-w-lg mb-md" />
 
-            {/* Date and group name — 24px icon + text-headline-sm (27px) */}
+            {/* Date and group name — 24px icon + type-headline-sm (27px) */}
             <div className="flex flex-wrap items-center gap-md">
               {[0, 1].map((i) => (
                 <div key={i} className="flex items-center gap-sm">
@@ -503,18 +503,18 @@ export function SessionPageSkeleton() {
 
         <div className={SIDE_COL}>
           <SkeletonGroup label="Loading potluck list" className={POTLUCK}>
-            {/* Title — 30px icon + text-headline-md (1.5rem × 1.3 ≈ 31px) */}
+            {/* Title — 30px icon + type-headline-md (1.5rem × 1.3 ≈ 31px) */}
             <div className="flex items-center gap-sm mb-md">
               <Skeleton variant="circle" className="w-[30px]" />
               <Skeleton className="h-8 w-56" />
             </div>
 
-            {/* Contribution list — py-md ×2 + one line of text-body-md ≈ 74px */}
+            {/* Contribution list — py-md ×2 + one line of type-body-md ≈ 74px */}
             <Skeleton variant="rect" className="h-[74px] rounded-xl mb-lg" />
 
             <div className="mt-md pt-md border-t border-outline-variant/30">
               <Skeleton className="w-40 mb-xs" />
-              {/* Input + add button — px-md py-sm ×2 + text-body-md + border ≈ 52px */}
+              {/* Input + add button — px-md py-sm ×2 + type-body-md + border ≈ 52px */}
               <div className="flex gap-xs">
                 <Skeleton variant="rect" className="h-[52px] flex-1 rounded-xl" />
                 <Skeleton variant="rect" className="h-[52px] w-12 rounded-xl" />

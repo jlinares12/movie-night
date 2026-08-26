@@ -16,17 +16,17 @@ export default function MovieSearchPanel({ onNominate, nominatingId }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Search for a movie…"
-        className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface text-body-md"
+        className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl px-md py-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-on-surface type-body-md"
       />
 
       {loading && (
-        <div role="progressbar" aria-label="Searching" className="text-label-sm text-on-surface-variant animate-pulse px-sm">
+        <div role="progressbar" aria-label="Searching" className="type-label-sm text-on-surface-variant animate-pulse px-sm">
           Searching…
         </div>
       )}
 
       {!loading && query.trim() && results.length === 0 && (
-        <p className="text-label-sm text-on-surface-variant px-sm py-md text-center">No movies found.</p>
+        <p className="type-label-sm text-on-surface-variant px-sm py-md text-center">No movies found.</p>
       )}
 
       {/* 360px is more than half a 667px screen, so the list is capped by viewport below sm */}
@@ -46,19 +46,19 @@ export default function MovieSearchPanel({ onNominate, nominatingId }: Props) {
               )}
 
               <div className="flex-1 min-w-0">
-                <p className="text-label-md text-on-surface truncate">{movie.title}</p>
+                <p className="type-label-md text-on-surface truncate">{movie.title}</p>
                 {movie.release_date && (
-                  <p className="text-label-sm text-on-surface-variant">{movie.release_date.slice(0, 4)}</p>
+                  <p className="type-label-sm text-on-surface-variant">{movie.release_date.slice(0, 4)}</p>
                 )}
                 {movie.vote_average != null && (
-                  <p className="text-label-sm text-primary">★ {movie.vote_average.toFixed(1)}</p>
+                  <p className="type-label-sm text-primary">★ {movie.vote_average.toFixed(1)}</p>
                 )}
               </div>
 
               <button
                 onClick={() => onNominate(movie)}
                 disabled={isNominating}
-                className="bg-primary text-on-primary text-label-sm font-bold px-sm py-xs rounded-lg disabled:opacity-50 flex-shrink-0 min-h-11"
+                className="bg-primary text-on-primary type-label-sm font-bold px-sm py-xs rounded-lg disabled:opacity-50 flex-shrink-0 min-h-11"
               >
                 Nominate
               </button>
