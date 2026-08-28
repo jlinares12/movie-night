@@ -793,8 +793,11 @@ def test_cast_vote_for_proposal_in_another_session_returns_404(app, client, as_u
     )
 
     # Assert
+    # Pinned to the whole body rather than data['error']: until the route
+    # exists the router's own 404 satisfies the status check, and dereferencing
+    # its HTML body would fail with a TypeError instead of a clear assertion.
     assert response.status_code == 404
-    assert response.get_json()['error'] == 'proposal not found'
+    assert response.get_json() == {'error': 'proposal not found'}
 
 
 def test_cast_vote_for_proposal_in_another_group_returns_404(app, client, as_user):
