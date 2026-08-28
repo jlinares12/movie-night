@@ -5,10 +5,17 @@ class Vote(db.Model):
     __tablename__ = 'vote'
     __table_args__ = (
         db.UniqueConstraint('user_id', 'session_id', name='uq_vote_user_session'),
+        # Compound FK ensures the voted proposal belongs to this session
+        db.ForeignKeyConstraint(
+            ['proposal_id', 'session_id'],
+            ['movie_proposal.id', 'movie_proposal.session_id'],
+            name='fk_vote_proposal_session',
+            ondelete='CASCADE',
+        ),
     )
 
     id          = db.Column(db.Integer, primary_key=True)
-    proposal_id = db.Column(db.Integer, db.ForeignKey('movie_proposal.id', ondelete='CASCADE'), nullable=False, index=True)
+    proposal_id = db.Column(db.Integer, nullable=False, index=True)
     user_id     = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False, index=True)
     session_id  = db.Column(db.Integer, db.ForeignKey('call_time_session.id', ondelete='CASCADE'), nullable=False, index=True)
     voted_at    = db.Column(db.DateTime(timezone=True), server_default=db.func.now(), nullable=False)
