@@ -1194,6 +1194,7 @@ def test_tally_total_votes_matches_votes_cast(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     assert response.get_json()['total_votes'] == 2
 
 
@@ -1211,6 +1212,7 @@ def test_tally_includes_zero_vote_proposals(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert {r['proposal_id'] for r in data['results']} == set(seed['proposal_ids'])
     assert _entry(data, seed['proposal_ids'][2])['vote_count'] == 0
@@ -1236,6 +1238,7 @@ def test_tally_sorted_by_vote_count_desc_then_proposal_id_asc(app, client, as_us
     )
 
     # Assert
+    assert response.status_code == 200
     # pids[1] and pids[2] are tied at one vote each; the lower id wins the tie.
     ordering = [r['proposal_id'] for r in response.get_json()['results']]
     assert ordering == [pids[0], pids[1], pids[2], pids[3]]
@@ -1255,6 +1258,7 @@ def test_tally_eligible_voters_matches_group_member_count(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['eligible_voters'] == 5
     assert data['total_votes'] == 1
@@ -1273,6 +1277,7 @@ def test_tally_entries_include_title_and_poster_url(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     entry = _entry(response.get_json(), seed['proposal_ids'][0])
     assert entry['title'] == seed['proposal_titles'][0]
     assert entry['poster_url'] == seed['proposal_posters'][0]
@@ -1334,6 +1339,7 @@ def test_tally_excludes_votes_from_another_session(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['total_votes'] == 1
     assert _entry(data, seed['proposal_ids'][0])['vote_count'] == 1
@@ -1358,6 +1364,7 @@ def test_tally_excludes_votes_from_another_group(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['total_votes'] == 1
     assert {r['proposal_id'] for r in data['results']} == set(seed['proposal_ids'])
@@ -1403,6 +1410,7 @@ def test_tally_hides_voters_during_voting_for_member(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['identities_revealed'] is False
     assert all(r['voters'] is None for r in data['results'])
@@ -1421,6 +1429,7 @@ def test_tally_hides_voters_during_voting_for_owner(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['identities_revealed'] is False
     assert all(r['voters'] is None for r in data['results'])
@@ -1439,6 +1448,7 @@ def test_tally_hides_voters_during_voting_for_admin(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['identities_revealed'] is False
     assert all(r['voters'] is None for r in data['results'])
@@ -1457,6 +1467,7 @@ def test_tally_leaks_no_identity_fields_during_voting(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     # Deliberately structural rather than key-by-key: a checklist only covers
     # the fields someone remembered to check. This walks the whole payload, then
     # scans the raw body for the other voters' usernames.
@@ -1486,6 +1497,7 @@ def test_tally_after_decided_reveals_identities(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['session_status'] == 'decided'
     assert data['identities_revealed'] is True
@@ -1505,6 +1517,7 @@ def test_tally_after_decided_voters_contain_correct_users(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     for proposal_id in seed['proposal_ids']:
         expected = {
@@ -1531,6 +1544,7 @@ def test_tally_after_closed_reveals_identities(app, client, as_user):
     )
 
     # Assert
+    assert response.status_code == 200
     data = response.get_json()
     assert data['identities_revealed'] is True
     assert _entry(data, seed['proposal_ids'][0])['voters'] is not None
@@ -1556,10 +1570,10 @@ def test_concurrent_cast_recovers_from_integrity_error(app, client, as_user, mon
     state = {'raised': False}
 
     def flaky_commit():
-        # Only sabotage the handler's own INSERT. Flask-Session commits through
-        # this same scoped session on its way out, and must not be caught here.
-        casting = any(isinstance(obj, Vote) for obj in db.session.new)
-        if casting and not state['raised']:
+        # Only sabotage the commit that inserts something. Flask-Session shares
+        # this scoped session and commits on its way out, but `as_user` already
+        # created its row above, so that commit stages nothing new.
+        if db.session.new and not state['raised']:
             state['raised'] = True
             db.session.rollback()
             with db.engine.begin() as conn:
