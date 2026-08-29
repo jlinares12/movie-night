@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { CSSProperties } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getSession, updateSession, deleteSession, getGroup, listProposals, createProposal, deleteProposal } from "../services/groups";
 import { ApiError } from "../services/apiError";
@@ -6,6 +7,8 @@ import { useGroupEvents } from "../hooks/useGroupEvents";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import MovieSearchPanel from "../components/MovieSearchPanel";
 import NominationCard, { NominationCardSkeleton } from "../components/NominationCard";
+import VotingPanel from "../components/VotingPanel";
+import { BALLOT_BOX_RESERVE } from "../components/BallotBox";
 import { Skeleton, SkeletonGroup } from "../components/Skeleton";
 import type { Session, UserRole, SessionStatus, GroupDetail, MovieProposal } from "../types/groups";
 import type { MovieSearchResult } from "../types/movies";
@@ -20,6 +23,15 @@ import type { MovieSearchResult } from "../types/movies";
  * stays on both — above `lg` it is the desktop gutter, below it only applies vertically.
  */
 const PAGE      = 'flex flex-col gap-lg lg:gap-xl';
+/*
+ * Below `lg` the ballot box is `fixed` above `MobileNavBar`, so the page has to pay for
+ * it the same way `MainLayout` pays for the nav bar itself. The height comes from
+ * `BallotBox` rather than from a number written twice, and it is reserved for the whole
+ * `voting` phase whether the box is expanded or not: padding that changed on expand
+ * would reflow the wall underneath someone at the exact moment they are staging a
+ * choice, and the poster they just tapped could jump out from under their finger.
+ */
+const BALLOT_PAD = 'pb-[var(--ballot-reserve)] lg:pb-0';
 const HERO      = 'rounded-[32px] overflow-hidden';
 const HERO_BODY = 'p-md lg:p-lg flex flex-col justify-end min-h-[280px] lg:h-[440px]';
 const GRID      = 'grid grid-cols-1 lg:grid-cols-12 gap-lg';
@@ -116,6 +128,17 @@ export default function SessionPage() {
     }
   };
 
+  /*
+   * The panel refetches the tally on focus and after any failed cast, so its
+   * `session_status` can be a phase ahead of this copy — an owner advancing to `decided`
+   * mid-vote is exactly that case. Flowing it back up here keeps the hero badge, the
+   * heading and the advance button in step with the panel instead of contradicting it.
+   * Guarded against re-setting an unchanged status so the panel's effect cannot loop.
+   */
+  const handleVotingStatusChange = useCallback((next: SessionStatus) => {
+    setSession((prev) => (prev && prev.status !== next ? { ...prev, status: next } : prev));
+  }, []);
+
   const handleDelete = async () => {
     if (!groupId || !sesId) return;
     if (!confirm('Delete this session? All data will be lost.')) return;
@@ -179,8 +202,13 @@ export default function SessionPage() {
   const formattedDate = scheduledDate?.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const formattedTime = scheduledDate?.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
+  const showVotingPanel = session.status !== 'open';
+
   return (
-    <div className={PAGE}>
+    <div
+      className={`${PAGE} ${session.status === 'voting' ? BALLOT_PAD : ''}`}
+      style={{ '--ballot-reserve': BALLOT_BOX_RESERVE } as CSSProperties}
+    >
       {/* Back */}
       <button
         onClick={() => navigate(`/group/${groupId}`)}
@@ -288,8 +316,10 @@ export default function SessionPage() {
             <MovieSearchPanel onNominate={handleNominate} nominatingId={nominatingId} />
           )}
 
-          {/* Nomination cards */}
-          {proposals.map((p) => (
+          {/* Nomination cards — the `open` phase only. From `voting` onward the same
+              nominations are the poster wall inside `VotingPanel`, and rendering both
+              would show every movie twice. */}
+          {session.status === 'open' && proposals.map((p) => (
             <NominationCard
               key={p.id}
               proposal={p}
@@ -307,25 +337,21 @@ export default function SessionPage() {
             </div>
           )}
 
-          {session.status === 'voting' && (
-            <div className="border-2 border-dashed border-primary/30 rounded-[24px] p-lg flex flex-col items-center justify-center gap-sm text-center min-h-[200px] neon-glow">
-              <span className="material-symbols-outlined text-primary" style={{ fontSize: '48px' }}>how_to_vote</span>
-              <p className="type-headline-sm text-primary">Voting in Progress</p>
-              <p className="type-body-md text-on-surface-variant">Members are casting their votes.</p>
-            </div>
-          )}
-
-          {(session.status === 'decided' || session.status === 'closed') && (
-            <div className="border-2 border-dashed border-outline-variant/40 rounded-[24px] p-lg flex flex-col items-center justify-center gap-sm text-center min-h-[200px]">
-              <span
-                className="material-symbols-outlined text-on-surface-variant"
-                style={{ fontSize: '48px', fontVariationSettings: "'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24" }}
-              >
-                check_circle
-              </span>
-              <p className="type-headline-sm text-on-surface-variant capitalize">Session {session.status}</p>
-              <p className="type-body-md text-on-surface-variant/70">Results will appear here once nominations are added.</p>
-            </div>
+          {/*
+            * One panel covers `voting`, `decided` and `closed`: the wall and the ballot
+            * box are the same two pieces throughout, and only their live-ness changes.
+            * It is handed the proposals this page already fetched — the tally carries no
+            * proposer, and re-fetching them here would be a second request for data
+            * already in hand.
+            */}
+          {showVotingPanel && groupId && sesId && (
+            <VotingPanel
+              groupId={groupId}
+              sessionId={sesId}
+              status={session.status as SessionStatus}
+              proposals={proposals}
+              onStatusChange={handleVotingStatusChange}
+            />
           )}
 
           {/* Session meta */}
