@@ -22,6 +22,37 @@ jest.mock('../../components/MovieSearchPanel', () => ({
     </button>
   ),
 }));
+/*
+ * Stubbed for the same reason NominationCard is: SessionPage's job here is
+ * *which* region it renders per status, not what the panel does inside it.
+ * VotingPanel's own behaviour — the secrecy rules, the staging contract, the
+ * mid-vote race — is covered in src/components/__tests__/VotingPanel.test.tsx,
+ * and mounting the real one would drag useSessionVoting's two fetches into every
+ * session-page test.
+ */
+jest.mock(
+  '../../components/VotingPanel',
+  () => ({
+    __esModule: true,
+    default: ({ groupId, sessionId, status, proposals }: { groupId: number; sessionId: number; status: string; proposals: MovieProposal[]; onStatusChange?: (s: string) => void }) => (
+      <div
+        data-testid="voting-panel"
+        data-group-id={groupId}
+        data-session-id={sessionId}
+        data-status={status}
+        data-proposal-count={proposals.length}
+      />
+    ),
+  }),
+  // `virtual` because this suite is landing ahead of the component. jest.mock
+  // resolves the path even when a factory is supplied, so without it the whole
+  // file — sixty-odd passing tests that have nothing to do with voting — would
+  // fail on `Cannot find module` until #197 lands, and any unrelated regression
+  // in that window would be invisible. With it, only the five voting cases below
+  // are red, which is the signal we actually want. Harmless once the real
+  // component exists: the factory keeps taking precedence either way.
+  { virtual: true },
+);
 jest.mock('../../components/NominationCard', () => ({
   __esModule: true,
   default: ({ proposal, canDelete, onDelete }: { proposal: MovieProposal; canDelete: boolean; onDelete: (id: number) => void }) => (
@@ -251,23 +282,52 @@ describe('SessionPage', () => {
     expect(screen.getByText(/no nominations yet/i)).toBeInTheDocument();
   });
 
-  test('shows "Voting in Progress" placeholder when session is voting', async () => {
+  test('renders the voting panel in place of the dashed placeholder when status is voting', async () => {
     await setup(makeSession({ status: 'voting' }), makeGroupDetail());
 
-    expect(screen.getByText('Voting in Progress')).toBeInTheDocument();
+    // The placeholder is what #197 replaces — asserting its absence is what stops
+    // the two rendering side by side
+    expect(screen.getByTestId('voting-panel')).toBeInTheDocument();
+    expect(screen.queryByText('Voting in Progress')).not.toBeInTheDocument();
   });
 
-  test('shows "Session decided" placeholder when status is decided', async () => {
+  test('renders the voting panel in its read-only state when status is decided', async () => {
     await setup(makeSession({ status: 'decided' }), makeGroupDetail());
 
-    expect(screen.getByText(/session decided/i)).toBeInTheDocument();
+    expect(screen.getByTestId('voting-panel')).toHaveAttribute('data-status', 'decided');
+    expect(screen.queryByText(/session decided/i)).not.toBeInTheDocument();
   });
 
-  test('shows "Session closed" placeholder when status is closed', async () => {
+  test('renders the voting panel in its read-only state when status is closed', async () => {
     await setup(makeSession({ status: 'closed' }), makeGroupDetail());
 
+    expect(screen.getByTestId('voting-panel')).toHaveAttribute('data-status', 'closed');
     // exact match avoids colliding with the all-caps "SESSION CLOSED" hero badge
-    expect(screen.getByText('Session closed')).toBeInTheDocument();
+    expect(screen.queryByText('Session closed')).not.toBeInTheDocument();
+  });
+
+  test('does not render the voting panel while the session is open', async () => {
+    await setup(makeSession({ status: 'open' }), makeGroupDetail(), [makeProposal()]);
+
+    // `open` is untouched by #197 — nominations keep their own list and card
+    expect(screen.queryByTestId('voting-panel')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId('nomination-card')).toHaveLength(1);
+  });
+
+  test('hands the voting panel the ids and the proposals it already fetched', async () => {
+    // The tally carries only proposal_id/title/poster_url/vote_count/voters, so the
+    // panel joins it against these to recover the proposer. Re-fetching them in the
+    // panel would be a second request for data the page is already holding.
+    await setup(
+      makeSession({ status: 'voting' }),
+      makeGroupDetail(),
+      [makeProposal({ id: 1 }), makeProposal({ id: 2, title: 'Arrival' })],
+    );
+
+    const panel = screen.getByTestId('voting-panel');
+    expect(panel).toHaveAttribute('data-group-id', '1');
+    expect(panel).toHaveAttribute('data-session-id', '10');
+    expect(panel).toHaveAttribute('data-proposal-count', '2');
   });
 
   // ── Advance button (owner / admin / member / closed) ──────────────────────
