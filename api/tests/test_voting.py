@@ -867,11 +867,13 @@ def test_db_rejects_cross_session_vote_directly(app):
 
     # Act / Assert
     # The route's 404 owns the HTTP semantics; this only proves the backstop.
+    # Both calls sit inside pytest.raises because _make_vote already flushes —
+    # Postgres rejects the row there, before commit() is ever reached.
     with app.app_context():
-        _make_vote(
-            seed['session_id'], seed['member_ids'][0], other['proposal_ids'][0]
-        )
         with pytest.raises(IntegrityError):
+            _make_vote(
+                seed['session_id'], seed['member_ids'][0], other['proposal_ids'][0]
+            )
             db.session.commit()
         db.session.rollback()
 
