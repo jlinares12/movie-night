@@ -105,3 +105,48 @@ export async function apiDeleteProposal(
     `/api/groups/${groupId}/sessions/${sessionId}/proposals/${proposalId}`,
   );
 }
+
+/**
+ * Advance (or set) a session's status. The status machine is one-directional —
+ * open → voting → decided → closed — and only owners/admins may move it, so this
+ * must be called with an owner or admin request context.
+ */
+export async function apiSetSessionStatus(
+  request: APIRequestContext,
+  groupId: number,
+  sessionId: number,
+  status: 'open' | 'voting' | 'decided' | 'closed',
+): Promise<Session> {
+  const res = await request.patch(`/api/groups/${groupId}/sessions/${sessionId}`, {
+    data: { status },
+  });
+  if (!res.ok()) throw new Error(`setSessionStatus ${res.status()}: ${await res.text()}`);
+  return res.json();
+}
+
+/*
+ * The two vote helpers below return the raw APIResponse rather than parsed JSON,
+ * unlike every helper above them. Voting is the one area where the *status code*
+ * is load-bearing to a test: 201 first cast vs 200 change, 401 unauthenticated,
+ * 403 non-member, 404 cross-session proposal, 409 wrong phase. A helper that threw
+ * on !ok() would make exactly those assertions unwritable.
+ */
+
+export async function apiCastVote(
+  request: APIRequestContext,
+  groupId: number,
+  sessionId: number,
+  proposalId: number,
+) {
+  return request.put(`/api/groups/${groupId}/sessions/${sessionId}/votes`, {
+    data: { proposal_id: proposalId },
+  });
+}
+
+export async function apiGetTally(
+  request: APIRequestContext,
+  groupId: number,
+  sessionId: number,
+) {
+  return request.get(`/api/groups/${groupId}/sessions/${sessionId}/votes/tally`);
+}

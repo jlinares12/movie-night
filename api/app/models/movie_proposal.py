@@ -25,7 +25,10 @@ class MovieProposal(db.Model):
 
     session          = db.relationship('CallTimeSession', back_populates='proposals')
     proposed_by_user = db.relationship('User', back_populates='proposals')
-    votes            = db.relationship('Vote', back_populates='proposal', cascade='all, delete-orphan')
+    # `overlaps` — see the note on Vote.proposal; vote.session_id is written by
+    # this relationship and by CallTimeSession.votes, deliberately.
+    votes            = db.relationship('Vote', back_populates='proposal', cascade='all, delete-orphan',
+                                       overlaps='votes')
 
     def to_dict(self):
         return {
