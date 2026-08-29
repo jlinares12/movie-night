@@ -2,17 +2,12 @@ from datetime import datetime
 from flask import Blueprint, g, jsonify, request
 from app.extensions import db
 from app.models.group import Group
-from app.models.group_member import GroupMember
 from app.models.call_time_session import CallTimeSession
-from app.utils.auth import require_auth
+from app.utils.auth import get_membership, require_auth
 
 bp = Blueprint('sessions', __name__)
 
 STATUS_ORDER = ['open', 'voting', 'decided', 'closed']
-
-
-def _get_membership(group_id, user):
-    return GroupMember.query.filter_by(group_id=group_id, user_id=user.id).first()
 
 
 @bp.route('/api/groups/<int:group_id>/sessions', methods=['POST'])
@@ -21,7 +16,7 @@ def create_session(group_id):
     group = db.session.get(Group, group_id)
     if not group:
         return jsonify({'error': 'group not found'}), 404
-    membership = _get_membership(group_id, g.current_user)
+    membership = get_membership(group_id, g.current_user)
     if not membership or membership.role == 'member':
         return jsonify({'error': 'forbidden'}), 403
 
@@ -50,7 +45,7 @@ def list_sessions(group_id):
     group = db.session.get(Group, group_id)
     if not group:
         return jsonify({'error': 'group not found'}), 404
-    if not _get_membership(group_id, g.current_user):
+    if not get_membership(group_id, g.current_user):
         return jsonify({'error': 'forbidden'}), 403
 
     sessions = (
@@ -68,7 +63,7 @@ def get_session(group_id, session_id):
     group = db.session.get(Group, group_id)
     if not group:
         return jsonify({'error': 'group not found'}), 404
-    if not _get_membership(group_id, g.current_user):
+    if not get_membership(group_id, g.current_user):
         return jsonify({'error': 'forbidden'}), 403
 
     movie_session = db.session.get(CallTimeSession, session_id)
@@ -83,7 +78,7 @@ def update_session(group_id, session_id):
     group = db.session.get(Group, group_id)
     if not group:
         return jsonify({'error': 'group not found'}), 404
-    membership = _get_membership(group_id, g.current_user)
+    membership = get_membership(group_id, g.current_user)
     if not membership or membership.role == 'member':
         return jsonify({'error': 'forbidden'}), 403
 
@@ -119,7 +114,7 @@ def delete_session(group_id, session_id):
     group = db.session.get(Group, group_id)
     if not group:
         return jsonify({'error': 'group not found'}), 404
-    membership = _get_membership(group_id, g.current_user)
+    membership = get_membership(group_id, g.current_user)
     if not membership or membership.role == 'member':
         return jsonify({'error': 'forbidden'}), 403
 

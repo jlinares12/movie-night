@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import session, g, jsonify
-from app.models import User
+from app.models import GroupMember, User
 
 
 def require_auth(f):
@@ -16,3 +16,8 @@ def require_auth(f):
         g.current_user = user
         return f(*args, **kwargs)
     return decorated
+
+
+def get_membership(group_id, user):
+    """The caller's GroupMember row for this group, or None if not a member."""
+    return GroupMember.query.filter_by(group_id=group_id, user_id=user.id).first()
