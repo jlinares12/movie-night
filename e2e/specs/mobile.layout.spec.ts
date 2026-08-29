@@ -220,13 +220,16 @@ test('nominating works at 375px', async ({ authedPage: page }) => {
   await expectNoHorizontalOverflow(page, 'session with a nomination');
 
   // ── Advance to voting ──
-  // This is the ceiling: there is no ballot UI. `api/app/models/vote.py` exists, but
-  // `api/app/routes/` has no `votes.py`, and `SessionPage.tsx` renders a static panel for
-  // the `voting` status. Measuring that panel is the honest end of this ticket's loop.
+  // This used to be the ceiling — the `voting` status rendered a static dashed panel,
+  // and measuring that was the honest end of the loop. #197 replaced it with the real
+  // ballot UI, so the measurement below is now taken over a poster wall plus the ballot
+  // box pinned above `MobileNavBar`, which is the layout that actually has to survive
+  // 375px. The wall's `radiogroup` and the box are the anchors rather than any body
+  // copy: both are DOM contracts the voting suites already depend on, where prose is
+  // free to be reworded.
   await page.getByRole('button', { name: /Advance to voting/i }).click();
-  // The panel's own body copy, not its "Voting in Progress" heading — the hero badge
-  // reads VOTING IN PROGRESS too, and would make that locator ambiguous.
-  await expect(page.getByText('Members are casting their votes.')).toBeVisible();
+  await expect(page.getByRole('radiogroup')).toBeVisible();
+  await expect(page.getByTestId('ballot-box')).toBeVisible();
   await expectNoHorizontalOverflow(page, 'session in voting');
 });
 
