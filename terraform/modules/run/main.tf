@@ -41,7 +41,11 @@ resource "google_cloud_run_v2_service" "call-time" {
     }
   }
   lifecycle {
-    ignore_changes = [ template[0].containers[0].image ]
+    ignore_changes = [
+      template[0].containers[0].image,
+      client,
+      client_version,
+    ]
   }
 }
 
@@ -104,6 +108,8 @@ resource "google_cloud_run_v2_job" "call-time-migrate" {
   lifecycle {
     ignore_changes = [
       template[0].template[0].containers[0].image,
+      client,
+      client_version,
     ]
   }
 }
