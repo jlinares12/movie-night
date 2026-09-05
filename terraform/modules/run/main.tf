@@ -4,6 +4,10 @@ resource "google_cloud_run_v2_service" "call-time" {
   ingress  = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
   template {
     service_account = var.service_account_email
+    scaling {
+      min_instance_count = (var.environment == "prod") ? 1 : 0
+      max_instance_count = 20
+    }
     containers {
       image = "us-docker.pkg.dev/cloudrun/container/hello"
       ports {
